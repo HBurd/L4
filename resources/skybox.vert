@@ -12,15 +12,16 @@ uniform mat3 camera_orientation; // inverse
 void main()
 {
     float near = 0.1f;
-    float far = 100.0f;
+    float far = 1000.0f;
     float scale = 0.1f;
 
     float aspect = screen.y / screen.x;
      
+    float boxsize = 1.0f;
     mat3 scalemat = mat3(
-        10.0f, 0.0f, 0.0f,
-        0.0f, 10.0f, 0.0f,
-        0.0f, 0.0f, 10.0f
+        boxsize, 0.0f, 0.0f,
+        0.0f, boxsize, 0.0f,
+        0.0f, 0.0f, boxsize
     );
 
     mat4 perspective = mat4(

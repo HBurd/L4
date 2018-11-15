@@ -1,3 +1,0 @@
-#!/bin/bash
-
-clang++ main.cpp hbmath.cpp hbrenderer.cpp hbtime.cpp hbentities.cpp hb_imgui.cpp hbship.cpp hb_stb.cpp -o L4game -ggdb3 -Iinclude -Iinclude/SDL -Llib -lSDL2 -lGLEW -ldl -lpthread -lsndio -lGL

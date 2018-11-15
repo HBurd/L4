@@ -1,9 +1,8 @@
 #include "hbrenderer.h"
 #include "GL/glew.h"
 #include <string>
+#include <cassert>
 
-// TODO: stick this in its own translation unit
-#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include "stb_image.h"
