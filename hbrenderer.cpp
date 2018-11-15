@@ -1,0 +1,395 @@
+#include "hbrenderer.h"
+#include "GL/glew.h"
+#include <string>
+
+// TODO: stick this in its own translation unit
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
+#include "stb_image.h"
+
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+
+static GLint compile_shader(const char* filename, GLuint shader_type)
+{
+    std::ifstream shader_file;
+    shader_file.open(filename, std::ios::ate);
+    unsigned int file_len = shader_file.tellg();
+    GLchar* shader_text = (GLchar*) malloc(file_len + 1); // +1 for null terminator
+    shader_file.seekg(0, std::ios::beg);
+    shader_file.read(shader_text, file_len);
+
+    // add null terminator
+    shader_text[file_len] = 0;
+
+    GLuint shader = glCreateShader(shader_type);
+
+    glShaderSource(shader, 1, &shader_text, NULL);
+    glCompileShader(shader);
+
+    free(shader_text);
+
+    GLint success = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (success == GL_FALSE)
+    {
+        GLint log_size = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_size);
+        GLchar* info_log = (GLchar*)malloc(log_size);
+        glGetShaderInfoLog(shader, log_size, NULL, info_log);
+        cout << "Shader compilation failed with the following error message: "
+             << info_log
+             << endl;
+        free(info_log);
+    }
+
+    return shader;
+}
+
+GLuint link_program(GLint vshader, GLint fshader)
+{
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vshader);
+    glAttachShader(program, fshader);
+    glLinkProgram(program);
+
+    GLint success = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (success == GL_FALSE)
+    {
+        GLint log_size = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_size);
+        GLchar* info_log = (GLchar*) malloc(log_size);
+        glGetProgramInfoLog(program, log_size, NULL, info_log);
+        cerr << "Program linking failed with the following error message: "
+             << info_log
+             << endl;
+        free(info_log);
+    }
+    return program;
+}
+
+Mesh::Mesh(const char* filename, ShaderProgramId _shader_program)
+{
+    shader_program = _shader_program;
+
+    // load model
+    tinyobj::attrib_t attrib;
+    vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    string obj_warn;
+    string obj_err;
+    tinyobj::LoadObj(&attrib, &shapes, &materials, &obj_warn, &obj_err, filename);
+
+    if (!obj_warn.empty())
+    {
+        cerr << "Warning loading model: "
+             << obj_warn
+             << endl;
+    }
+
+    if (!obj_err.empty())
+    {
+        cerr << "Error loading model: "
+             << obj_err
+             << endl;
+    }
+
+    for (unsigned int s = 0; s < shapes.size(); s++)
+    {
+        unsigned int idx_offset = 0;
+        for (unsigned int f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+        {
+            unsigned int num_vertices = shapes[s].mesh.num_face_vertices[f];
+            if (num_vertices != 3)
+            {
+                cerr << "Only faces with 3 vertices are supported"
+                     << endl;
+            }
+            for (unsigned int v = 0; v < num_vertices; v++)
+            {
+                tinyobj::index_t idx = shapes[s].mesh.indices[idx_offset + v];
+
+                Vec3 position;
+                Vec3 normal;
+                Vec2 uv;
+
+                assert(attrib.vertices.size() > 0);
+
+                position = Vec3(
+                    attrib.vertices[3 * idx.vertex_index],
+                    attrib.vertices[3 * idx.vertex_index + 1],
+                    attrib.vertices[3 * idx.vertex_index + 2]);
+
+                if (attrib.normals.size() > 0)
+                {
+                    normal = Vec3(
+                        attrib.normals[3 * idx.normal_index],
+                        attrib.normals[3 * idx.normal_index + 1],
+                        attrib.normals[3 * idx.normal_index + 2]);
+                }
+
+                if (attrib.texcoords.size() > 0)
+                {
+                    uv = Vec2(
+                        attrib.texcoords[2 * idx.texcoord_index],
+                        attrib.texcoords[2 * idx.texcoord_index + 1]);
+                }
+
+                vertices.push_back(Vertex(position, normal, uv));
+            }
+            idx_offset += num_vertices;
+        }
+    }
+
+    // create and fill vbo
+    vbo = 0;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vertices.size() * sizeof(Vertex),
+        vertices.data(),
+        GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    {
+        unsigned int stride = sizeof(Vertex);
+        unsigned int location = 0;  // pos
+        GLvoid* offset = 0;
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(
+            location,
+            3,  // # components
+            GL_FLOAT,
+            GL_FALSE, // normalized int conversion
+            stride,
+            offset);
+        
+        location = 1; // normal
+        offset = (GLvoid*)offsetof(Vertex, normal);
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(
+            location,
+            3,  // # components
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            offset);
+
+        location = 2; // normal
+        offset = (GLvoid*)offsetof(Vertex, uv);
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(
+            location,
+            2,  // # components
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            offset);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+ShaderProgram::ShaderProgram(
+    const char* vshader_filename,
+    const char* fshader_filename)
+{
+    vshader = compile_shader(vshader_filename, GL_VERTEX_SHADER);
+    fshader = compile_shader(fshader_filename, GL_FRAGMENT_SHADER);
+
+    program = link_program(vshader, fshader);
+}
+
+Vertex::Vertex(Vec3 _position, Vec3 _normal, Vec2 _uv)
+:position(_position), normal(_normal), uv(_uv) {}
+
+Renderer::Renderer(unsigned int _width, unsigned int _height)
+:width(_width), height(_height)
+{
+    // load gl bindings
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+    {
+        cerr << "Error loading gl bindings: "
+             << glewGetErrorString(err) << endl;
+    }
+
+
+    glViewport(0, 0, width, height);
+    glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+}
+
+MeshId Renderer::load_mesh(const char* filename, ShaderProgramId shader_prog_id)
+{
+    meshes.push_back(Mesh(filename, shader_prog_id));
+    return meshes.size() - 1;
+}
+
+void Renderer::load_skybox(const char* filename, const char* texture_filename, ShaderProgramId shader_prog_id)
+{
+    skybox_texture = load_texture(texture_filename);
+    skybox_mesh = load_mesh(filename, shader_prog_id);
+}
+
+ShaderProgramId Renderer::load_shader(const char* vshader, const char* fshader)
+{
+    shader_programs.push_back(ShaderProgram(vshader, fshader));
+    return shader_programs.size() - 1;
+}
+
+GLuint Renderer::load_texture(const char* texture_filename)
+{
+    // load actual texture
+    int w, h, n;
+    unsigned char* image_data = stbi_load(
+        texture_filename,
+        &w, &h, &n, 3);  // force 3 components per pixel
+
+    GLuint texture_id;
+    glGenTextures(1, &texture_id);
+
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,  // mipmap level
+        GL_RGB,   // internal format
+        w,
+        h,
+        0,  // must be 0
+        GL_RGB,   // format
+        GL_UNSIGNED_BYTE,
+        image_data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_image_free(image_data);
+
+    return texture_id;
+}
+
+void Renderer::set_screen_size(unsigned int w, unsigned int h)
+{
+    width = w;
+    height = h;
+    glViewport(0, 0, width, height);
+}
+
+void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const
+{
+    Mat33 rotation_matrix = orientation.to_matrix();
+    
+    const Mesh* mesh = &meshes[mesh_id];
+    glUseProgram(shader_programs[0].program);
+    
+    GLuint rotation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "rotation");
+    glUniformMatrix3fv(
+        rotation_uniform_location,
+        1,       // 1 matrix
+        GL_TRUE, // transpose (row to column major)
+        (GLfloat*)&rotation_matrix.data);
+
+    GLuint screen_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "screen");
+    glUniform2f(screen_uniform_location, width, height);
+
+    GLuint origin_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "origin");
+    glUniform3fv(origin_uniform_location, 1, (GLfloat*)&position);
+
+    GLuint camera_pos_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_pos");
+    glUniform3fv(camera_pos_uniform_location, 1, (GLfloat*)&camera_pos);
+
+    GLuint camera_orientation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_orientation");
+    Mat33 camera_orientation_inverse = camera_orientation.inverse().to_matrix();
+    glUniformMatrix3fv(
+        camera_orientation_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&camera_orientation_inverse.data);
+
+    glBindVertexArray(mesh->vao);
+    glDrawArrays(
+        GL_TRIANGLES,
+        0,  // starting idx
+        mesh->vertices.size()
+    );
+}
+
+void Renderer::draw_skybox() const
+{
+    const Mesh* mesh = &meshes[skybox_mesh];
+    glUseProgram(shader_programs[mesh->shader_program].program);
+
+    GLuint screen_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "screen");
+    glUniform2f(screen_uniform_location, width, height);
+
+    GLuint camera_pos_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_pos");
+    glUniform3fv(camera_pos_uniform_location, 1, (GLfloat*)&camera_pos);
+
+    GLuint camera_orientation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_orientation");
+    Mat33 camera_orientation_inverse = camera_orientation.inverse().to_matrix();
+    glUniformMatrix3fv(
+        camera_orientation_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&camera_orientation_inverse.data);
+
+    glBindVertexArray(mesh->vao);
+    glBindTexture(GL_TEXTURE_2D, skybox_texture);
+    glDepthMask(GL_FALSE);
+
+    glDrawArrays(
+        GL_TRIANGLES,
+        0,  // starting idx
+        mesh->vertices.size()
+    );
+
+    glDepthMask(GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
+}
+
+void Renderer::clear() const
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
