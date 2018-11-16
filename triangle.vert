@@ -28,7 +28,7 @@ void main()
 
     float near = 0.1f;
     float far = 100.0f;
-    float scale = 0.1f;
+    float scale = 0.07f;
 
     float aspect = screen.y / screen.x;
 
@@ -42,6 +42,7 @@ void main()
     vec3 out_position = camera_orientation * (rotation_matrix * Position + origin - camera_pos);
     gl_Position = perspective * vec4(out_position, 1.0f);
 
-    vec3 rotated_normal = camera_orientation * rotation_matrix * Normal;
-    OUT.Color = vec3(1.0f, 1.0f, 1.0f) * dot(rotated_normal, -normalize(out_position));
+    vec3 light_direction = vec3(1.0f, 0.0f, 0.0f);
+    vec3 rotated_normal = rotation_matrix * Normal;
+    OUT.Color = vec3(1.0f, 1.0f, 1.0f) * dot(rotated_normal, light_direction);
 }

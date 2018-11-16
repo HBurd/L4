@@ -1,8 +1,13 @@
-SRC = code/main.cpp code/hbmath.cpp code/hbrenderer.cpp code/hbtime.cpp code/hbentities.cpp code/hbship.cpp
+SRC = code/main.cpp code/hbmath.cpp code/hbrenderer.cpp code/hbtime.cpp code/hbentities.cpp code/hbship.cpp code/hbkeyboard.cpp code/hbplayer_control.cpp
 OBJ = hb_imgui.o hb_stb.o hb_tinyobjloader.o
+default: L4game
+
+clean:
+	rm *.o
+	rm L4game
+
 L4game: hb_imgui.o hb_stb.o hb_tinyobjloader.o $(SRC)
 	clang++ $(SRC) $(OBJ) -o L4game -ggdb3 -Iinclude -Llib -lSDL2 -lGLEW -ldl -lpthread -lsndio -lGL
-	cp resources/* .
 
 hb_imgui.o:
 	clang++ code/hb_imgui.cpp -c -o hb_imgui.o -Iinclude/SDL -Iinclude

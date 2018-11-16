@@ -7,6 +7,8 @@
 #include "hbentities.h"
 #include "hbship.h"
 #include "hbutil.h"
+#include "hbkeyboard.h"
+#include "hbplayer_control.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -51,17 +53,25 @@ int main()
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui::StyleColorsDark();
 
+    Keyboard kb;
+
     EntityManager entity_manager;
     entity_manager.entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH));
+    entity_manager.entity_lists.push_back(
+        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
 
     // add test entities
-    EntityHandle test_entity1 = entity_manager.create_entity(
-        create_ship(Vec3(-1.5f, 0.0f, -3.0f), ship_mesh));
-    EntityHandle test_entity2 = entity_manager.create_entity(
-        create_ship(Vec3(1.5f, 0.0f, -3.0f), ship_mesh));
-    EntityHandle test_entity3 = entity_manager.create_entity(
-        create_ship(Vec3(0.0f, 0.0f, 2.0f), ship_mesh));
+    EntityHandle test_entity1;
+    {
+        Entity player_ship_entity = create_ship(Vec3(-1.5f, 0.0f, -3.0f), ship_mesh);
+        player_ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
+        EntityHandle test_entity1 = entity_manager.create_entity(player_ship_entity);
+        EntityHandle test_entity2 = entity_manager.create_entity(
+            create_ship(Vec3(1.5f, 0.0f, -3.0f), ship_mesh));
+        EntityHandle test_entity3 = entity_manager.create_entity(
+            create_ship(Vec3(0.0f, 0.0f, 2.0f), ship_mesh));
+    }
  
     bool show_frame_rate = true;
 
@@ -90,6 +100,12 @@ int main()
                     renderer.set_screen_size(new_width, new_height);
                     break;
                 }
+            case SDL_KEYUP:
+                kb.handle_keyup(event.key.keysym.sym);
+                break;
+            case SDL_KEYDOWN:
+                kb.handle_keydown( event.key.keysym.sym);
+                break;
             }
             if (event.type == SDL_QUIT)
             {
@@ -125,9 +141,21 @@ int main()
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                Rotor omega = Rotor::simple_rotation(0.003f);
-                entity_list.physics_list[entity_idx].orientation = 
-                    omega * entity_list.physics_list[entity_idx].orientation;
+                //Rotor omega = Rotor::yaw(0.003f);
+                //entity_list.physics_list[entity_idx].orientation = 
+                //    omega * entity_list.physics_list[entity_idx].orientation;
+            }
+        }
+
+        // PlayerControl updates
+        for (unsigned int list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+        {
+            EntityList& entity_list = entity_manager.entity_lists[list_idx];
+            if (!entity_list.supports_components(ComponentType::PHYSICS | ComponentType::PLAYER_CONTROL))
+                continue;
+            for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            {
+                player_control_update(&entity_list.physics_list[entity_idx], kb);
             }
         }
 

@@ -13,7 +13,7 @@ void main()
 {
     float near = 0.1f;
     float far = 1000.0f;
-    float scale = 0.1f;
+    float scale = 0.07f;
 
     float aspect = screen.y / screen.x;
      

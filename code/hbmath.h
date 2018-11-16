@@ -88,7 +88,9 @@ struct Rotor
     Mat33 to_matrix() const;
     Rotor inverse() const;
 
-    static Rotor simple_rotation(float rotation);
+    static Rotor roll(float angle);
+    static Rotor pitch(float angle);
+    static Rotor yaw(float angle);
 };
 
 // algebra
@@ -105,6 +107,7 @@ Vec3 cross(const Vec3& lhs, const Vec3& rhs);
 Mat33 operator*(const Mat33& lhs, const Mat33& rhs);
 Mat33 operator+(const Mat33& lhs, const Mat33& rhs);
 Mat33 operator-(const Mat33& lhs, const Mat33& rhs);
+Vec3 operator*(const Mat33& lhs, const Vec3& rhs);
 
 Rotor operator*(const Rotor& lhs, const Rotor& rhs);
 

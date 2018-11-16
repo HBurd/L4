@@ -134,6 +134,38 @@ Vec3 Vec3::normalize() const
     return Vec3(x / magnitude, y / magnitude, z / magnitude);
 }
 
+Vec3 operator+(const Vec3& lhs, const Vec3& rhs)
+{
+    Vec3 result = lhs;
+    result += rhs;
+    return result;
+}
+
+Vec3 operator-(const Vec3& lhs, const Vec3& rhs)
+{
+    Vec3 result = lhs;
+    result -= rhs;
+    return result;
+}
+
+Vec3 operator*(float lhs, const Vec3& rhs)
+{
+    Vec3 result = rhs;
+    result.x *= lhs;
+    result.y *= lhs;
+    result.z *= lhs;
+    return result;
+}
+
+Vec3 operator*(const Vec3& lhs, float rhs)
+{
+    Vec3 result = lhs;
+    result.x *= rhs;
+    result.y *= rhs;
+    result.z *= rhs;
+    return result;
+}
+
 float dot(const Vec3& lhs, const Vec3& rhs)
 {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
@@ -207,6 +239,15 @@ Mat33 operator-(const Mat33& lhs, const Mat33& rhs)
     return result;
 }
 
+Vec3 operator*(const Mat33& lhs, const Vec3& rhs)
+{
+    return Vec3(
+        rhs.x * lhs.data[0] + rhs.y * lhs.data[1] + rhs.z * lhs.data[2],
+        rhs.x * lhs.data[3] + rhs.y * lhs.data[4] + rhs.z * lhs.data[5],
+        rhs.x * lhs.data[6] + rhs.y * lhs.data[7] + rhs.z * lhs.data[8]
+    );
+}
+
 Rotor::Rotor(const Vec3& v1, const Vec3& v2)
 {
     s = dot(v1, v2);
@@ -254,14 +295,39 @@ Rotor Rotor::inverse() const
     return result;
 }
 
-// performs a rotation on the xy plane
-Rotor Rotor::simple_rotation(float rotation)
+// rotation in xy plane
+Rotor Rotor::roll(float angle)
 {
-    float cosine = cosf(0.5f * rotation);
-    float sine = sinf(0.5f * rotation);
-
+    float cosine = cosf(0.5f * angle);
+    float sine = sinf(0.5f * angle);
+    
     Vec3 start = Vec3(1.0f, 0.0f, 0.0f);
-    Vec3 end = Vec3(cosine, 0.0f, sine);
+    Vec3 end = Vec3(cosine, sine, 0.0f);
+
+    return Rotor(start, end);
+}
+
+// rotation in yz plane
+Rotor Rotor::pitch(float angle)
+{
+    float cosine = cosf(0.5f * angle);
+    float sine = sinf(0.5f * angle);
+
+    Vec3 start = Vec3(0.0f, 1.0f, 0.0f);
+    Vec3 end = Vec3(0.0f, cosine, sine);
+
+    return Rotor(start, end);
+}
+
+// rotation in zx plane
+Rotor Rotor::yaw(float angle)
+{
+
+    float cosine = cosf(0.5f * angle);
+    float sine = sinf(0.5f * angle);
+    
+    Vec3 start = Vec3(0.0f, 0.0f, 1.0f);
+    Vec3 end = Vec3(sine, 0.0f, cosine);
 
     return Rotor(start, end);
 }

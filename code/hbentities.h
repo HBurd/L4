@@ -11,7 +11,8 @@ namespace ComponentType
     enum ComponentType
     {
         PHYSICS = 1,
-        MESH = 2,
+        MESH = 2,               // TODO: can we include component dependencies in here?
+        PLAYER_CONTROL = 4,
 
         // =======================================
         // Add components here as they are created
