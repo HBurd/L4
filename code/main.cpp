@@ -9,6 +9,7 @@
 #include "hbutil.h"
 #include "hbkeyboard.h"
 #include "hbplayer_control.h"
+#include "hbnet.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -54,6 +55,7 @@ int main()
     ImGui::StyleColorsDark();
 
     Keyboard kb;
+    NetworkInterface network;
 
     EntityManager entity_manager;
     entity_manager.entity_lists.push_back(
@@ -128,6 +130,8 @@ int main()
             ImGui::Text("%d fps", (unsigned int)(1.0 / delta_time + 0.5));
             ImGui::End();
         }
+
+        network.draw_gui();
 
         // ==============
         // Entity Updates
