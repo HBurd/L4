@@ -7,6 +7,7 @@
 struct PlayerControlState
 {
     float thrust = 0.0f;
+    Rotor torque;
 };
 
 // currently justs builds PlayerControlState based on kb

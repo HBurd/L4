@@ -4,12 +4,20 @@
 PlayerControlState player_control_get_state(const Keyboard kb)
 {
     // build the control packet and send it to the server
+    float max_thrusdt = 0.05f;
+    float angle_speed = 0.01f;
 
     PlayerControlState control_state;
     if (kb.space)
     {
         control_state.thrust = 0.05f;
     }
+    if (kb.q) control_state.torque = Rotor::roll(-angle_speed)  * control_state.torque;
+    if (kb.e) control_state.torque = Rotor::roll(angle_speed)   * control_state.torque;
+    if (kb.w) control_state.torque = Rotor::pitch(angle_speed)  * control_state.torque;
+    if (kb.s) control_state.torque = Rotor::pitch(-angle_speed) * control_state.torque;
+    if (kb.a) control_state.torque = Rotor::yaw(-angle_speed)   * control_state.torque;
+    if (kb.d) control_state.torque = Rotor::yaw(angle_speed)    * control_state.torque;
 
     return control_state;
 
@@ -39,4 +47,5 @@ void player_control_update(Physics* physics, PlayerControlState control_state)
     thrust = thrust * control_state.thrust;
     
     physics->position += thrust;
+    physics->orientation= physics->orientation * control_state.torque;
 }
