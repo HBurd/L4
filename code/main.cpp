@@ -55,7 +55,14 @@ int main()
     ImGui::StyleColorsDark();
 
     Keyboard kb;
-    NetworkInterface network;
+    // NetworkInterface network;
+    
+    ClientData client;
+    ServerData server;
+    NetworkGui network_gui;
+    ClientId client_id = INCOMPLETE_ID;
+
+    vector<GamePacketIn> game_packets;
 
     EntityManager entity_manager;
     entity_manager.entity_lists.push_back(
@@ -64,16 +71,16 @@ int main()
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
 
     // add test entities
-    EntityHandle test_entity1;
-    {
-        Entity player_ship_entity = create_ship(Vec3(-1.5f, 0.0f, -3.0f), ship_mesh);
-        player_ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
-        EntityHandle test_entity1 = entity_manager.create_entity(player_ship_entity);
-        EntityHandle test_entity2 = entity_manager.create_entity(
-            create_ship(Vec3(1.5f, 0.0f, -3.0f), ship_mesh));
-        EntityHandle test_entity3 = entity_manager.create_entity(
-            create_ship(Vec3(0.0f, 0.0f, 2.0f), ship_mesh));
-    }
+    //EntityHandle test_entity1;
+    //{
+    //    Entity player_ship_entity = create_ship(Vec3(-1.5f, 0.0f, -3.0f), ship_mesh);
+    //    player_ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
+    //    EntityHandle test_entity1 = entity_manager.create_entity(player_ship_entity);
+    //    EntityHandle test_entity2 = entity_manager.create_entity(
+    //        create_ship(Vec3(1.5f, 0.0f, -3.0f), ship_mesh));
+    //    EntityHandle test_entity3 = entity_manager.create_entity(
+    //        create_ship(Vec3(0.0f, 0.0f, 2.0f), ship_mesh));
+    //}
  
     bool show_frame_rate = true;
 
@@ -107,6 +114,11 @@ int main()
                 break;
             case SDL_KEYDOWN:
                 kb.handle_keydown( event.key.keysym.sym);
+                // handle oneshot keypresses here
+                if (event.key.keysym.sym == SDLK_BACKQUOTE)
+                {
+                    network_gui.main_gui = !network_gui.main_gui;
+                }
                 break;
             }
             if (event.type == SDL_QUIT)
@@ -131,7 +143,21 @@ int main()
             ImGui::End();
         }
 
-        network.draw_gui();
+        {
+            bool create_server = false;
+            bool connect_to_server = false;
+            network_gui.draw(&create_server, &connect_to_server);
+
+            if (create_server)
+            {
+                client_id = server.init(network_gui.port);
+            }
+            else if (connect_to_server)
+            {
+                client_id = client.connect(network_gui.ip, network_gui.port);
+                client.spawn(Vec3(0.0f, 0.0f, -3.0f));
+            }
+        }
 
         // ==============
         // Entity Updates
@@ -145,9 +171,6 @@ int main()
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                //Rotor omega = Rotor::yaw(0.003f);
-                //entity_list.physics_list[entity_idx].orientation = 
-                //    omega * entity_list.physics_list[entity_idx].orientation;
             }
         }
 
@@ -155,28 +178,117 @@ int main()
         for (unsigned int list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
         {
             EntityList& entity_list = entity_manager.entity_lists[list_idx];
-            if (!entity_list.supports_components(ComponentType::PHYSICS | ComponentType::PLAYER_CONTROL))
+            if (!entity_list.supports_components(ComponentType::PLAYER_CONTROL))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                player_control_update(&entity_list.physics_list[entity_idx], kb);
+                if (entity_list.player_control_list[entity_idx].client_id != client_id)
+                    continue;
+                PlayerControlState control_state = player_control_get_state(kb);
+
+                // TODO: Handle server case
+                if (client_id == SERVER_ID) continue;
+
+                ControlUpdatePacket control_update(control_state, client_id);
+                client.send_to_server(*(GamePacket*)&control_update);
             }
         }
 
         // Camera update
+        //{
+        //    size_t list_idx;
+        //    size_t entity_idx;
+
+        //    entity_manager.entity_table.lookup_entity(
+        //        test_entity1,
+        //        entity_manager.entity_lists,
+        //        &list_idx,
+        //        &entity_idx);
+
+        //    Physics& physics = entity_manager.entity_lists[list_idx].physics_list[entity_idx];
+        //    renderer.camera_pos = physics.position;
+        //    renderer.camera_orientation = physics.orientation;
+        //}
+        
+        if (server.active)
         {
-            size_t list_idx;
-            size_t entity_idx;
+            get_packets(server.sock, &game_packets);
+            for (auto packet : game_packets)
+            {
+                switch (packet.packet.header.type)
+                {
+                    case GamePacketType::CONNECTION_REQ:
+                        server.accept_client(packet.sender);
+                        break;
+                    case GamePacketType::PLAYER_SPAWN:
+                    {
+                        Entity ship_entity = create_ship(packet.packet.player_spawn.coords, ship_mesh);
+                        ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
+                        ship_entity.player_control = {packet.packet.header.sender};
+                        EntityHandle ship_entity_handle = 
+                            entity_manager.create_entity(ship_entity);
 
-            entity_manager.entity_table.lookup_entity(
-                test_entity1,
-                entity_manager.entity_lists,
-                &list_idx,
-                &entity_idx);
+                        server.clients[packet.packet.header.sender].player_entity = ship_entity_handle;
 
-            Physics& physics = entity_manager.entity_lists[list_idx].physics_list[entity_idx];
-            renderer.camera_pos = physics.position;
-            renderer.camera_orientation = physics.orientation;
+                        EntityCreatePacket entity_create_packet(ship_entity, ship_entity_handle, client_id);
+                        
+                        server.broadcast(*(GamePacket*)&entity_create_packet);
+                        break;
+                    }
+                    case GamePacketType::CONTROL_UPDATE:
+                    {
+                        size_t player_list_idx;
+                        size_t player_entity_idx;
+                        entity_manager.entity_table.lookup_entity(
+                            server.clients[packet.packet.header.sender].player_entity,
+                            entity_manager.entity_lists,
+                            &player_list_idx,
+                            &player_entity_idx);
+
+                        player_control_update(
+                            &entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
+                            packet.packet.control_update.state);
+
+                        PhysicsSyncPacket physics_sync(
+                            server.clients[packet.packet.header.sender].player_entity,
+                            entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
+                            client_id);
+                        server.broadcast(*(GamePacket*)&physics_sync);
+
+                        break;
+                    }
+                }
+            }
+        }
+        else if (client.active)
+        {
+            get_packets(client.sock, &game_packets);
+            for (auto packet : game_packets)
+            {
+                switch (packet.packet.header.type)
+                {
+                    case GamePacketType::ENTITY_CREATE:
+                        entity_manager.create_entity_with_handle(
+                            packet.packet.entity_create.entity,
+                            packet.packet.entity_create.handle);
+                        break;
+                    case GamePacketType::PHYSICS_SYNC:
+                    {
+                        size_t list_idx;
+                        size_t entity_idx;
+                        entity_manager.entity_table.lookup_entity(
+                            packet.packet.physics_sync.entity,
+                            entity_manager.entity_lists,
+                            &list_idx,
+                            &entity_idx);
+
+                        entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
+                            packet.packet.physics_sync.physics_state;
+
+                        break;
+                    }
+                }
+            }
         }
         
         // =========

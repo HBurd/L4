@@ -31,6 +31,9 @@ void Keyboard::handle_keyup(SDL_Keycode key)
     case SDLK_SPACE:
         space = false;
         break;
+    case SDLK_BACKQUOTE: // '`'
+        tilde = false;
+        break;
     }
 }
 
@@ -64,6 +67,9 @@ void Keyboard::handle_keydown(SDL_Keycode key)
         break;
     case SDLK_SPACE:
         space = true;
+        break;
+    case SDLK_BACKQUOTE: // '`'
+        tilde = true;
         break;
     }
 }

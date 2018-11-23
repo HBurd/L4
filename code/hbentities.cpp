@@ -22,6 +22,11 @@ void EntityList::add_entity(Entity entity)
         mesh_list.push_back(entity.mesh_id);
         assert(mesh_list.size() == size);
     }
+    if (supported_components & ComponentType::PLAYER_CONTROL)
+    {
+        player_control_list.push_back(entity.player_control);
+        assert(player_control_list.size() == size);
+    }
 }
 
 bool EntityList::supports_components(uint32_t components) const
@@ -36,6 +41,12 @@ EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
     EntityTableEntry new_entry = {.version = 0, .list_idx = list_idx, .entity_idx = entity_idx};
     entries.push_back(new_entry);
     return handle;
+}
+
+void EntityTable::claim_entry(EntityHandle handle, size_t list_idx, size_t entity_idx)
+{
+    assert(entries.size() == handle.idx);
+    entries.push_back({.version = 0, .list_idx = list_idx, .entity_idx = entity_idx}); 
 }
 
 bool EntityTable::lookup_entity(
@@ -73,4 +84,24 @@ EntityHandle EntityManager::create_entity(Entity entity)
 
     assert(false);  // unable to find suitable list
     return {};
+}
+
+void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity_handle)
+{
+    // find a suitable EntityList for this entity
+    for (size_t list_idx = 0; list_idx < entity_lists.size(); list_idx++)
+    {
+        EntityList& entity_list = entity_lists[list_idx];
+
+        // components must match exactly
+        if (entity_list.supported_components == entity.supported_components)
+        {
+            size_t entity_idx = entity_list.size;
+            entity_list.add_entity(entity);
+            entity_table.claim_entry(entity_handle, list_idx, entity_idx);
+            return;
+        }
+    }
+
+    assert(false);  // unable to find suitable list
 }

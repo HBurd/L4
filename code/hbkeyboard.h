@@ -15,6 +15,8 @@ struct Keyboard
     bool i = false;
     bool k = false;
 
+    bool tilde = false;
+
     bool space = false;
     
     void handle_keyup(SDL_Keycode key);

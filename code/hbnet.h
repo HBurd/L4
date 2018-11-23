@@ -2,13 +2,22 @@
 #define HBNET_H
 
 #include <cstdlib>
-#include <mutex>
-#include <atomic>
 #include <stdint.h>
 
-#include "hbentities.h"
+// TODO try to get rid of these!!
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-const unsigned int SERVER_PORT = 4444;
+#include "hbentities.h"
+#include "hbrenderer.h"
+#include "hbplayer_control.h"
+
+const uint16_t DEFAULT_SERVER_PORT = 4444;
+const uint32_t DEFAULT_CONNECTION_IP = 0x7f000001;
+
+typedef size_t ClientId;
+const size_t SERVER_ID = 0xFFFFFFFF;
+const size_t INCOMPLETE_ID = 0xFFFFFFFE;
 
 namespace GamePacketType
 {
@@ -17,78 +26,148 @@ namespace GamePacketType
         CONNECTION_REQ,    // client --> server
         CONNECTION_ACK,    // server --> client
         ENTITY_CREATE,     // server --> client
+        PLAYER_SPAWN,      // client --> server
+        CONTROL_UPDATE,    // client --> server
+        PHYSICS_SYNC,      // server --> client
+
+        // ===============================
+        // ^^ ADD NEW PACKET TYPES HERE ^^
+        // ===============================
     };
 }
 
-typedef size_t ClientId;
-
-struct __attribute__((__packed__)) GamePacket
+struct GamePacketHeader
 {
     int type;
+    ClientId sender;
 
-    union GamePacketData
-    {
-        struct ConnectionAck
-        {
-            ClientId client_id;
-        } connection_ack;
-
-        struct EntityCreate
-        {
-            EntityHandle handle;
-        } entity_create;
-    } packet_data;
+    GamePacketHeader(int packet_type, ClientId _sender);
 };
 
-struct ServerInfo
+struct ConnectionReqPacket
 {
-    std::atomic<size_t> num_clients{0};
-    uint32_t port;
+    GamePacketHeader header;
+
+    ConnectionReqPacket();
 };
 
-struct ClientInfo
+struct ConnectionAckPacket
 {
-    uint32_t ip;
-    uint16_t port;
-};
-
-struct ConnectionInfo
-{
-    enum ConnectionType
-    {
-        NO_CONNECTION,
-        SERVER_CONNECTION,
-        CLIENT_CONNECTION
-    } connection_type = NO_CONNECTION;
-
-    // only one of these is used based on the connection type
-    ServerInfo server;
-    ClientInfo client;
-
-    std::vector<GamePacket> command_queue;
-};
-
-struct NetworkInterface
-{
-    struct GuiState
-    {
-        bool draw_main_gui = true;
-        bool draw_server_create_gui = false;
-        bool draw_server_connect_gui = false;
-
-        uint16_t port = SERVER_PORT;
-        uint32_t ip = 0x7F000001;  // 127.0.0.1
-    } gui_state;
+    GamePacketHeader header;
+    ClientId client_id;
     
-    ConnectionInfo connection_info;
+    ConnectionAckPacket(ClientId new_client_id, ClientId sender);
+};
 
-    void draw_gui();
+struct EntityCreatePacket
+{
+    GamePacketHeader header;
+    Entity entity;
+    EntityHandle handle;
+
+    EntityCreatePacket(Entity _entity, EntityHandle entity_handle, ClientId sender);
+};
+
+struct PlayerSpawnPacket
+{
+    GamePacketHeader header;
+    Vec3 coords;
+
+    PlayerSpawnPacket(Vec3 _coords, ClientId sender);
+};
+
+struct ControlUpdatePacket
+{
+    GamePacketHeader header;
+    PlayerControlState state;
+    
+    ControlUpdatePacket(PlayerControlState _state, ClientId sender);
+};
+
+struct PhysicsSyncPacket
+{
+    GamePacketHeader header;
+    EntityHandle entity;
+    Physics physics_state;
+
+    PhysicsSyncPacket(EntityHandle _entity, Physics physics, ClientId sender);
+};
+
+// ===============================
+// ^^ ADD NEW PACKET TYPES HERE ^^
+// ===============================
+
+// Basically some sort of franken-type which can't be directly instantiated
+// but can be casted to. Useful occasionally for storing lists of packets
+union GamePacket
+{
+    GamePacketHeader header;
+    ConnectionReqPacket connection_req;
+    ConnectionAckPacket conncetion_ack;
+    PlayerSpawnPacket player_spawn;
+    EntityCreatePacket entity_create;
+    ControlUpdatePacket control_update;
+    PhysicsSyncPacket physics_sync;
+
+    // ===============================
+    // ^^ ADD NEW PACKET TYPES HERE ^^
+    // ===============================
+};
+
+struct GamePacketIn
+{
+    sockaddr_in sender;
+    GamePacket packet;
+};
+
+struct ClientConnection
+{
+    ClientConnection(sockaddr_in client_addr);
+    sockaddr_in addr;
+    EntityHandle player_entity;
+    PlayerControlState player_control;
+};
+
+struct ServerData
+{
+    bool active = false;
+    std::vector<ClientConnection> clients;
+    int sock = -1;
+
+    ClientId init(uint16_t port);
+    void broadcast(GamePacket packet);
+    void accept_client(sockaddr_in client_addr);
+};
+
+struct ClientData
+{
+    bool active = false;
+    std::vector<ClientConnection> clients;
+    int sock = -1;
+    sockaddr_in server_addr = {};
+    ClientId client_id;
+
+    ClientId connect(uint32_t server_ip, uint16_t server_port);
+    void send_to_server(GamePacket packet);
+    void spawn(Vec3 coords);
+};
+
+void get_packets(int sock, vector<GamePacketIn>* packet_list);
+bool recv_game_packet(int sock, GamePacket* packet, sockaddr_in* from);
+
+struct NetworkGui
+{
+    bool main_gui = true;
+    bool server_create_gui = false;
+    bool server_connect_gui = false;
+
+    uint16_t port = DEFAULT_SERVER_PORT;
+    uint32_t ip = DEFAULT_CONNECTION_IP;
+
+    void draw(bool* server, bool* client);
     void draw_main_gui();
-    void draw_server_create_gui();
-    void draw_server_connect_gui();
-
-    void server_init(unsigned int port);
-    void client_connect(unsigned int ip, unsigned int port);
+    bool draw_server_create_gui();
+    bool draw_server_connect_gui();
 };
 
 #endif // include guard

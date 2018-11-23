@@ -31,13 +31,23 @@ struct Physics
     Physics(Vec3 _position);
 };
 
+// TODO: this doesn't belong here
+typedef size_t ClientId;
+
+struct PlayerControl
+{
+    ClientId client_id;
+};
+
 // Used for initializing the components of new entities
 // Values are copied into new components
 struct Entity
 {
     uint32_t supported_components;   // bitfield containing implemented components
+
     Physics physics;
     MeshId mesh_id;
+    PlayerControl player_control;
 
     // =======================================
     // Add components here as they are created
@@ -54,6 +64,7 @@ struct EntityList
     uint32_t supported_components;   // bitfield containing implemented components
     vector<Physics> physics_list;
     vector<MeshId> mesh_list;
+    vector<PlayerControl> player_control_list;
 
     // =======================================
     // Add components here as they are created
@@ -78,6 +89,7 @@ struct EntityTable
     vector<EntityTableEntry> entries;
 
     EntityHandle add_entry(size_t list_idx, size_t entity_idx);
+    void claim_entry(EntityHandle handle, size_t list_idx, size_t entity_idx);
     bool lookup_entity(
         EntityHandle handle,
         const vector<EntityList>& entity_lists,
@@ -91,6 +103,7 @@ struct EntityManager
     EntityTable entity_table;
 
     EntityHandle create_entity(Entity entity);
+    void create_entity_with_handle(Entity entity, EntityHandle entity_handle);
 };
 
 #endif // include guard
