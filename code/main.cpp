@@ -171,14 +171,19 @@ int main()
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
+                entity_list.physics_list[entity_idx].position += entity_list.physics_list[entity_idx].velocity;
+                entity_list.physics_list[entity_idx].orientation =
+                    entity_list.physics_list[entity_idx].orientation
+                    * entity_list.physics_list[entity_idx].angular_velocity;
             }
         }
 
         // PlayerControl updates
+        // TODO: we should just cache the player entity when we get it
         for (unsigned int list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
         {
             EntityList& entity_list = entity_manager.entity_lists[list_idx];
-            if (!entity_list.supports_components(ComponentType::PLAYER_CONTROL))
+            if (!entity_list.supports_components(ComponentType::PLAYER_CONTROL | ComponentType::PHYSICS))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
@@ -191,25 +196,18 @@ int main()
 
                 ControlUpdatePacket control_update(control_state, client_id);
                 client.send_to_server(*(GamePacket*)&control_update);
+                
+                // client side prediction:
+                player_control_update(
+                    &entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                    control_state);
+
+                // also update camera here
+                renderer.camera_pos = entity_list.physics_list[entity_idx].position;
+                renderer.camera_orientation = entity_list.physics_list[entity_idx].orientation;
             }
         }
 
-        // Camera update
-        //{
-        //    size_t list_idx;
-        //    size_t entity_idx;
-
-        //    entity_manager.entity_table.lookup_entity(
-        //        test_entity1,
-        //        entity_manager.entity_lists,
-        //        &list_idx,
-        //        &entity_idx);
-
-        //    Physics& physics = entity_manager.entity_lists[list_idx].physics_list[entity_idx];
-        //    renderer.camera_pos = physics.position;
-        //    renderer.camera_orientation = physics.orientation;
-        //}
-        
         if (server.active)
         {
             get_packets(server.sock, &game_packets);
@@ -219,6 +217,26 @@ int main()
                 {
                     case GamePacketType::CONNECTION_REQ:
                         server.accept_client(packet.sender);
+                        // now update the client with all existing entities
+                        for (size_t list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+                        {
+                            EntityList& entity_list = entity_manager.entity_lists[list_idx];
+                            for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+                            {
+                                Entity entity = entity_list.serialize(entity_idx);
+                                EntityCreatePacket create_packet(
+                                    entity,
+                                    entity_list.handles[entity_idx],
+                                    client_id);
+                                sendto(
+                                    server.sock,
+                                    &create_packet,
+                                    sizeof(create_packet),
+                                    0,
+                                    (sockaddr*)&packet.sender,
+                                    sizeof(packet.sender));
+                            }
+                        }
                         break;
                     case GamePacketType::PLAYER_SPAWN:
                     {
@@ -276,15 +294,15 @@ int main()
                     {
                         size_t list_idx;
                         size_t entity_idx;
-                        entity_manager.entity_table.lookup_entity(
-                            packet.packet.physics_sync.entity,
-                            entity_manager.entity_lists,
-                            &list_idx,
-                            &entity_idx);
-
-                        entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
-                            packet.packet.physics_sync.physics_state;
-
+                        if (entity_manager.entity_table.lookup_entity(
+                                packet.packet.physics_sync.entity,
+                                entity_manager.entity_lists,
+                                &list_idx,
+                                &entity_idx))
+                        {
+                            entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
+                                packet.packet.physics_sync.physics_state;
+                        }
                         break;
                     }
                 }

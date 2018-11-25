@@ -6,6 +6,8 @@
 
 using std::vector;
 
+const size_t MAX_ENTITIES = 65536;
+
 namespace ComponentType
 {
     enum ComponentType
@@ -54,13 +56,20 @@ struct Entity
     // =======================================
 };
 
+struct EntityHandle
+{
+    int32_t version;
+    size_t idx;
+};
+
 struct EntityList
 {
     EntityList(uint32_t _supported_components);
-    void add_entity(Entity entity);
+    void add_entity(Entity entity, EntityHandle handle);
     bool supports_components(uint32_t components) const;
+    Entity serialize(size_t entity_idx);
 
-    size_t size;
+    size_t size = 0;
     uint32_t supported_components;   // bitfield containing implemented components
     vector<Physics> physics_list;
     vector<MeshId> mesh_list;
@@ -69,27 +78,33 @@ struct EntityList
     // =======================================
     // Add components here as they are created
     // =======================================
-};
-
-struct EntityHandle
-{
-    uint32_t version;
-    size_t idx;
+    
+    vector<EntityHandle> handles;
 };
 
 struct EntityTableEntry
 {
-    uint32_t version;
-    size_t list_idx;
-    size_t entity_idx;
+    int32_t version;
+    union
+    {
+        struct
+        {
+            size_t list_idx;
+            size_t entity_idx;
+        };
+        size_t next_free;
+    };
 };
 
 struct EntityTable
 {
-    vector<EntityTableEntry> entries;
+    EntityTable();
+
+    size_t first_free;
+    EntityTableEntry entries[MAX_ENTITIES] = {};
 
     EntityHandle add_entry(size_t list_idx, size_t entity_idx);
-    void claim_entry(EntityHandle handle, size_t list_idx, size_t entity_idx);
+    void add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle);
     bool lookup_entity(
         EntityHandle handle,
         const vector<EntityList>& entity_lists,
