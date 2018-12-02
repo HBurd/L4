@@ -65,6 +65,16 @@ bool EntityList::supports_components(uint32_t components) const
     return (supported_components & components) == components;
 }
 
+bool EntityHandle::is_initialized() const
+{
+    return version != 0;
+}
+
+bool operator==(const EntityHandle& lhs, const EntityHandle& rhs)
+{
+    return lhs.version == rhs.version && lhs.idx == rhs.idx;
+}
+
 EntityTable::EntityTable()
 {
     first_free = 0;
@@ -99,7 +109,7 @@ void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, Enti
         first_free = entries[first_free].next_free;
 
         // check the version corresponds to inactive entry
-        assert(entries[handle.idx].version < 0);
+        assert(entries[handle.idx].version <= 0);
 
         entries[handle.idx].version = -entries[handle.idx].version + 1;
         entries[handle.idx].list_idx = list_idx;
@@ -113,7 +123,8 @@ void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, Enti
             entries[idx].next_free = entries[handle.idx].next_free;
 
             // check the version corresponds to inactive entry
-            assert(entries[handle.idx].version < 0);
+            // if it doesn't something has gone wrong
+            assert(entries[handle.idx].version <= 0);
 
             entries[handle.idx].version = -entries[handle.idx].version + 1;
             entries[handle.idx].list_idx = list_idx;
@@ -131,7 +142,7 @@ bool EntityTable::lookup_entity(
     EntityHandle handle,
     const vector<EntityList>& entity_lists,
     size_t* list_idx,
-    size_t* entity_idx)
+    size_t* entity_idx) const
 {
     if (handle.version != entries[handle.idx].version)
     {

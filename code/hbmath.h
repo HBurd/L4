@@ -87,6 +87,7 @@ struct Rotor
     Rotor(const Vec3& v1, const Vec3& lhs);
     Mat33 to_matrix() const;
     Rotor inverse() const;
+    Rotor normalize() const;
 
     static Rotor roll(float angle);
     static Rotor pitch(float angle);
@@ -110,6 +111,7 @@ Mat33 operator-(const Mat33& lhs, const Mat33& rhs);
 Vec3 operator*(const Mat33& lhs, const Vec3& rhs);
 
 Rotor operator*(const Rotor& lhs, const Rotor& rhs);
+Rotor slerp(const Rotor& lhs, const Rotor& rhs, float t);
 
 // Misc
 // ====

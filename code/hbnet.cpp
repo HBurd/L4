@@ -1,8 +1,5 @@
 #include "hbnet.h"
-#include "imgui/imgui.h"
-
 #include "hbship.h"
-#include <iostream>
 
 using std::vector;
 
@@ -32,84 +29,6 @@ ControlUpdatePacket::ControlUpdatePacket(PlayerControlState _state, ClientId sen
 
 PhysicsSyncPacket::PhysicsSyncPacket(EntityHandle _entity, Physics physics, ClientId sender)
 :header(GamePacketType::PHYSICS_SYNC, sender), entity(_entity), physics_state(physics) {}
-
-bool NetworkGui::draw_server_create_gui()
-{
-    bool server_create = false;
-    if (server_create_gui)
-    {
-        ImGui::Begin("Create Server", &server_create_gui);
-        ImGui::InputInt("Port", (int*)&port);
-
-        if (ImGui::Button("Create"))
-        {
-            // close this window
-            server_create_gui = false;
-            server_create = true;   // set return value
-        }
-        ImGui::End();
-    }
-
-    return server_create;
-}
-
-bool NetworkGui::draw_server_connect_gui()
-{
-    bool server_connect = false;
-    if (server_connect_gui)
-    {
-        ImGui::Begin("Connect to Server", &server_connect_gui);
-
-        ImGui::InputInt("IP", (int*)&ip);
-        ImGui::InputInt("Port", (int*)&port);
-
-        if (ImGui::Button("Connect"))
-        {
-            // close this window
-            server_connect_gui = false;
-            server_connect = true;  // set return value
-        }
-        ImGui::End();
-    }
-    return server_connect;
-}
-
-void NetworkGui::draw_main_gui()
-{
-    ImGui::Begin("Network", &main_gui);
-
-    if (ImGui::Button("Create Server"))
-    {
-        server_create_gui = true;
-    }
-    if (ImGui::Button("Connect to server"))
-    {
-        server_connect_gui = true;
-    }
-    //if (connection_info.connection_type == ConnectionInfo::SERVER_CONNECTION)
-    //{
-    //    // Technically we should lock here, but really there's no problem
-    //    // with reading a garbage value
-    //    ImGui::Text("Server running. %zu clients connected.",
-    //                connection_info.server->connections.size());
-    //}
-    //else if (connection_info.connection_type == ConnectionInfo::CLIENT_CONNECTION)
-    //{
-    //    ImGui::Text("Client connected with client id %zu.",
-    //                connection_info.client->client_id);
-    //}
-    ImGui::End();
-}
-
-void NetworkGui::draw(bool* server, bool* client)
-{
-    if (main_gui)
-    {
-        draw_main_gui();
-        *server = draw_server_create_gui();
-        *client = draw_server_connect_gui();
-    }
-}
 
 void get_packets(int sock, vector<GamePacketIn>* packet_list)
 {

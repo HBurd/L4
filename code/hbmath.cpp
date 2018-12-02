@@ -134,6 +134,11 @@ Vec3 Vec3::normalize() const
     return Vec3(x / magnitude, y / magnitude, z / magnitude);
 }
 
+Vec3 operator-(const Vec3& operand)
+{
+    return Vec3(-operand.x, -operand.y, -operand.z);
+}
+
 Vec3 operator+(const Vec3& lhs, const Vec3& rhs)
 {
     Vec3 result = lhs;
@@ -292,6 +297,17 @@ Rotor Rotor::inverse() const
     result.xy = -xy;
     result.yz = -yz;
     result.zx = -zx;
+    return result;
+}
+
+Rotor Rotor::normalize() const
+{
+    float magnitude = sqrtf(s*s + xy*xy + yz*yz + zx*zx);
+    Rotor result;
+    result.s = s / magnitude;
+    result.xy = xy / magnitude;
+    result.yz = yz / magnitude;
+    result.zx = zx / magnitude;
     return result;
 }
 

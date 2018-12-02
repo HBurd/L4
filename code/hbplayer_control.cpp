@@ -1,23 +1,90 @@
 #include "hbplayer_control.h"
 #include "hbnet.h"
+#include "imgui/imgui.h"
+#include <cmath>
 
-PlayerControlState player_control_get_state(const Keyboard kb)
+const float MAX_THRUST = 0.001f;
+const float MAX_TORQUE = 0.001f;
+
+PlayerControlState player_control_get_state(
+    const Keyboard kb,
+    bool stabilize,
+    Physics player,
+    bool track,
+    Physics target)
 {
     // build the control packet and send it to the server
-    float max_thrust = 0.001f;
-    float angle_speed = 0.001f;
 
     PlayerControlState control_state;
     if (kb.space)
     {
-        control_state.thrust = max_thrust;
+        control_state.thrust = MAX_THRUST;
     }
-    if (kb.q) control_state.torque = Rotor::roll(-angle_speed)  * control_state.torque;
-    if (kb.e) control_state.torque = Rotor::roll(angle_speed)   * control_state.torque;
-    if (kb.w) control_state.torque = Rotor::pitch(angle_speed)  * control_state.torque;
-    if (kb.s) control_state.torque = Rotor::pitch(-angle_speed) * control_state.torque;
-    if (kb.a) control_state.torque = Rotor::yaw(-angle_speed)   * control_state.torque;
-    if (kb.d) control_state.torque = Rotor::yaw(angle_speed)    * control_state.torque;
+
+    float roll_torque = 0.0f;
+    float pitch_torque = 0.0f;
+    float yaw_torque = 0.0f;
+
+    if (track)
+    {
+        Vec3 target_direction = target.velocity - player.velocity;
+        if (target_direction.norm() >= 0.0001f)
+        {
+            // find the rotor representing the rotation to the thrust vector
+            Rotor err = Rotor(player.orientation.to_matrix() * Vec3(0.0f, 0.0f, 1.0f),
+                              target_direction.normalize());
+            
+
+        }
+    }
+    else if (stabilize)  // the two do not work together
+    {
+        float roll = player.angular_velocity.xy;
+        float pitch = player.angular_velocity.yz;
+        float yaw = player.angular_velocity.zx;
+
+        roll_torque = -roll;
+        pitch_torque = -pitch;
+        yaw_torque = -yaw;
+    }
+ 
+    if (kb.q) roll_torque = -MAX_TORQUE;
+    if (kb.e) roll_torque = MAX_TORQUE;
+    if (kb.w) pitch_torque = MAX_TORQUE;
+    if (kb.s) pitch_torque = -MAX_TORQUE;
+    if (kb.a) yaw_torque = -MAX_TORQUE;
+    if (kb.d) yaw_torque = MAX_TORQUE;
+
+    // clamp torque
+
+    float factor = 1.0f;
+    if (fabs(roll_torque) > MAX_TORQUE)
+    {
+        factor = MAX_TORQUE / fabs(roll_torque);
+    }
+    roll_torque *= factor;
+    pitch_torque *= factor;
+    yaw_torque *= factor;
+
+    factor = 1.0f;
+    if (fabs(pitch_torque) > MAX_TORQUE)
+    {
+        factor = MAX_TORQUE / fabs(pitch_torque);
+    }
+    roll_torque *= factor;
+    pitch_torque *= factor;
+    yaw_torque *= factor;
+
+    factor = 1.0f;
+    if (fabs(yaw_torque) > MAX_TORQUE)
+    {
+        factor = MAX_TORQUE / fabs(yaw_torque);
+    }
+    roll_torque *= factor;
+    pitch_torque *= factor;
+    yaw_torque *= factor;
+ 
+    control_state.torque = Rotor::roll(roll_torque) * Rotor::pitch(pitch_torque) * Rotor::yaw(yaw_torque);
 
     return control_state;
 }

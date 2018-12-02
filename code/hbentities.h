@@ -58,9 +58,13 @@ struct Entity
 
 struct EntityHandle
 {
-    int32_t version;
+    int32_t version = 0;  // 0 for uninitialized
     size_t idx;
+
+    bool is_initialized() const;
 };
+
+bool operator==(const EntityHandle& lhs, const EntityHandle& rhs);
 
 struct EntityList
 {
@@ -109,7 +113,7 @@ struct EntityTable
         EntityHandle handle,
         const vector<EntityList>& entity_lists,
         size_t* list_idx,
-        size_t* entity_idx);
+        size_t* entity_idx) const;
 };
 
 struct EntityManager

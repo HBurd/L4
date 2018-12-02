@@ -12,9 +12,6 @@
 #include "hbrenderer.h"
 #include "hbplayer_control.h"
 
-const uint16_t DEFAULT_SERVER_PORT = 4444;
-const uint32_t DEFAULT_CONNECTION_IP = 0x7f000001;
-
 typedef size_t ClientId;
 const size_t SERVER_ID = 0xFFFFFFFF;
 const size_t INCOMPLETE_ID = 0xFFFFFFFE;
@@ -154,20 +151,5 @@ struct ClientData
 
 void get_packets(int sock, vector<GamePacketIn>* packet_list);
 bool recv_game_packet(int sock, GamePacket* packet, sockaddr_in* from);
-
-struct NetworkGui
-{
-    bool main_gui = true;
-    bool server_create_gui = false;
-    bool server_connect_gui = false;
-
-    uint16_t port = DEFAULT_SERVER_PORT;
-    uint32_t ip = DEFAULT_CONNECTION_IP;
-
-    void draw(bool* server, bool* client);
-    void draw_main_gui();
-    bool draw_server_create_gui();
-    bool draw_server_connect_gui();
-};
 
 #endif // include guard

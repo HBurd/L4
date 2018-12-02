@@ -1,4 +1,4 @@
-SRC = code/main.cpp code/hbmath.cpp code/hbrenderer.cpp code/hbtime.cpp code/hbentities.cpp code/hbship.cpp code/hbkeyboard.cpp code/hbplayer_control.cpp code/hbnet.cpp
+SRC = code/main.cpp code/hbmath.cpp code/hbrenderer.cpp code/hbtime.cpp code/hbentities.cpp code/hbship.cpp code/hbkeyboard.cpp code/hbplayer_control.cpp code/hbnet.cpp code/hbgui.cpp
 SRC_PLATFORM = code/hbnet_unix.cpp
 OBJ = hb_imgui.o hb_stb.o hb_tinyobjloader.o
 default: L4game

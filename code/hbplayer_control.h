@@ -10,8 +10,12 @@ struct PlayerControlState
     Rotor torque;
 };
 
-// currently justs builds PlayerControlState based on kb
-PlayerControlState player_control_get_state(Keyboard kb);
+PlayerControlState player_control_get_state(
+    const Keyboard kb,
+    bool stabilize,
+    Physics player,
+    bool track,
+    Physics target);
 
 void player_control_update(Physics* physics, PlayerControlState control_state);
 
