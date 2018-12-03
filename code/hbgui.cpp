@@ -99,7 +99,15 @@ static void generate_entity_name(
         snprintf(
             name,
             name_len,
-            "satellite (id %zu)",
+            "ship (id %zu)",
+            entity_list.handles[entity_idx].idx);
+    }
+    else if (entity_list.supports_components(ComponentType::PROJECTILE))
+    {
+        snprintf(
+            name,
+            name_len,
+            "projectile (id %zu)",
             entity_list.handles[entity_idx].idx);
     }
     else

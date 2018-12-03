@@ -11,6 +11,7 @@
 #include "hbplayer_control.h"
 #include "hbnet.h"
 #include "hbgui.h"
+#include "hbprojectile.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -61,8 +62,10 @@ int main()
     
     ClientData client;
     ServerData server;
+
     MainMenu main_menu;
     SpawnMenu spawn_menu;
+    bool enable_ui = true;
 
     struct ClientState
     {
@@ -70,6 +73,7 @@ int main()
         bool has_spawned = false;
         EntityHandle player_handle;
         PlayerControlState control_state;
+        bool shoot = false;
 
         EntityHandle guidance_target;
         bool track;
@@ -79,8 +83,10 @@ int main()
     vector<GamePacketIn> game_packets;
 
     EntityManager entity_manager;
+    // add list for projectiles
     entity_manager.entity_lists.push_back(
-        EntityList(ComponentType::PHYSICS | ComponentType::MESH));
+        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
+    // add list for players
     entity_manager.entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
@@ -114,10 +120,16 @@ int main()
                 break;
             case SDL_KEYDOWN:
                 kb.handle_keydown( event.key.keysym.sym);
-                // handle oneshot keypresses here
+                // ====================================
+                // vv HANDLE ONESHOT KEYPRESSES HERE vv
+                // ====================================
                 if (event.key.keysym.sym == SDLK_BACKQUOTE)
                 {
-                    main_menu.draw_main_menu = !main_menu.draw_main_menu;
+                    enable_ui = !enable_ui;
+                }
+                if (event.key.keysym.sym == SDLK_RETURN)
+                {
+                    client_state.shoot = true;
                 }
                 break;
             }
@@ -131,6 +143,7 @@ int main()
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
 
+        if (enable_ui)
         {
             bool create_server = false;
             bool connect_to_server = false;
@@ -208,6 +221,8 @@ int main()
                 player_physics,
                 client_state.track,
                 target_physics);
+            client_state.control_state.shoot = client_state.shoot;
+            client_state.shoot = false;
 
             ControlUpdatePacket control_update(client_state.control_state, client_state.id);
             client.send_to_server(*(GamePacket*)&control_update);
@@ -221,12 +236,12 @@ int main()
         }
 
         // Physics updates
-        for (unsigned int list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+        for (size_t list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
         {
             EntityList& entity_list = entity_manager.entity_lists[list_idx];
             if (!entity_list.supports_components(ComponentType::PHYSICS))
                 continue;
-            for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
                 Physics& physics = entity_list.physics_list[entity_idx];
                 physics.position += physics.velocity;
@@ -236,6 +251,22 @@ int main()
                 // or we get accumulating floating point errors
                 physics.orientation = physics.orientation.normalize();
                 physics.angular_velocity = physics.angular_velocity.normalize();
+            }
+        }
+
+        // Projectile updates
+        for (size_t list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+        {
+            EntityList& entity_list = entity_manager.entity_lists[list_idx];
+            if (!entity_list.supports_components(ComponentType::PROJECTILE))
+                continue;
+            for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            {
+                if (!projectile_update(&entity_list.projectile_list[entity_idx]))
+                {
+                    // TODO: synchronize between clients and server?
+                    entity_manager.kill_entity(entity_list.handles[entity_idx]);
+                }
             }
         }
  
@@ -298,6 +329,21 @@ int main()
                         player_control_update(
                             &entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
                             packet.packet.control_update.state);
+
+                        if (packet.packet.control_update.state.shoot)
+                        {
+                            Entity projectile_entity = create_projectile(
+                                entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
+                                projectile_mesh);
+                            EntityHandle projectile_handle =
+                                entity_manager.create_entity(projectile_entity);
+                            EntityCreatePacket entity_create_packet(
+                                projectile_entity,
+                                projectile_handle,
+                                client_state.id);
+                            
+                            server.broadcast(*(GamePacket*)&entity_create_packet);
+                        }
 
                         PhysicsSyncPacket physics_sync(
                             server.clients[packet.packet.header.sender].player_entity,

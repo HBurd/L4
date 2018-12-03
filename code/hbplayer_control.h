@@ -8,6 +8,7 @@ struct PlayerControlState
 {
     float thrust = 0.0f;
     Rotor torque;
+    bool shoot = false;
 };
 
 PlayerControlState player_control_get_state(

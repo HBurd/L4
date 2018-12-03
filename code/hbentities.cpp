@@ -28,6 +28,11 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
         player_control_list.push_back(entity.player_control);
         assert(player_control_list.size() == size);
     }
+    if (supported_components & ComponentType::PROJECTILE)
+    {
+        projectile_list.push_back(entity.projectile);
+        assert(projectile_list.size() == size);
+    }
     
     handles.push_back(handle);
     
@@ -53,6 +58,11 @@ Entity EntityList::serialize(size_t entity_idx)
     {
         entity.supported_components |= ComponentType::PLAYER_CONTROL;
         entity.player_control = player_control_list[entity_idx];
+    }
+    if (supported_components & ComponentType::PROJECTILE)
+    {
+        entity.supported_components |= ComponentType::PROJECTILE;
+        entity.projectile = projectile_list[entity_idx];
     }
 
     // see above
@@ -155,6 +165,25 @@ bool EntityTable::lookup_entity(
     return true;
 }
 
+void EntityTable::free_handle(EntityHandle handle)
+{
+    if (handle.version != entries[handle.idx].version)
+    {
+        // this handle has already been freed
+        return;
+    }
+    
+    // swap version sign to indicate handle freed
+    entries[handle.idx].version = -entries[handle.idx].version;
+}
+
+void EntityTable::update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx)
+{
+    assert(handle.version == entries[handle.idx].version);
+    entries[handle.idx].list_idx = new_list_idx;
+    entries[handle.idx].entity_idx = new_entity_idx;
+}
+
 EntityHandle EntityManager::create_entity(Entity entity)
 {
     // find a suitable EntityList for this entity
@@ -194,4 +223,62 @@ void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity
     }
 
     assert(false);  // unable to find suitable list
+}
+
+void EntityManager::kill_entity(EntityHandle handle)
+{
+    // cache list_idx and entity_idx
+    size_t list_idx;
+    size_t entity_idx;
+    entity_table.lookup_entity(
+        handle,
+        entity_lists,
+        &list_idx,
+        &entity_idx);
+
+    EntityList& entity_list = entity_lists[list_idx];
+
+    // invalidate handle
+    entity_table.free_handle(handle);
+
+    // We are replacing this entity with the last entity in the list
+    // so we must update its handle
+    entity_list.handles[entity_idx] = entity_list.handles.back();
+    entity_list.handles.pop_back();
+    if (entity_list.handles.size() >  0)
+    {
+        entity_table.update_handle(entity_list.handles[entity_idx], list_idx, entity_idx);
+    }
+
+    // Now remove actual components
+    // we have to modify each list individually
+    uint32_t removed_components = 0;
+    if (entity_list.supports_components(ComponentType::PHYSICS))
+    {
+        entity_list.physics_list[entity_idx] = entity_list.physics_list.back();
+        entity_list.physics_list.pop_back();
+        removed_components |= ComponentType::PHYSICS;
+    }
+    if (entity_list.supports_components(ComponentType::MESH))
+    {
+        entity_list.mesh_list[entity_idx] = entity_list.mesh_list.back();
+        entity_list.mesh_list.pop_back();
+        removed_components |= ComponentType::MESH;
+    }
+    if (entity_list.supports_components(ComponentType::PLAYER_CONTROL))
+    {
+        entity_list.player_control_list[entity_idx] = entity_list.player_control_list.back();
+        entity_list.player_control_list.pop_back();
+        removed_components |= ComponentType::PLAYER_CONTROL;
+    }
+    if (entity_list.supports_components(ComponentType::PROJECTILE))
+    {
+        entity_list.projectile_list[entity_idx] = entity_list.projectile_list.back();
+        entity_list.projectile_list.pop_back();
+        removed_components |= ComponentType::PROJECTILE;
+    }
+
+    // verify we removed all of this entity's components
+    assert(removed_components == entity_list.supported_components);
+    entity_list.size--;
 }

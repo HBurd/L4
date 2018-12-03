@@ -34,6 +34,9 @@ void Keyboard::handle_keyup(SDL_Keycode key)
     case SDLK_BACKQUOTE: // '`'
         tilde = false;
         break;
+    case SDLK_RETURN:
+        enter = false;
+        break;
     }
 }
 
@@ -70,6 +73,9 @@ void Keyboard::handle_keydown(SDL_Keycode key)
         break;
     case SDLK_BACKQUOTE: // '`'
         tilde = true;
+        break;
+    case SDLK_RETURN:
+        enter = true;
         break;
     }
 }

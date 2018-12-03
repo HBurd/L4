@@ -16,15 +16,7 @@ out VS_OUTPUT
 
 void main()
 {
-    float flip = 3.1416f * 0.125f;
-
-    mat3 vert_flip = mat3(
-        1.0f, 0.0f, 0.0f,
-        0.0f, cos(flip), sin(flip),
-        0.0f, -sin(flip), cos(flip)
-    );
-
-    mat3 rotation_matrix = vert_flip * rotation;
+    mat3 rotation_matrix = rotation;
 
     float near = 0.1f;
     float far = 100.0f;

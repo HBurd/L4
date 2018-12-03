@@ -18,6 +18,7 @@ struct Keyboard
     bool tilde = false;
 
     bool space = false;
+    bool enter = false;
     
     void handle_keyup(SDL_Keycode key);
     void handle_keydown(SDL_Keycode key);

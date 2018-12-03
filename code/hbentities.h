@@ -15,6 +15,7 @@ namespace ComponentType
         PHYSICS = 1,
         MESH = 2,               // TODO: can we include component dependencies in here?
         PLAYER_CONTROL = 4,
+        PROJECTILE = 8,
 
         // =======================================
         // Add components here as they are created
@@ -41,6 +42,11 @@ struct PlayerControl
     ClientId client_id;
 };
 
+struct Projectile
+{
+    unsigned int timeout = 60; // 1 second
+};
+
 // Used for initializing the components of new entities
 // Values are copied into new components
 struct Entity
@@ -50,6 +56,7 @@ struct Entity
     Physics physics;
     MeshId mesh_id;
     PlayerControl player_control;
+    Projectile projectile;
 
     // =======================================
     // Add components here as they are created
@@ -78,6 +85,7 @@ struct EntityList
     vector<Physics> physics_list;
     vector<MeshId> mesh_list;
     vector<PlayerControl> player_control_list;
+    vector<Projectile> projectile_list;
 
     // =======================================
     // Add components here as they are created
@@ -114,6 +122,9 @@ struct EntityTable
         const vector<EntityList>& entity_lists,
         size_t* list_idx,
         size_t* entity_idx) const;
+
+    void free_handle(EntityHandle handle);
+    void update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx);
 };
 
 struct EntityManager
@@ -123,6 +134,8 @@ struct EntityManager
 
     EntityHandle create_entity(Entity entity);
     void create_entity_with_handle(Entity entity, EntityHandle entity_handle);
+    
+    void kill_entity(EntityHandle handle);
 };
 
 #endif // include guard
