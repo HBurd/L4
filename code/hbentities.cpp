@@ -243,11 +243,18 @@ void EntityManager::kill_entity(EntityHandle handle)
 
     // We are replacing this entity with the last entity in the list
     // so we must update its handle
-    entity_list.handles[entity_idx] = entity_list.handles.back();
-    entity_list.handles.pop_back();
-    if (entity_list.handles.size() >  0)
+    if (entity_idx == entity_list.size - 1)
     {
-        entity_table.update_handle(entity_list.handles[entity_idx], list_idx, entity_idx);
+        entity_list.handles.pop_back();
+    }
+    else
+    {
+        entity_list.handles[entity_idx] = entity_list.handles.back();
+        entity_list.handles.pop_back();
+        if (entity_list.handles.size() >  0)
+        {
+            entity_table.update_handle(entity_list.handles[entity_idx], list_idx, entity_idx);
+        }
     }
 
     // Now remove actual components
