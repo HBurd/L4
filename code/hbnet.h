@@ -26,6 +26,7 @@ namespace GamePacketType
         PLAYER_SPAWN,      // client --> server
         CONTROL_UPDATE,    // client --> server
         PHYSICS_SYNC,      // server --> client
+        PLAYER_DAMAGE,     // server --> client
 
         // ===============================
         // ^^ ADD NEW PACKET TYPES HERE ^^
@@ -90,6 +91,15 @@ struct PhysicsSyncPacket
     PhysicsSyncPacket(EntityHandle _entity, Physics physics, ClientId sender);
 };
 
+struct PlayerDamagePacket
+{
+    GamePacketHeader header;
+    ClientId player;
+    // implicitly player entity for now
+    
+    PlayerDamagePacket(ClientId _player, ClientId sender);
+};
+
 // ===============================
 // ^^ ADD NEW PACKET TYPES HERE ^^
 // ===============================
@@ -105,6 +115,7 @@ union GamePacket
     EntityCreatePacket entity_create;
     ControlUpdatePacket control_update;
     PhysicsSyncPacket physics_sync;
+    PlayerDamagePacket player_damage;
 
     // ===============================
     // ^^ ADD NEW PACKET TYPES HERE ^^

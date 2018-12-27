@@ -1,4 +1,5 @@
 #include "hbgui.h"
+#include "hbutil.h"
 #include "imgui/imgui.h"
 #include <cstdio>
 
@@ -120,6 +121,41 @@ static void generate_entity_name(
     }
 }
 
+void ShipConsole::draw()
+{
+    // build the string to give to imgui
+    char display_data[ARRAY_LENGTH(data) + 1] = {};
+    // start at mark to end
+    strncpy(display_data, data + mark, ARRAY_LENGTH(data) - mark);
+    // finish start to mark
+    strncpy(display_data + strlen(display_data), data, mark);
+
+    ImGui::Begin("Ship Console");
+
+    ImGui::TextUnformatted(display_data);
+
+    ImGui::End();
+}
+
+void ShipConsole::write(const char* string)
+{
+    const size_t string_len = strlen(string);
+    size_t len_copied = 0;
+    while (len_copied < string_len)
+    {
+        size_t copy_len = (string_len <= ARRAY_LENGTH(data) - mark)
+            ? string_len : (ARRAY_LENGTH(data) - mark);
+        strncpy(data + mark, string, ARRAY_LENGTH(data) - mark);
+        len_copied += copy_len;
+        mark += copy_len;
+        if (mark == ARRAY_LENGTH(data))
+        {
+            mark = 0;
+        }
+        assert(mark < ARRAY_LENGTH(data));
+    }
+}
+
 static void draw_guidance_stats(
     const EntityManager* entity_manager,
     EntityHandle player_handle,
@@ -170,7 +206,7 @@ bool draw_guidance_menu(
     ImGui::Checkbox("Target tracking", track);
     ImGui::Checkbox("Stabilization", stabilize);
 
-    ImGui::Text("Local satellites and celestial bodies:");
+    ImGui::Text("Local objects:");
     bool something_detected = false;
 
     for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
@@ -238,14 +274,15 @@ bool draw_guidance_menu(
     {
         size_t list_idx;
         size_t entity_idx;
-        assert(entity_manager->entity_table.lookup_entity(
+        if(entity_manager->entity_table.lookup_entity(
             *target_handle,
             entity_manager->entity_lists,
             &list_idx,
-            &entity_idx));
-
-        ImGui::Text("Target info:");
-        draw_guidance_stats(entity_manager, player_handle, *target_handle);
+            &entity_idx))
+        {
+            ImGui::Text("Target info:");
+            draw_guidance_stats(entity_manager, player_handle, *target_handle);
+        }
     }
     else
     {

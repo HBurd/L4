@@ -65,6 +65,7 @@ int main()
 
     MainMenu main_menu;
     SpawnMenu spawn_menu;
+    ShipConsole ship_console;
     bool enable_ui = true;
 
     struct ClientState
@@ -74,10 +75,11 @@ int main()
         EntityHandle player_handle;
         PlayerControlState control_state;
         bool shoot = false;
+        unsigned int player_health = 3;
 
         EntityHandle guidance_target;
-        bool track;
-        bool stabilize;
+        bool track = false;
+        bool stabilize = false;
     } client_state;
 
     vector<GamePacketIn> game_packets;
@@ -176,6 +178,8 @@ int main()
                     &client_state.guidance_target,
                     &client_state.track,
                     &client_state.stabilize);
+
+                ship_console.draw();
             }
         }
         
@@ -265,7 +269,43 @@ int main()
                 if (!projectile_update(&entity_list.projectile_list[entity_idx]))
                 {
                     // TODO: synchronize between clients and server?
+                    // also will this break the loops?
                     entity_manager.kill_entity(entity_list.handles[entity_idx]);
+                }
+            }
+        }
+
+        // check for collisions
+        if (server.active)
+        {
+            for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)
+            {
+                EntityList& entity_list1 = entity_manager.entity_lists[list1_idx];
+                if (!entity_list1.supports_components(ComponentType::PLAYER_CONTROL | ComponentType::PHYSICS))
+                    continue;
+                for (size_t entity1_idx = 0; entity1_idx < entity_list1.size; entity1_idx++)
+                {
+                    for (size_t list2_idx = 0; list2_idx < entity_manager.entity_lists.size(); list2_idx++)
+                    {
+                        EntityList& entity_list2 = entity_manager.entity_lists[list2_idx];
+                        if (!entity_list2.supports_components(ComponentType::PHYSICS))
+                            continue;
+                        for (size_t entity2_idx = 0; entity2_idx < entity_list2.size; entity2_idx++)
+                        {
+                            if (list1_idx == list2_idx && entity1_idx == entity2_idx)
+                                continue;
+                            const float collision_distance = 1.0f;
+                            if ((entity_list1.physics_list[entity1_idx].position
+                                 - entity_list2.physics_list[entity2_idx].position)
+                                 .norm() < collision_distance)
+                            {
+                                PlayerDamagePacket player_damage_packet(
+                                    entity_list1.player_control_list[entity1_idx].client_id,
+                                    client_state.id);
+                                server.broadcast(*(GamePacket*)&player_damage_packet);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -375,6 +415,14 @@ int main()
                             assert(!client_state.has_spawned);
                             client_state.has_spawned = true;
                             client_state.player_handle = packet.packet.entity_create.handle;
+                            ship_console.write(
+                                "Welcome to your new AN-111 spaceship!\n"
+                                "The buttons marked Q, W, E, A, S and D in the\n"
+                                "cockpit will control your orientation.\n"
+                                "The lever marked SPACE controls forward thrust.\n"
+                                "Weapons can be triggered by pressing ENTER on\n"
+                                "the weapons control panel.\n"
+                                "...\n");
                         }
                         break;
                     case GamePacketType::PHYSICS_SYNC:
@@ -389,6 +437,20 @@ int main()
                         {
                             entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
                                 packet.packet.physics_sync.physics_state;
+                        }
+                        break;
+                    }
+                    case GamePacketType::PLAYER_DAMAGE:
+                    {
+                        if (packet.packet.player_damage.player == client_state.id)
+                        {
+                            //// TODO very bad
+                            //client_state.player_health--;
+                            //char damage_string[] = 
+                            //    "TAKING DAMAGE!!\n"
+                            //    "Ship health is 3/3\n";
+                            //damage_string[31] = '0' + client_state.player_health;
+                            //ship_console.write(damage_string);
                         }
                         break;
                     }

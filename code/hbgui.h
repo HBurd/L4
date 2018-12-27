@@ -31,6 +31,16 @@ struct SpawnMenu
     bool draw(bool can_spawn);
 };
 
+struct ShipConsole
+{
+    // circular buffer
+    char data[1024] = {};
+    size_t mark = 0;
+
+    void draw();
+    void write(const char* string);
+};
+
 bool draw_guidance_menu(
     const EntityManager* entity_manager,
     EntityHandle player_handle,

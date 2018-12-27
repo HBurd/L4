@@ -30,6 +30,9 @@ ControlUpdatePacket::ControlUpdatePacket(PlayerControlState _state, ClientId sen
 PhysicsSyncPacket::PhysicsSyncPacket(EntityHandle _entity, Physics physics, ClientId sender)
 :header(GamePacketType::PHYSICS_SYNC, sender), entity(_entity), physics_state(physics) {}
 
+PlayerDamagePacket::PlayerDamagePacket(ClientId _player, ClientId sender)
+:header(GamePacketType::PLAYER_DAMAGE, sender), player(_player) {}
+
 void get_packets(int sock, vector<GamePacketIn>* packet_list)
 {
     packet_list->clear();
