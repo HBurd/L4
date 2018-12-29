@@ -1,246 +1,12 @@
 #include "hbnet.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <cassert>
 #include <vector>
 #include <iostream>
-
-#if 0
-static void* server_thread(void* arg)
-{
-    ConnectionInfo* connection_info = (ConnectionInfo*)arg;
-    connection_info->sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    assert(connection_info->sock_fd >= 0);
-
-    sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons(connection_info->server->port);
-    
-    assert(bind(connection_info->sock_fd, (sockaddr*)&server, sizeof(server)) >= 0);
-
-    while(true)
-    {
-        uint8_t recv_packet[sizeof(GamePacket)] = {};
-        sockaddr_in from;
-        size_t fromlen = sizeof(from);
-
-        recvfrom(
-            connection_info->sock_fd,
-            recv_packet,
-            sizeof(recv_packet),
-            0,
-            (sockaddr*)&from,
-            (socklen_t*)&fromlen);
-        
-        assert(fromlen == sizeof(from));
-
-        GamePacketHeader* recv_packet_header = (GamePacketHeader*)recv_packet;
-        switch (recv_packet_header->type)
-        {
-            case GamePacketType::CONNECTION_REQ:
-            {
-                // add to list of known clients
-                ClientId client_id;
-                {
-                    client_id = connection_info->server->connections.size();
-                    std::lock_guard<std::mutex> lock(connection_info->server->mutex);
-                    connection_info->server->connections.push_back(from);
-                }
-
-                // send ack
-                ConnectionAckPacket ack_packet(client_id, SERVER_ID);
-
-                sendto(
-                    connection_info->sock_fd,
-                    &ack_packet,
-                    sizeof(ack_packet),
-                    0,
-                    (sockaddr*)&from,
-                    sizeof(from));
-            } break;
-            default:
-            // if not handled above, any incoming packet goes directly into the command queue
-            {
-                std::lock_guard<std::mutex> lock(connection_info->mutex);
-                connection_info->back_queue->push_back(*(GamePacket*)recv_packet);
-            }
-        }
-    }
-
-    pthread_exit(nullptr);
-}
-
-static void* client_thread(void* arg)
-{
-    ConnectionInfo* connection_info = (ConnectionInfo*)arg;
-
-    connection_info->sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    assert(connection_info->sock_fd >= 0);
-    
-    sockaddr_in server_addr = {};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(connection_info->client->port);
-    server_addr.sin_addr.s_addr = htonl(connection_info->client->ip);
-
-    // Connect to server
-    {
-        ConnectionReqPacket req_packet;
-
-        sendto(
-            connection_info->sock_fd,
-            &req_packet,
-            sizeof(req_packet),
-            0,
-            (sockaddr*)&server_addr,
-            sizeof(server_addr));
-
-        sockaddr_in from = {};
-        size_t fromlen = sizeof(from);
-        
-        uint8_t ack_packet_data[sizeof(GamePacket)] = {};
-
-        int n = recvfrom(
-            connection_info->sock_fd,
-            ack_packet_data,
-            sizeof(ack_packet_data),
-            0,
-            (sockaddr*)&from,
-            (socklen_t*)&fromlen);
-
-        ConnectionAckPacket* ack_packet = (ConnectionAckPacket*)ack_packet_data;
-
-        assert(ack_packet->header.type == GamePacketType::CONNECTION_ACK);
-        assert(from.sin_addr.s_addr == server_addr.sin_addr.s_addr);
-        
-        // TODO: Lock here?
-            
-        connection_info->client->client_id = ack_packet->client_id;
-
-        // we successfully connected
-        // now request a spawn
-        PlayerSpawnPacket spawn_packet(Vec3(0.0f, 0.0f, -3.0f), connection_info->client->client_id);
-
-        sendto(
-            connection_info->sock_fd,
-            &spawn_packet,
-            sizeof(spawn_packet),
-            0,
-            (sockaddr*)&server_addr,
-            sizeof(server_addr));
-    }
-
-    while(true)
-    {
-        uint8_t recv_packet[sizeof(GamePacket)] = {};
-        sockaddr_in from;
-        size_t fromlen = sizeof(from);
-
-        recvfrom(
-            connection_info->sock_fd,
-            recv_packet,
-            sizeof(recv_packet),
-            0,
-            (sockaddr*)&from,
-            (socklen_t*)&fromlen);
-        
-        assert(fromlen == sizeof(from));
-
-        GamePacketHeader* recv_packet_header = (GamePacketHeader*)recv_packet;
-
-        // stick the recieved packet in the command queue
-        std::lock_guard<std::mutex> lock(connection_info->mutex);
-        connection_info->back_queue->push_back(*(GamePacket*)recv_packet);
-    }
-
-    pthread_exit(nullptr);
-}
-
-void PacketReceiver::thread_init(uint16_t _port)
-{
-    port = _port;
-
-    // TODO: Store the thread
-    pthread_t server_pthread;
-    pthread_create(&server_pthread, nullptr, receiver_thread, this);
-}
-
-void NetworkServerInstance::init(uint16_t _port)
-{
-    port = _port;
-    receiver.thread_init(_port);
-    active = true;
-}
-
-void NetworkClientInstance::client_connect()
-{
-    ConnectionReqPacket req_packet;
-
-    sendto(
-        connection_info->sock_fd,
-        &req_packet,
-        sizeof(req_packet),
-        0,
-        (sockaddr*)&server_addr,
-        sizeof(server_addr));
-
-    sockaddr_in from = {};
-    size_t fromlen = sizeof(from);
-    
-    uint8_t ack_packet_data[sizeof(GamePacket)] = {};
-
-    int n = recvfrom(
-        sock_fd,
-        ack_packet_data,
-        sizeof(ack_packet_data),
-        0,
-        (sockaddr*)&from,
-        (socklen_t*)&fromlen);
-
-    ConnectionAckPacket* ack_packet = (ConnectionAckPacket*)ack_packet_data;
-
-    assert(ack_packet->header.type == GamePacketType::CONNECTION_ACK);
-    assert(from.sin_addr.s_addr == server_addr.sin_addr.s_addr);
-    
-    // TODO: Lock here?
-        
-    connection_info->client->client_id = ack_packet->client_id;
-}
-
-void NetworkClientInstance::client(uint32_t ip, uint16_t port)
-{
-    sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    assert(sock_fd >= 0);
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-    server_addr.sin_addr.s_addr = htonl(ip);
-
-    client_connect();
-
-    active = true;
-
-    pthread_t client_pthread;
-    pthread_create(&client_pthread, nullptr, client_thread, &connection_info);
-}
-
-void NetworkInterface::broadcast_create_entity(Entity entity, EntityHandle entity_handle)
-{
-    EntityCreatePacket packet(entity, entity_handle, SERVER_ID);
-    
-    std::lock_guard<std::mutex> lock(connection_info.server->mutex);
-    for (auto client : connection_info.server->connections)
-    {
-        sendto(
-            connection_info.sock_fd,
-            &packet,
-            sizeof(packet),
-            0,
-            (sockaddr*)&client.addr,
-            sizeof(client.addr));
-    }
-}
-#endif
 
 ClientId ServerData::init(uint16_t port)
 {
@@ -256,6 +22,56 @@ ClientId ServerData::init(uint16_t port)
 
     active = true;
     return SERVER_ID;
+}
+
+void ClientData::create_server(uint16_t port)
+{
+    int pipefd[2];
+    if (pipe(pipefd) < 0)
+    {
+        std::cout << "error creating pipe" << std::endl;
+    }
+    // create the server process
+    if (fork() == 0)
+    {
+        // close the read end of the pipe and remap stdout
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+
+        // we are child process
+        char port_arg[6];   // 2^16 has max 5 digits, plus null terminator
+        snprintf(port_arg, sizeof(port_arg), "%d", port);
+        // replace process
+        execl("L4server", "L4server", port_arg);
+    }
+    else
+    {
+        close(pipefd[1]);
+        server_pipe = pipefd[0];
+        fcntl(server_pipe, F_SETFL, O_NONBLOCK);
+    }
+}
+
+void ClientData::write_server_stdout(Console *console)
+{
+    char buf[256];
+    while(true)
+    {
+        int n = read(server_pipe, buf, sizeof(buf));
+        if (n == -1)
+        {
+            if (errno != EAGAIN)
+            {
+                std::cout << "error reading from pipe" << std::endl;
+            }
+            break;
+        }
+        if (n == 0)
+        {
+            break;
+        }
+        console->writen(buf, n);
+    }
 }
 
 void ServerData::broadcast(GamePacket packet)
@@ -283,26 +99,59 @@ ClientId ClientData::connect(uint32_t server_ip, uint16_t server_port)
 
     ConnectionReqPacket req_packet;
 
-    sendto(
-        sock,
-        &req_packet,
-        sizeof(req_packet),
-        0,
-        (sockaddr*)&server_addr,
-        sizeof(server_addr));
-
+    // keep requesting until response is received
     sockaddr_in from = {};
     size_t fromlen = sizeof(from);
-    
     uint8_t ack_packet_data[sizeof(GamePacket)] = {};
 
-    int n = recvfrom(
-        sock,
-        ack_packet_data,
-        sizeof(ack_packet_data),
-        0,
-        (sockaddr*)&from,
-        (socklen_t*)&fromlen);
+    // TODO: we may need to retry several times if the
+    // server hasn't started yet (i.e. client creating
+    // server and connecting right away). This implementation
+    // doesn't work because an extra request gets sent
+    // and the server has two connections to the client.
+    // Maybe the connection requires another step?
+    // -- dec 27 '18
+#if 0
+    bool ack_received = false;
+    while (!ack_received)
+    {
+        sendto(
+            sock,
+            &req_packet,
+            sizeof(req_packet),
+            0,
+            (sockaddr*)&server_addr,
+            sizeof(server_addr));
+
+
+        int n = recvfrom(
+            sock,
+            ack_packet_data,
+            sizeof(ack_packet_data),
+            MSG_DONTWAIT,   // nonblocking
+            (sockaddr*)&from,
+            (socklen_t*)&fromlen);
+
+        if (n >= 0) ack_received = true;
+        else usleep(100000);
+    }
+#else
+        sendto(
+            sock,
+            &req_packet,
+            sizeof(req_packet),
+            0,
+            (sockaddr*)&server_addr,
+            sizeof(server_addr));
+
+        int n = recvfrom(
+            sock,
+            ack_packet_data,
+            sizeof(ack_packet_data),
+            0,
+            (sockaddr*)&from,
+            (socklen_t*)&fromlen);
+#endif
 
     ConnectionAckPacket* ack_packet = (ConnectionAckPacket*)ack_packet_data;
 

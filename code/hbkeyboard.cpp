@@ -5,37 +5,37 @@ void Keyboard::handle_keyup(SDL_Keycode key)
     switch (key)
     {
     case SDLK_q:
-        q = false;
+       held.q = false;
         break;
     case SDLK_w:
-        w = false;
+        held.w = false;
         break;
     case SDLK_e:
-        e = false;
+        held.e = false;
         break;
     case SDLK_a:
-        a = false;
+        held.a = false;
         break;
     case SDLK_s:
-        s = false;
+        held.s = false;
         break;
     case SDLK_d:
-        d = false;
+        held.d = false;
         break;
     case SDLK_i:
-        i = false;
+        held.i = false;
         break;
     case SDLK_k:
-        k = false;
+        held.k = false;
         break;
     case SDLK_SPACE:
-        space = false;
+        held.space = false;
         break;
     case SDLK_BACKQUOTE: // '`'
-        tilde = false;
+        held.tilde = false;
         break;
     case SDLK_RETURN:
-        enter = false;
+        held.enter = false;
         break;
     }
 }
@@ -45,37 +45,53 @@ void Keyboard::handle_keydown(SDL_Keycode key)
     switch (key)
     {
     case SDLK_q:
-        q = true;
+        down.q = !held.q;   // ignore key repeats
+        held.q = true;
         break;
     case SDLK_w:
-        w = true;
+        down.w = !held.w;
+        held.w = true;
         break;
     case SDLK_e:
-        e = true;
+        down.e = !held.e;
+        held.e = true;
         break;
     case SDLK_a:
-        a = true;
+        down.a = !held.a;
+        held.a = true;
         break;
     case SDLK_s:
-        s = true;
+        down.s = !held.s;
+        held.s = true;
         break;
     case SDLK_d:
-        d = true;
+        down.d = !held.d;
+        held.d = true;
         break;
     case SDLK_i:
-        i = true;
+        down.i = !held.i;
+        held.i = true;
         break;
     case SDLK_k:
-        k = true;
+        down.k = !held.k;
+        held.k = true;
         break;
     case SDLK_SPACE:
-        space = true;
+        down.space = !held.space;
+        held.space = true;
         break;
     case SDLK_BACKQUOTE: // '`'
-        tilde = true;
+        down.tilde = !held.tilde;
+        held.tilde = true;
         break;
     case SDLK_RETURN:
-        enter = true;
+        down.enter = !held.enter;
+        held.enter = true;
         break;
     }
+}
+
+void Keyboard::clear_keydowns()
+{
+    down = KeyboardData();
 }

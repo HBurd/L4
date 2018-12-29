@@ -222,25 +222,50 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
              << glewGetErrorString(err) << endl;
     }
 
-
+    // gl setup
     glViewport(0, 0, width, height);
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-}
 
-MeshId Renderer::load_mesh(const char* filename, ShaderProgramId shader_prog_id)
-{
-    meshes.push_back(Mesh(filename, shader_prog_id));
-    return meshes.size() - 1;
-}
+    // load meshes
+    for (int mesh_type = 0; mesh_type < MeshType::NUM_MESH_TYPES; mesh_type++)
+    {
+        assert(meshes.size() == mesh_type);
+        // this is really weird... better way?
+        // TODO: also, we should load shaders separatly so there isn't duplication
+        switch (mesh_type)
+        {
+            case MeshType::SHIP:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("triangle.vert", "triangle.frag");
+                meshes.push_back(Mesh("ship.obj", shader_prog));
+                break;
+            }
+            case MeshType::PROJECTILE:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("triangle.vert", "triangle.frag");
+                meshes.push_back(Mesh("projectile.obj", shader_prog));
+                break;
+            }
+            case MeshType::SKYBOX:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("skybox.vert", "skybox.frag");
+                meshes.push_back(Mesh("skybox.obj", shader_prog));
+                break;
+            }
+            default:
+                assert(false); // Unimplemeneted mesh type
+        }
+    }
 
-void Renderer::load_skybox(const char* filename, const char* texture_filename, ShaderProgramId shader_prog_id)
-{
-    skybox_texture = load_texture(texture_filename);
-    skybox_mesh = load_mesh(filename, shader_prog_id);
+    skybox_texture = load_texture("skymap3.png");
+    skybox_mesh = MeshType::SKYBOX;
 }
 
 ShaderProgramId Renderer::load_shader(const char* vshader, const char* fshader)

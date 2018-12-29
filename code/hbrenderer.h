@@ -6,6 +6,7 @@
 #include <vector>
 #include "GL/glew.h"
 
+#include "hbmesh_type.h"
 #include "hbmath.h"
 
 using std::vector;
@@ -45,10 +46,10 @@ typedef size_t MeshId;
 
 struct Renderer
 {
-    // an opengl context must already be available
+    // an opengl context must already be available before constructing
     Renderer(unsigned int _width, unsigned int _height);
-    MeshId load_mesh(const char* filename, ShaderProgramId shader_prog_id);
-    void load_skybox(const char* filename, const char* texture_filename, ShaderProgramId shader_prog_id);
+    //MeshId load_mesh(const char* filename, ShaderProgramId shader_prog_id);
+    //void load_skybox(const char* filename, const char* texture_filename, ShaderProgramId shader_prog_id);
     ShaderProgramId load_shader(const char* vshader, const char* fshader);
     GLuint load_texture(const char* texture_filename);
     void set_screen_size(unsigned int w, unsigned int h);

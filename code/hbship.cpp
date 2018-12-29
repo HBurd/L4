@@ -1,11 +1,12 @@
 #include "hbship.h"
+#include "hbmesh_type.h"
 
-Entity create_ship(Vec3 position, MeshId mesh_id)
+Entity create_ship(Vec3 position)
 {
     Entity result;
     result.supported_components = ComponentType::PHYSICS | ComponentType::MESH;
     result.physics = Physics(position);
-    result.mesh_id = mesh_id;
+    result.mesh_id = MeshType::SHIP;
 
     return result;
 }

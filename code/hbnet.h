@@ -12,6 +12,9 @@
 #include "hbrenderer.h"
 #include "hbplayer_control.h"
 
+//TODO: shouldn't have this dependency!!
+#include "hbgui.h"
+
 typedef size_t ClientId;
 const size_t SERVER_ID = 0xFFFFFFFF;
 const size_t INCOMPLETE_ID = 0xFFFFFFFE;
@@ -155,9 +158,14 @@ struct ClientData
     sockaddr_in server_addr = {};
     ClientId client_id;
 
+    int server_pipe = -1;       // TODO: platform specific
+    // write stdout of the server process to a circular buffer
+    void write_server_stdout(Console *console);
+
     ClientId connect(uint32_t server_ip, uint16_t server_port);
     void send_to_server(GamePacket packet);
     void spawn(Vec3 coords);
+    void create_server(uint16_t port);
 };
 
 void get_packets(int sock, vector<GamePacketIn>* packet_list);

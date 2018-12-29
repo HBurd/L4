@@ -41,48 +41,35 @@ bool MainMenu::draw_server_connect_gui()
 
 void MainMenu::draw(bool* server, bool* client)
 {
-    if (draw_main_menu)
+    ImGui::Begin("Main Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::Text("Start a game or connect to a game:");
+
+    ImGui::Checkbox("Server", &is_server);
+    
+    if (is_server)
     {
-        ImGui::Begin("Main Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-
-        ImGui::Text("Start a game or connect to a game:");
-
-        ImGui::Checkbox("Server", &is_server);
-        
-        if (is_server)
-        {
-            *server = draw_server_create_gui();
-        }
-        else
-        {
-            *client = draw_server_connect_gui();
-        }
-
-        ImGui::End();
+        *server = draw_server_create_gui();
     }
+    else
+    {
+        *client = draw_server_connect_gui();
+    }
+
+    ImGui::End();
 }
 
-bool SpawnMenu::draw(bool can_spawn)
+bool SpawnMenu::draw()
 {
     bool spawn_clicked = false;
-    if (draw_spawn_menu)
-    {
-        ImGui::Begin("Spawn Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        
-        if (can_spawn)
-        {
-            ImGui::Text("Choose your spawn point:");
-            ImGui::InputFloat3("x, y, z", (float*)&coords);
-            
-            spawn_clicked = ImGui::Button("Spawn");
-        }
-        else
-        {
-            ImGui::Text("Unfortunately, you can't spawn right now.");
-        }
+    ImGui::Begin("Spawn Menu", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    
+    ImGui::Text("Choose your spawn point:");
+    ImGui::InputFloat3("x, y, z", (float*)&coords);
+    
+    spawn_clicked = ImGui::Button("Spawn");
 
-        ImGui::End();
-    }
+    ImGui::End();
 
     return spawn_clicked;
 }
@@ -121,7 +108,10 @@ static void generate_entity_name(
     }
 }
 
-void ShipConsole::draw()
+Console::Console(const char *name_)
+:name(name_) {}
+
+void Console::draw()
 {
     // build the string to give to imgui
     char display_data[ARRAY_LENGTH(data) + 1] = {};
@@ -130,16 +120,21 @@ void ShipConsole::draw()
     // finish start to mark
     strncpy(display_data + strlen(display_data), data, mark);
 
-    ImGui::Begin("Ship Console");
+    ImGui::Begin(name);
 
     ImGui::TextUnformatted(display_data);
 
     ImGui::End();
 }
 
-void ShipConsole::write(const char* string)
+void Console::write(const char *string)
 {
     const size_t string_len = strlen(string);
+    writen(string, string_len);
+}
+
+void Console::writen(const char *string, size_t string_len)
+{
     size_t len_copied = 0;
     while (len_copied < string_len)
     {

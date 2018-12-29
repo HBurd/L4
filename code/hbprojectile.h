@@ -5,7 +5,7 @@
 #include "hbrenderer.h"
 #include "hbmath.h"
 
-Entity create_projectile(Physics shooter_physics, MeshId mesh_id);
+Entity create_projectile(Physics shooter_physics);
 
 // returns whether projectile still exists
 bool projectile_update(Projectile* projectile);

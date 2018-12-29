@@ -16,7 +16,7 @@ PlayerControlState player_control_get_state(
     // build the control packet and send it to the server
 
     PlayerControlState control_state;
-    if (kb.space)
+    if (kb.held.space)
     {
         control_state.thrust = MAX_THRUST;
     }
@@ -48,12 +48,12 @@ PlayerControlState player_control_get_state(
         yaw_torque = -yaw;
     }
  
-    if (kb.q) roll_torque = -MAX_TORQUE;
-    if (kb.e) roll_torque = MAX_TORQUE;
-    if (kb.w) pitch_torque = MAX_TORQUE;
-    if (kb.s) pitch_torque = -MAX_TORQUE;
-    if (kb.a) yaw_torque = -MAX_TORQUE;
-    if (kb.d) yaw_torque = MAX_TORQUE;
+    if (kb.held.q) roll_torque = -MAX_TORQUE;
+    if (kb.held.e) roll_torque = MAX_TORQUE;
+    if (kb.held.w) pitch_torque = MAX_TORQUE;
+    if (kb.held.s) pitch_torque = -MAX_TORQUE;
+    if (kb.held.a) yaw_torque = -MAX_TORQUE;
+    if (kb.held.d) yaw_torque = MAX_TORQUE;
 
     // clamp torque
 

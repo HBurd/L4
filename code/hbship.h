@@ -5,6 +5,6 @@
 #include "hbrenderer.h"
 #include "hbmath.h"
 
-Entity create_ship(Vec3 position, MeshId mesh_id);
+Entity create_ship(Vec3 position);
 
 #endif // include guard

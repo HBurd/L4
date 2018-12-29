@@ -3,7 +3,7 @@
 
 #include "SDL/SDL.h"
 
-struct Keyboard
+struct KeyboardData
 {
     bool q = false;
     bool w = false;
@@ -19,9 +19,15 @@ struct Keyboard
 
     bool space = false;
     bool enter = false;
-    
+};
+
+struct Keyboard
+{
+    KeyboardData held;
+    KeyboardData down;
     void handle_keyup(SDL_Keycode key);
     void handle_keydown(SDL_Keycode key);
+    void clear_keydowns();
 };
 
 #endif // include guard
