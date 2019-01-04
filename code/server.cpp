@@ -69,8 +69,7 @@ int main(int argc, char* argv[])
     bool running = true;
     while (running)
     {
-        perform_entity_update_step(&entity_manager);
-
+        perform_entity_update_step(&entity_manager, delta_time);
 
         // check for collisions
         for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)

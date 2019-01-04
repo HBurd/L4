@@ -92,6 +92,7 @@ struct Rotor
     static Rotor roll(float angle);
     static Rotor pitch(float angle);
     static Rotor yaw(float angle);
+    static Rotor lerp(const Rotor &start, const Rotor &end, float t);
 };
 
 // algebra

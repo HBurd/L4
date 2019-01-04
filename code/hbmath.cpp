@@ -348,6 +348,17 @@ Rotor Rotor::yaw(float angle)
     return Rotor(start, end);
 }
 
+Rotor Rotor::lerp(const Rotor &start, const Rotor &end, float t)
+{
+    Rotor result;
+    result.s  = start.s  + t * (end.s  - start.s);
+    result.xy = start.xy + t * (end.xy - start.xy);
+    result.yz = start.yz + t * (end.yz - start.yz);
+    result.zx = start.zx + t * (end.zx - start.zx);
+    result.normalize();
+    return result;
+}
+
 // misc
 
 int modulo(int a, int b) {

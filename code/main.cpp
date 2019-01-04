@@ -99,7 +99,7 @@ int main(int argc, char *argv[], char *envp[])
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
-    double delta_time;
+    double delta_time = 0.0f;
 
     bool running = true;
     while (running)
@@ -238,7 +238,7 @@ int main(int argc, char *argv[], char *envp[])
                 control_state);
         }
 
-        perform_entity_update_step(&entity_manager);
+        perform_entity_update_step(&entity_manager, delta_time);
 
         // Process incoming packets
         get_packets(client.sock, &game_packets);
@@ -283,20 +283,20 @@ int main(int argc, char *argv[], char *envp[])
                     }
                     break;
                 }
-                case GamePacketType::PLAYER_DAMAGE:
-                {
-                    if (packet.packet.player_damage.player == client_state.id)
-                    {
-                        //// TODO very bad
-                        //client_state.player_health--;
-                        //char damage_string[] = 
-                        //    "TAKING DAMAGE!!\n"
-                        //    "Ship health is 3/3\n";
-                        //damage_string[31] = '0' + client_state.player_health;
-                        //ship_console.write(damage_string);
-                    }
-                    break;
-                }
+                //case GamePacketType::PLAYER_DAMAGE:
+                //{
+                //    if (packet.packet.player_damage.player == client_state.id)
+                //    {
+                //        //// TODO very bad
+                //        //client_state.player_health--;
+                //        //char damage_string[] = 
+                //        //    "TAKING DAMAGE!!\n"
+                //        //    "Ship health is 3/3\n";
+                //        //damage_string[31] = '0' + client_state.player_health;
+                //        //ship_console.write(damage_string);
+                //    }
+                //    break;
+                //}
             }
         }
 
@@ -345,6 +345,13 @@ int main(int argc, char *argv[], char *envp[])
         SDL_GL_SwapWindow(window);
 
         delta_time = time_keeper.get_delta_time_s();
+        
+        {
+            char frame_rate_display[8];
+            snprintf(frame_rate_display, sizeof(frame_rate_display), "%f", delta_time);
+            ship_console.write(frame_rate_display);
+            ship_console.write("\n");
+        }
 
         //// wait until we've hit 60 fps
         //double time_remaining = 0.016667 - delta_time;

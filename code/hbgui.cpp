@@ -115,14 +115,17 @@ void Console::draw()
 {
     // build the string to give to imgui
     char display_data[ARRAY_LENGTH(data) + 1] = {};
-    // start at mark to end
+    // copy mark to end
     strncpy(display_data, data + mark, ARRAY_LENGTH(data) - mark);
-    // finish start to mark
+    // copy start to mark
     strncpy(display_data + strlen(display_data), data, mark);
 
     ImGui::Begin(name);
 
     ImGui::TextUnformatted(display_data);
+    // set scroll to bottom
+    float max_scroll = ImGui::GetScrollMaxY();
+    ImGui::SetScrollY(max_scroll);
 
     ImGui::End();
 }
@@ -138,9 +141,10 @@ void Console::writen(const char *string, size_t string_len)
     size_t len_copied = 0;
     while (len_copied < string_len)
     {
-        size_t copy_len = (string_len <= ARRAY_LENGTH(data) - mark)
-            ? string_len : (ARRAY_LENGTH(data) - mark);
-        strncpy(data + mark, string, ARRAY_LENGTH(data) - mark);
+        // copy length min of string length and remaining length of console array
+        size_t copy_len = (string_len - len_copied <= ARRAY_LENGTH(data) - mark)
+            ? string_len - len_copied : (ARRAY_LENGTH(data) - mark);
+        strncpy(data + mark, string + len_copied, copy_len);//ARRAY_LENGTH(data) - mark);
         len_copied += copy_len;
         mark += copy_len;
         if (mark == ARRAY_LENGTH(data))

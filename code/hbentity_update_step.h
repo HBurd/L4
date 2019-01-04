@@ -3,6 +3,6 @@
 
 #include "hbentities.h"
 
-void perform_entity_update_step(EntityManager *entity_manager);
+void perform_entity_update_step(EntityManager *entity_manager, double dt);
 
 #endif
