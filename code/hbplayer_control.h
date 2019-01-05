@@ -3,12 +3,27 @@
 
 #include "hbentities.h"
 #include "hbkeyboard.h"
+#include "hbclient.h"
+
+const size_t MAX_PAST_INPUTS = 128;
 
 struct PlayerControlState
 {
     float thrust = 0.0f;
     Rotor torque;
     bool shoot = false;
+};
+
+struct PastInput
+{
+    PlayerControlState input;   // input at frame start
+    float dt = 0.0f;            // frame duration
+};
+
+struct PlayerInputBuffer
+{
+    PastInput inputs[MAX_PAST_INPUTS] = {};
+    size_t next_input_idx = 0;
 };
 
 PlayerControlState player_control_get_state(
@@ -19,5 +34,11 @@ PlayerControlState player_control_get_state(
     Physics target);
 
 void player_control_update(Physics *physics, PlayerControlState control_state, float dt);
+void handle_player_input(
+    PlayerControlState input,
+    float delta_time,
+    Physics *player_physics,
+    PlayerInputBuffer *player_input_buffer,
+    ClientData *client);
 
 #endif // include guard

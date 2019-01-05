@@ -15,6 +15,7 @@
 #include "hbgui.h"
 #include "hbprojectile.h"
 #include "hbentity_update_step.h"
+#include "hbpackets.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -78,7 +79,6 @@ int main(int argc, char *argv[], char *envp[])
             SPAWNED
         } status = DISCONNECTED;
         bool server_proc_connected = false;
-        ClientId id = INCOMPLETE_ID;
 
         EntityHandle player_handle;
         unsigned int player_health = 3;
@@ -89,6 +89,8 @@ int main(int argc, char *argv[], char *envp[])
     } client_state;
 
     vector<GamePacketIn> game_packets;
+
+    PlayerInputBuffer past_inputs;
 
     EntityManager entity_manager;
     // add list for projectiles
@@ -157,13 +159,13 @@ int main(int argc, char *argv[], char *envp[])
                     // connect to localhost
                     // TODO: need a better sln
                     usleep(100000);
-                    client_state.id = client.connect(0x7f000001, main_menu.port);
+                    client.connect(0x7f000001, main_menu.port);
                     client_state.server_proc_connected = true;
                     client_state.status = ClientState::NOT_SPAWNED;
                 }
                 else if (connect_to_server)
                 {
-                    client_state.id = client.connect(main_menu.ip, main_menu.port);
+                    client.connect(main_menu.ip, main_menu.port);
                     client_state.status = ClientState::NOT_SPAWNED;
                 }
             }
@@ -227,6 +229,15 @@ int main(int argc, char *argv[], char *envp[])
                 target_physics);
             control_state.shoot = kb.down.enter;
 
+            handle_player_input(
+                control_state,
+                delta_time,
+                &player_physics,
+                &past_inputs,
+                &client);
+
+            /*
+
             ControlUpdatePacket control_update(control_state, client_state.id);
             client.send_to_server(*(GamePacket*)&control_update);
 
@@ -237,6 +248,7 @@ int main(int argc, char *argv[], char *envp[])
                 &player_physics,
                 control_state,
                 delta_time);
+                */
         }
 
         perform_entity_update_step(&entity_manager, delta_time);
@@ -254,7 +266,7 @@ int main(int argc, char *argv[], char *envp[])
                     // check if created entity is the player entity
                     if ((packet.packet.entity_create.entity.supported_components
                          & ComponentType::PLAYER_CONTROL)
-                        && packet.packet.entity_create.entity.player_control.client_id == client_state.id)
+                        && packet.packet.entity_create.entity.player_control.client_id == client.id)
                     {
                         assert(client_state.status == ClientState::NOT_SPAWNED);
                         client_state.status = ClientState::SPAWNED;

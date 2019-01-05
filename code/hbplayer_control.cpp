@@ -1,5 +1,6 @@
 #include "hbplayer_control.h"
 #include "hbnet.h"
+#include "hbpackets.h"
 #include "imgui/imgui.h"
 #include <cmath>
 
@@ -89,11 +90,28 @@ PlayerControlState player_control_get_state(
     return control_state;
 }
 
-void player_control_update(Physics* physics, PlayerControlState control_state, float dt)
+void player_control_update(Physics *physics, PlayerControlState control_state, float dt)
 {
     Vec3 thrust = physics->orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
     thrust = thrust * control_state.thrust * dt;
     
     physics->velocity += thrust;
     physics->angular_velocity = physics->angular_velocity * Rotor::lerp(Rotor(), control_state.torque, dt);
+}
+
+void handle_player_input(
+    PlayerControlState input,
+    float dt,
+    Physics *player_physics,
+    PlayerInputBuffer *player_input_buffer,
+    ClientData *client)
+{
+    ControlUpdatePacket control_update(input);
+    client->send_to_server(*(GamePacket*)&control_update);
+
+    // client side prediction:
+    player_control_update(
+        player_physics,
+        input,
+        dt);
 }
