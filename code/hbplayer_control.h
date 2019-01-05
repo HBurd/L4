@@ -18,6 +18,6 @@ PlayerControlState player_control_get_state(
     bool track,
     Physics target);
 
-void player_control_update(Physics *physics, PlayerControlState control_state);
+void player_control_update(Physics *physics, PlayerControlState control_state, float dt);
 
 #endif // include guard

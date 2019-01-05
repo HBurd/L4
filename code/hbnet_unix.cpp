@@ -8,7 +8,7 @@
 #include <vector>
 #include <iostream>
 
-ClientId ServerData::init(uint16_t port)
+ServerData::ServerData(uint16_t port)
 {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     assert(sock >= 0);
@@ -19,9 +19,6 @@ ClientId ServerData::init(uint16_t port)
     server_addr.sin_port = htons(port);
     
     assert(bind(sock, (sockaddr*)&server_addr, sizeof(server_addr)) >= 0);
-
-    active = true;
-    return SERVER_ID;
 }
 
 void ClientData::create_server(uint16_t port)

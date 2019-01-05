@@ -154,7 +154,7 @@ bool EntityTable::lookup_entity(
     size_t* list_idx,
     size_t* entity_idx) const
 {
-    if (handle.version != entries[handle.idx].version)
+    if (handle.version == 0 || handle.version != entries[handle.idx].version)
     {
         return false;
     }

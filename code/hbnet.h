@@ -141,11 +141,10 @@ struct ClientConnection
 
 struct ServerData
 {
-    bool active = false;
     std::vector<ClientConnection> clients;
-    int sock = -1;
+    int sock;
 
-    ClientId init(uint16_t port);
+    ServerData(uint16_t port);
     void broadcast(GamePacket packet);
     void accept_client(sockaddr_in client_addr);
 };
@@ -153,7 +152,7 @@ struct ServerData
 struct ClientData
 {
     bool active = false;
-    std::vector<ClientConnection> clients;
+    //std::vector<ClientConnection> clients;
     int sock = -1;
     sockaddr_in server_addr = {};
     ClientId client_id;

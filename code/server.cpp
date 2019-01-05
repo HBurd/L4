@@ -33,25 +33,25 @@ int main(int argc, char* argv[])
     // exit when parent exits
     prctl(PR_SET_PDEATHSIG, SIGHUP);
 
-    ServerData server;
-
     // parse command line arguments
+    uint16_t port;
     {
         if (argc != 2)
         {
             cout << "Usage: L4Server [port]" << endl;
             return 1;
         }
-        uint32_t port = atoi(argv[1]);
-        if (port == 0 || port & 0xFFFF0000)
+        uint32_t port32 = atoi(argv[1]);
+        if (port32 == 0 || port32 & 0xFFFF0000)
         {
             cout << "A valid port was not supplied." << endl;
             return 1;
         }
 
-        // initialize the server
-        server.init(port);
+        port = (uint16_t) port32;
     }
+
+    ServerData server(port);
 
     vector<GamePacketIn> game_packets;
 
@@ -64,11 +64,28 @@ int main(int argc, char* argv[])
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
-    double delta_time;
+    double delta_time = 0.0;
 
     bool running = true;
     while (running)
     {
+        // update player control
+        for (auto client : server.clients)
+        {
+            // look up player entity
+            size_t list_idx;
+            size_t entity_idx;
+            if (entity_manager.entity_table.lookup_entity(
+                    client.player_entity,
+                    entity_manager.entity_lists,
+                    &list_idx,
+                    &entity_idx))
+            { 
+                Physics* player_physics = &entity_manager.entity_lists[list_idx].physics_list[entity_idx];
+                player_control_update(player_physics, client.player_control, delta_time);
+            }
+        }
+
         perform_entity_update_step(&entity_manager, delta_time);
 
         // check for collisions
@@ -158,9 +175,12 @@ int main(int argc, char* argv[])
                         &player_list_idx,
                         &player_entity_idx);
 
-                    player_control_update(
-                        &entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
-                        packet.packet.control_update.state);
+                    server.clients[packet.packet.header.sender].player_control =
+                        packet.packet.control_update.state;
+
+                    //player_control_update(
+                    //    &entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
+                    //    packet.packet.control_update.state);
 
                     if (packet.packet.control_update.state.shoot)
                     {

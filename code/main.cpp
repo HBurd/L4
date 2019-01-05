@@ -235,7 +235,8 @@ int main(int argc, char *argv[], char *envp[])
             // client side prediction:
             player_control_update(
                 &player_physics,
-                control_state);
+                control_state,
+                delta_time);
         }
 
         perform_entity_update_step(&entity_manager, delta_time);

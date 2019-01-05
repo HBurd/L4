@@ -1,6 +1,8 @@
 #ifndef HBMATH_H
 #define HBMATH_H
 
+const float MATH_PI  = 3.141592653589793238462643f;
+
 // Vector math
 // ==========
 
@@ -92,7 +94,10 @@ struct Rotor
     static Rotor roll(float angle);
     static Rotor pitch(float angle);
     static Rotor yaw(float angle);
+
+    Rotor exponentiate(float t);
     static Rotor lerp(const Rotor &start, const Rotor &end, float t);
+    static Rotor slerp(const Rotor &start, const Rotor &end, float t);
 };
 
 // algebra
@@ -112,7 +117,6 @@ Mat33 operator-(const Mat33& lhs, const Mat33& rhs);
 Vec3 operator*(const Mat33& lhs, const Vec3& rhs);
 
 Rotor operator*(const Rotor& lhs, const Rotor& rhs);
-Rotor slerp(const Rotor& lhs, const Rotor& rhs, float t);
 
 // Misc
 // ====

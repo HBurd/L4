@@ -3,8 +3,8 @@
 #include "imgui/imgui.h"
 #include <cmath>
 
-const float MAX_THRUST = 0.001f;
-const float MAX_TORQUE = 0.001f;
+const float MAX_THRUST = 1.0f;
+const float MAX_TORQUE = 1.0f;
 
 PlayerControlState player_control_get_state(
     const Keyboard kb,
@@ -89,11 +89,11 @@ PlayerControlState player_control_get_state(
     return control_state;
 }
 
-void player_control_update(Physics* physics, PlayerControlState control_state)
+void player_control_update(Physics* physics, PlayerControlState control_state, float dt)
 {
     Vec3 thrust = physics->orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
-    thrust = thrust * control_state.thrust;
+    thrust = thrust * control_state.thrust * dt;
     
     physics->velocity += thrust;
-    physics->angular_velocity = physics->angular_velocity * control_state.torque;
+    physics->angular_velocity = physics->angular_velocity * Rotor::lerp(Rotor(), control_state.torque, dt);
 }

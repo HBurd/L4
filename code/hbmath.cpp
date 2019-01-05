@@ -348,6 +348,24 @@ Rotor Rotor::yaw(float angle)
     return Rotor(start, end);
 }
 
+Rotor Rotor::exponentiate(float t)
+{
+    Vec3 bivector = Vec3(xy, yz, zx);
+    float angle = acosf(s);
+    std::cout << angle << std::endl;
+    //if (angle < 0) angle += MATH_PI;
+    angle *= t;
+
+    Rotor result;
+    result.s = cosf(angle);
+    bivector = bivector.normalize() * sinf(angle);
+    result.xy = bivector.x;
+    result.yz = bivector.y;
+    result.zx = bivector.z;
+    return result;
+    // (I barely understand this)
+}
+
 Rotor Rotor::lerp(const Rotor &start, const Rotor &end, float t)
 {
     Rotor result;
@@ -355,8 +373,13 @@ Rotor Rotor::lerp(const Rotor &start, const Rotor &end, float t)
     result.xy = start.xy + t * (end.xy - start.xy);
     result.yz = start.yz + t * (end.yz - start.yz);
     result.zx = start.zx + t * (end.zx - start.zx);
-    result.normalize();
+    result = result.normalize();
     return result;
+}
+
+Rotor Rotor::slerp(const Rotor &start, const Rotor &end, float t)
+{
+    return start * ((start.inverse() * end).exponentiate(t));
 }
 
 // misc
