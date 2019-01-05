@@ -346,13 +346,6 @@ int main(int argc, char *argv[], char *envp[])
         SDL_GL_SwapWindow(window);
 
         delta_time = time_keeper.get_delta_time_s();
-        
-        {
-            char frame_rate_display[8];
-            snprintf(frame_rate_display, sizeof(frame_rate_display), "%f", delta_time);
-            ship_console.write(frame_rate_display);
-            ship_console.write("\n");
-        }
 
         //// wait until we've hit 60 fps
         //double time_remaining = 0.016667 - delta_time;

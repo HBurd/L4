@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
         delta_time = time_keeper.get_delta_time_s();
 
         // wait until we've hit 60 fps
-        double time_remaining = 0.016667 - delta_time;
+        double time_remaining = 0.1 - delta_time;
         if (time_remaining > 0.0)
         {
             if (time_remaining > 0.001)
