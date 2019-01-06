@@ -28,6 +28,8 @@ using std::cerr;
 using std::endl;
 using std::vector;
 
+const double TIMESTEP = 1.0 / 60.0;
+
 const int INITIAL_WINDOW_WIDTH = 800;
 const int INITIAL_WINDOW_HEIGHT = 600;
 
@@ -101,7 +103,6 @@ int main(int argc, char *argv[], char *envp[])
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
-    double delta_time = 0.0f;
 
     bool running = true;
     while (running)
@@ -231,7 +232,7 @@ int main(int argc, char *argv[], char *envp[])
 
             handle_player_input(
                 control_state,
-                delta_time,
+                TIMESTEP,
                 &player_physics,
                 &past_inputs,
                 &client);
@@ -251,7 +252,7 @@ int main(int argc, char *argv[], char *envp[])
                 */
         }
 
-        perform_entity_update_step(&entity_manager, delta_time);
+        perform_entity_update_step(&entity_manager, TIMESTEP);
 
         // Process incoming packets
         get_packets(client.sock, &game_packets);
@@ -296,7 +297,20 @@ int main(int argc, char *argv[], char *envp[])
                         if (entity_manager.entity_lists[list_idx].handles[entity_idx]
                                 == client_state.player_handle)
                         {
-                            ship_console.write("Player physics update\n");
+                            // apply later inputs (reconciliation)
+                            for (uint32_t sequence = packet.packet.physics_sync.sequence;
+                                 sequence < past_inputs.next_seq_num;
+                                 sequence++)
+                            {
+                                uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs.inputs);
+                                if (past_inputs.inputs[input_idx].sequence_number == sequence)
+                                {
+                                    player_control_update(
+                                        &entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                                        past_inputs.inputs[input_idx].input,
+                                        past_inputs.inputs[input_idx].dt);
+                                }
+                            }
                         }
                     }
                     break;
@@ -334,8 +348,6 @@ int main(int argc, char *argv[], char *envp[])
                     entity_manager.entity_lists[list_idx].physics_list[entity_idx].orientation;
             }
         }
-
-        ship_console.write("======Frame end======\n");
         
         // =========
         // Rendering
@@ -363,20 +375,6 @@ int main(int argc, char *argv[], char *envp[])
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         SDL_GL_SwapWindow(window);
-
-        delta_time = time_keeper.get_delta_time_s();
-
-        //// wait until we've hit 60 fps
-        //double time_remaining = 0.016667 - delta_time;
-        //if (time_remaining > 0.0)
-        //{
-        //    if (time_remaining > 0.001)
-        //    {
-        //        SDL_Delay(
-        //    }
-
-        //    while (time_remaining 
-        //}
     }
 
     SDL_Quit();

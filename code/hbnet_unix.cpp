@@ -3,7 +3,7 @@
 
 #include "hbnet.h"
 
-bool recv_game_packet(int sock, GamePacket* packet, sockaddr_in* from)
+bool recv_game_packet(int sock, GamePacket *packet, sockaddr_in *from)
 {
     size_t fromlen = sizeof(*from);
 

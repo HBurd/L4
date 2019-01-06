@@ -102,12 +102,8 @@ void player_control_update(Physics *physics, PlayerControlState control_state, f
 
 void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)
 {
-    inputs[next_input_idx] = {control_state, dt};
-    next_input_idx++;
-    if (next_input_idx >= ARRAY_LENGTH(inputs))
-    {
-        next_input_idx -= ARRAY_LENGTH(inputs);
-    }
+    inputs[next_seq_num % ARRAY_LENGTH(inputs)] = {control_state, dt, next_seq_num};
+    next_seq_num++;
 }
 
 // TODO: this function does too many things
@@ -118,7 +114,7 @@ void handle_player_input(
     PlayerInputBuffer *player_input_buffer,
     ClientData *client)
 {
-    ControlUpdatePacket control_update(input, player_input_buffer->next_input_idx);
+    ControlUpdatePacket control_update(input, player_input_buffer->next_seq_num);
     client->send_to_server(*(GamePacket*)&control_update);
 
     // save this input
