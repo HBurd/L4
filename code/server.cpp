@@ -24,6 +24,8 @@
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "imgui/imgui_impl_opengl3.h"
 
+const double TIMESTEP = 1.0 / 60.0;
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -113,7 +115,6 @@ int main(int argc, char* argv[])
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
-    double delta_time = 0.0;
 
     bool running = true;
     while (running)
@@ -168,6 +169,9 @@ int main(int argc, char* argv[])
                         packet.packet.control_update.state;
                     server.clients[packet.packet.header.sender].sequence =
                         packet.packet.control_update.sequence;
+                    server.clients[packet.packet.header.sender].received_input = true;
+
+                    std::cout << "cont update: " << packet.packet.control_update.sequence << std::endl;
 
                     break;
                 }
@@ -177,6 +181,7 @@ int main(int argc, char* argv[])
         // update player control
         for (auto client : server.clients)
         {
+            if (!client.received_input) continue;
             // look up player entity
             size_t list_idx;
             size_t entity_idx;
@@ -187,7 +192,7 @@ int main(int argc, char* argv[])
                     &entity_idx))
             { 
                 Physics* player_physics = &entity_manager.entity_lists[list_idx].physics_list[entity_idx];
-                player_control_update(player_physics, client.player_control, delta_time);
+                player_control_update(player_physics, client.player_control, TIMESTEP);
 
                 // Create an entity if the player shot
                 if (client.player_control.shoot)
@@ -209,11 +214,15 @@ int main(int argc, char* argv[])
                     entity_manager.entity_lists[list_idx].physics_list[entity_idx],
                     client.sequence);
                 server.broadcast(*(GamePacket*)&physics_sync);
+                std::cout << "sent packet, seq " << client.sequence<< std::endl;
             }
+
+            client.received_input = false;
         }
 
-        perform_entity_update_step(&entity_manager, delta_time);
+        perform_entity_update_step(&entity_manager, TIMESTEP);
 
+        /*
         // check for collisions
         for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)
         {
@@ -244,18 +253,29 @@ int main(int argc, char* argv[])
                 }
             }
         }
+        */
  
-        delta_time = time_keeper.get_delta_time_s();
+        std::cout << "frame end" << std::endl;
+        double delta_time = time_keeper.get_delta_time_s_no_reset();
 
         // wait until we've hit 60 fps
-        double time_remaining = 0.01666 - delta_time;
+        double time_remaining = TIMESTEP - delta_time;
         if (time_remaining > 0.0)
         {
             if (time_remaining > 0.001)
             {
                 SDL_Delay((uint32_t)(1000 * time_remaining));
             }
+            // busy wait for the rest of the time
+            delta_time = time_keeper.get_delta_time_s_no_reset();
+            while (delta_time < TIMESTEP)
+            {
+                delta_time = time_keeper.get_delta_time_s_no_reset();
+            }
         }
+
+        delta_time = time_keeper.get_delta_time_s();
+        std::cout << "delta time: " << delta_time << std::endl;
     }
 
     SDL_Quit();
