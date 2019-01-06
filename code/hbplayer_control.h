@@ -18,12 +18,13 @@ struct PastInput
 {
     PlayerControlState input;   // input at frame start
     float dt = 0.0f;            // frame duration
+    uint32_t sequence_number = 0;
 };
 
 struct PlayerInputBuffer
 {
     PastInput inputs[MAX_PAST_INPUTS] = {};
-    size_t next_input_idx = 0;
+    uint32_t next_seq_num = 0;
 
     void save_input(PlayerControlState control_state, float dt);
 };
