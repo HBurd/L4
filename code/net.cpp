@@ -1,10 +1,10 @@
-#include "hbnet.h"
-#include "hbpackets.h"
-#include "hbship.h"
+#include "hb/net.h"
+#include "hb/packets.h"
+#include "hb/ship.h"
 
 using std::vector;
 
 // TODO: check the platform
-#include "hbnet_unix.cpp"
+#include "net_unix.cpp"
 
 // (currently everything is platform specific)

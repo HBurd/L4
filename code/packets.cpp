@@ -1,4 +1,4 @@
-#include "hbpackets.h"
+#include "hb/packets.h"
 
 GamePacketHeader::GamePacketHeader(int packet_type, ClientId _sender)
 : type(packet_type),

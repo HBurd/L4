@@ -1,7 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "hbnet.h"
+#include "hb/net.h"
 
 bool recv_game_packet(int sock, GamePacket *packet, sockaddr_in *from)
 {

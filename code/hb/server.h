@@ -4,8 +4,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "hbplayer_control.h"
-#include "hbentities.h"
+#include "hb/player_control.h"
+#include "hb/entities.h"
 
 union GamePacket;
 

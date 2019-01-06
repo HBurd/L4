@@ -1,10 +1,10 @@
 #ifndef HBCLIENT_H
 #define HBCLIENT_H
 
-#include "hbnet.h"
+#include "hb/net.h"
 
 //TODO: shouldn't have this dependency!!
-#include "hbgui.h"
+#include "hb/gui.h"
 
 struct ClientData
 {

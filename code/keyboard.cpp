@@ -1,4 +1,4 @@
-#include "hbkeyboard.h"
+#include "hb/keyboard.h"
 
 void Keyboard::handle_keyup(SDL_Keycode key)
 {

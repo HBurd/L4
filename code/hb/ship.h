@@ -1,9 +1,9 @@
 #ifndef HBSHIP_H
 #define HBSHIP_H
 
-#include "hbentities.h"
-#include "hbrenderer.h"
-#include "hbmath.h"
+#include "hb/entities.h"
+#include "hb/renderer.h"
+#include "hb/math.h"
 
 Entity create_ship(Vec3 position);
 

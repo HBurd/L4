@@ -1,4 +1,4 @@
-#include "hbtime.h"
+#include "hb/time.h"
 #include "SDL/SDL.h"
 
 TimeKeeper::TimeKeeper()

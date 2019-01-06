@@ -1,5 +1,5 @@
-#include "hbgui.h"
-#include "hbutil.h"
+#include "hb/gui.h"
+#include "hb/util.h"
 #include "imgui/imgui.h"
 #include <cstdio>
 

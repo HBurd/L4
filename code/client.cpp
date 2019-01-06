@@ -1,5 +1,5 @@
-#include "hbclient.h"
-#include "hbpackets.h"
+#include "hb/client.h"
+#include "hb/packets.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>

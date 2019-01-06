@@ -1,5 +1,5 @@
-#include "hbprojectile.h"
-#include "hbmesh_type.h"
+#include "hb/projectile.h"
+#include "hb/mesh_type.h"
 
 Entity create_projectile(Physics shooter_physics)
 {

@@ -2,7 +2,7 @@
 #define HBENTITIES_H
 
 #include <vector>
-#include "hbrenderer.h"
+#include "hb/renderer.h"
 
 using std::vector;
 

@@ -1,19 +1,19 @@
 #include "SDL/SDL.h"
 #include <iostream>
 
-#include "hbmath.h"
-#include "hbrenderer.h"
-#include "hbtime.h"
-#include "hbentities.h"
-#include "hbship.h"
-#include "hbutil.h"
-#include "hbkeyboard.h"
-#include "hbplayer_control.h"
-#include "server.h"
-#include "hbpackets.h"
-#include "hbgui.h"
-#include "hbprojectile.h"
-#include "hbentity_update_step.h"
+#include "hb/math.h"
+#include "hb/renderer.h"
+#include "hb/time.h"
+#include "hb/entities.h"
+#include "hb/ship.h"
+#include "hb/util.h"
+#include "hb/keyboard.h"
+#include "hb/player_control.h"
+#include "hb/server.h"
+#include "hb/packets.h"
+#include "hb/gui.h"
+#include "hb/projectile.h"
+#include "hb/entity_update_step.h"
 
 #include <sys/prctl.h>
 #include <signal.h>

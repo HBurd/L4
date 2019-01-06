@@ -1,5 +1,5 @@
-#include "hbship.h"
-#include "hbmesh_type.h"
+#include "hb/ship.h"
+#include "hb/mesh_type.h"
 
 Entity create_ship(Vec3 position)
 {

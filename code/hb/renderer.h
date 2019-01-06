@@ -6,8 +6,8 @@
 #include <vector>
 #include "GL/glew.h"
 
-#include "hbmesh_type.h"
-#include "hbmath.h"
+#include "hb/mesh_type.h"
+#include "hb/math.h"
 
 using std::vector;
 

@@ -1,8 +1,8 @@
 #ifndef HBGUI_H
 #define HBGUI_H
 
-#include "hbmath.h"
-#include "hbentities.h"
+#include "hb/math.h"
+#include "hb/entities.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;

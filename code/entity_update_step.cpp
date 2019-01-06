@@ -1,5 +1,5 @@
-#include "hbentity_update_step.h"
-#include "hbprojectile.h"
+#include "hb/entity_update_step.h"
+#include "hb/projectile.h"
 
 void perform_entity_update_step(EntityManager *entity_manager, double dt)
 {

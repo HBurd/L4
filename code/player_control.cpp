@@ -1,7 +1,7 @@
-#include "hbplayer_control.h"
-#include "hbnet.h"
-#include "hbpackets.h"
-#include "hbutil.h"
+#include "hb/player_control.h"
+#include "hb/net.h"
+#include "hb/packets.h"
+#include "hb/util.h"
 #include "imgui/imgui.h"
 #include <cmath>
 

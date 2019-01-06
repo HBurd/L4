@@ -1,5 +1,5 @@
-#include "hbentities.h"
-#include "hbutil.h"
+#include "hb/entities.h"
+#include "hb/util.h"
 #include <cassert>
 
 Physics::Physics(Vec3 _position)

@@ -1,11 +1,11 @@
 #ifndef HBPACKETS_H
 #define HBPACKETS_H
 
-#include "hbnet.h"
-#include "hbentities.h"
-#include "hbmath.h"
-#include "hbplayer_control.h"
-#include "hbrenderer.h"
+#include "hb/net.h"
+#include "hb/entities.h"
+#include "hb/math.h"
+#include "hb/player_control.h"
+#include "hb/renderer.h"
 
 namespace GamePacketType
 {

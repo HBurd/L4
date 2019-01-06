@@ -1,9 +1,9 @@
 #ifndef HBPROJECTILE_H
 #define HBPROJECTILE_H
 
-#include "hbentities.h"
-#include "hbrenderer.h"
-#include "hbmath.h"
+#include "hb/entities.h"
+#include "hb/renderer.h"
+#include "hb/math.h"
 
 Entity create_projectile(Physics shooter_physics);
 
