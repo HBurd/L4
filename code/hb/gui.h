@@ -54,4 +54,8 @@ bool draw_guidance_menu(
     bool *track,
     bool *stabilize);
 
+#ifdef FAST_BUILD
+#include "gui.cpp"
+#endif
+
 #endif // include guard

@@ -123,4 +123,8 @@ struct GamePacketIn
 
 void get_packets(int sock, vector<GamePacketIn>* packet_list);
 
+#ifdef FAST_BUILD
+#include "packets.cpp"
+#endif
+
 #endif

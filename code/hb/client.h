@@ -25,4 +25,8 @@ struct ClientData
     void create_server(uint16_t port);
 };
 
+#ifdef FAST_BUILD
+#include "client.cpp"
+#endif
+
 #endif // include guard

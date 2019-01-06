@@ -3,7 +3,6 @@
 
 #include "hb/entities.h"
 #include "hb/keyboard.h"
-#include "hb/client.h"
 
 const size_t MAX_PAST_INPUTS = 128;
 
@@ -37,11 +36,9 @@ PlayerControlState player_control_get_state(
     Physics target);
 
 void player_control_update(Physics *physics, PlayerControlState control_state, float dt);
-void handle_player_input(
-    PlayerControlState input,
-    float delta_time,
-    Physics *player_physics,
-    PlayerInputBuffer *player_input_buffer,
-    ClientData *client);
+
+#ifdef FAST_BUILD
+#include "player_control.cpp"
+#endif
 
 #endif // include guard

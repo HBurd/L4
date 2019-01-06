@@ -7,4 +7,8 @@
 
 Entity create_ship(Vec3 position);
 
+#ifdef FAST_BUILD
+#include "ship.cpp"
+#endif
+
 #endif // include guard

@@ -122,4 +122,8 @@ Rotor operator*(const Rotor& lhs, const Rotor& rhs);
 // ====
 int modulo(int n, int d); // works for negative numbers, unlike %
 
+#ifdef FAST_BUILD
+#include "math.cpp"
+#endif
+
 #endif // include guard

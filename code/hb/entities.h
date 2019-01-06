@@ -138,4 +138,8 @@ struct EntityManager
     void kill_entity(EntityHandle handle);
 };
 
+#ifdef FAST_BUILD
+#include "entities.cpp"
+#endif
+
 #endif // include guard

@@ -17,4 +17,8 @@ union GamePacket;
 
 bool recv_game_packet(int sock, GamePacket* packet, sockaddr_in* from);
 
+#ifdef FAST_BUILD
+#include "net.cpp"
+#endif
+
 #endif // include guard

@@ -14,4 +14,8 @@ struct TimeKeeper
     uint64_t perf_cnt;
 };
 
+#ifdef FAST_BUILD
+#include "time.cpp"
+#endif
+
 #endif // include_guard

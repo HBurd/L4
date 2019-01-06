@@ -16,6 +16,7 @@
 #include "hb/projectile.h"
 #include "hb/entity_update_step.h"
 #include "hb/packets.h"
+#include "hb/handle_player_input.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
