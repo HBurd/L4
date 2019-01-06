@@ -293,6 +293,11 @@ int main(int argc, char *argv[], char *envp[])
                     {
                         entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
                             packet.packet.physics_sync.physics_state;
+                        if (entity_manager.entity_lists[list_idx].handles[entity_idx]
+                                == client_state.player_handle)
+                        {
+                            ship_console.write("Player physics update\n");
+                        }
                     }
                     break;
                 }
@@ -329,6 +334,8 @@ int main(int argc, char *argv[], char *envp[])
                     entity_manager.entity_lists[list_idx].physics_list[entity_idx].orientation;
             }
         }
+
+        ship_console.write("======Frame end======\n");
         
         // =========
         // Rendering

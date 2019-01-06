@@ -1,6 +1,7 @@
 #include "hbplayer_control.h"
 #include "hbnet.h"
 #include "hbpackets.h"
+#include "hbutil.h"
 #include "imgui/imgui.h"
 #include <cmath>
 
@@ -99,6 +100,17 @@ void player_control_update(Physics *physics, PlayerControlState control_state, f
     physics->angular_velocity = physics->angular_velocity * Rotor::lerp(Rotor(), control_state.torque, dt);
 }
 
+void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)
+{
+    inputs[next_input_idx] = {control_state, dt};
+    next_input_idx++;
+    if (next_input_idx >= ARRAY_LENGTH(inputs))
+    {
+        next_input_idx -= ARRAY_LENGTH(inputs);
+    }
+}
+
+// TODO: this function does too many things
 void handle_player_input(
     PlayerControlState input,
     float dt,
@@ -106,8 +118,11 @@ void handle_player_input(
     PlayerInputBuffer *player_input_buffer,
     ClientData *client)
 {
-    ControlUpdatePacket control_update(input);
+    ControlUpdatePacket control_update(input, player_input_buffer->next_input_idx);
     client->send_to_server(*(GamePacket*)&control_update);
+
+    // save this input
+    player_input_buffer->save_input(input, dt);
 
     // client side prediction:
     player_control_update(

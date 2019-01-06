@@ -69,8 +69,9 @@ struct ControlUpdatePacket
 {
     GamePacketHeader header;
     PlayerControlState state;
+    uint32_t sequence;
     
-    ControlUpdatePacket(PlayerControlState _state);
+    ControlUpdatePacket(PlayerControlState _state, uint32_t _sequence);
 };
 
 struct PhysicsSyncPacket
@@ -78,8 +79,9 @@ struct PhysicsSyncPacket
     GamePacketHeader header;
     EntityHandle entity;
     Physics physics_state;
+    uint32_t sequence;
 
-    PhysicsSyncPacket(EntityHandle _entity, Physics physics);
+    PhysicsSyncPacket(EntityHandle _entity, Physics physics, uint32_t _sequence);
 };
 
 struct PlayerDamagePacket

@@ -14,6 +14,7 @@ struct ClientConnection
     ClientConnection(sockaddr_in client_addr);
     sockaddr_in addr;
     EntityHandle player_entity;
+    uint32_t sequence;
     PlayerControlState player_control;
 };
 

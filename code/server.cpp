@@ -118,56 +118,6 @@ int main(int argc, char* argv[])
     bool running = true;
     while (running)
     {
-        // update player control
-        for (auto client : server.clients)
-        {
-            // look up player entity
-            size_t list_idx;
-            size_t entity_idx;
-            if (entity_manager.entity_table.lookup_entity(
-                    client.player_entity,
-                    entity_manager.entity_lists,
-                    &list_idx,
-                    &entity_idx))
-            { 
-                Physics* player_physics = &entity_manager.entity_lists[list_idx].physics_list[entity_idx];
-                player_control_update(player_physics, client.player_control, delta_time);
-            }
-        }
-
-        perform_entity_update_step(&entity_manager, delta_time);
-
-        // check for collisions
-        for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)
-        {
-            EntityList& entity_list1 = entity_manager.entity_lists[list1_idx];
-            if (!entity_list1.supports_components(ComponentType::PLAYER_CONTROL | ComponentType::PHYSICS))
-                continue;
-            for (size_t entity1_idx = 0; entity1_idx < entity_list1.size; entity1_idx++)
-            {
-                for (size_t list2_idx = 0; list2_idx < entity_manager.entity_lists.size(); list2_idx++)
-                {
-                    EntityList& entity_list2 = entity_manager.entity_lists[list2_idx];
-                    if (!entity_list2.supports_components(ComponentType::PHYSICS))
-                        continue;
-                    for (size_t entity2_idx = 0; entity2_idx < entity_list2.size; entity2_idx++)
-                    {
-                        if (list1_idx == list2_idx && entity1_idx == entity2_idx)
-                            continue;
-                        const float collision_distance = 1.0f;
-                        if ((entity_list1.physics_list[entity1_idx].position
-                             - entity_list2.physics_list[entity2_idx].position)
-                             .norm() < collision_distance)
-                        {
-                            PlayerDamagePacket player_damage_packet(
-                                entity_list1.player_control_list[entity1_idx].client_id);
-                            server.broadcast(*(GamePacket*)&player_damage_packet);
-                        }
-                    }
-                }
-            }
-        }
- 
         // Process incoming packets
         get_packets(server.sock, &game_packets);
         for (auto packet : game_packets)
@@ -214,48 +164,91 @@ int main(int argc, char* argv[])
                 }
                 case GamePacketType::CONTROL_UPDATE:
                 {
-                    size_t player_list_idx;
-                    size_t player_entity_idx;
-                    entity_manager.entity_table.lookup_entity(
-                        server.clients[packet.packet.header.sender].player_entity,
-                        entity_manager.entity_lists,
-                        &player_list_idx,
-                        &player_entity_idx);
-
                     server.clients[packet.packet.header.sender].player_control =
                         packet.packet.control_update.state;
-
-                    //player_control_update(
-                    //    &entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx],
-                    //    packet.packet.control_update.state);
-
-                    if (packet.packet.control_update.state.shoot)
-                    {
-                        Entity projectile_entity = create_projectile(
-                            entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx]);
-                        EntityHandle projectile_handle =
-                            entity_manager.create_entity(projectile_entity);
-                        EntityCreatePacket entity_create_packet(
-                            projectile_entity,
-                            projectile_handle);
-                        
-                        server.broadcast(*(GamePacket*)&entity_create_packet);
-                    }
-
-                    PhysicsSyncPacket physics_sync(
-                        server.clients[packet.packet.header.sender].player_entity,
-                        entity_manager.entity_lists[player_list_idx].physics_list[player_entity_idx]);
-                    server.broadcast(*(GamePacket*)&physics_sync);
+                    server.clients[packet.packet.header.sender].sequence =
+                        packet.packet.control_update.sequence;
 
                     break;
                 }
             }
         }
 
+        // update player control
+        for (auto client : server.clients)
+        {
+            // look up player entity
+            size_t list_idx;
+            size_t entity_idx;
+            if (entity_manager.entity_table.lookup_entity(
+                    client.player_entity,
+                    entity_manager.entity_lists,
+                    &list_idx,
+                    &entity_idx))
+            { 
+                Physics* player_physics = &entity_manager.entity_lists[list_idx].physics_list[entity_idx];
+                player_control_update(player_physics, client.player_control, delta_time);
+
+                // Create an entity if the player shot
+                if (client.player_control.shoot)
+                {
+                    Entity projectile_entity = create_projectile(
+                        entity_manager.entity_lists[list_idx].physics_list[entity_idx]);
+                    EntityHandle projectile_handle =
+                        entity_manager.create_entity(projectile_entity);
+                    EntityCreatePacket entity_create_packet(
+                        projectile_entity,
+                        projectile_handle);
+                    
+                    server.broadcast(*(GamePacket*)&entity_create_packet);
+                }
+
+                // Send the sync packet
+                PhysicsSyncPacket physics_sync(
+                    client.player_entity,
+                    entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                    client.sequence);
+                server.broadcast(*(GamePacket*)&physics_sync);
+            }
+        }
+
+        perform_entity_update_step(&entity_manager, delta_time);
+
+        // check for collisions
+        for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)
+        {
+            EntityList& entity_list1 = entity_manager.entity_lists[list1_idx];
+            if (!entity_list1.supports_components(ComponentType::PLAYER_CONTROL | ComponentType::PHYSICS))
+                continue;
+            for (size_t entity1_idx = 0; entity1_idx < entity_list1.size; entity1_idx++)
+            {
+                for (size_t list2_idx = 0; list2_idx < entity_manager.entity_lists.size(); list2_idx++)
+                {
+                    EntityList& entity_list2 = entity_manager.entity_lists[list2_idx];
+                    if (!entity_list2.supports_components(ComponentType::PHYSICS))
+                        continue;
+                    for (size_t entity2_idx = 0; entity2_idx < entity_list2.size; entity2_idx++)
+                    {
+                        if (list1_idx == list2_idx && entity1_idx == entity2_idx)
+                            continue;
+                        const float collision_distance = 1.0f;
+                        if ((entity_list1.physics_list[entity1_idx].position
+                             - entity_list2.physics_list[entity2_idx].position)
+                             .norm() < collision_distance)
+                        {
+                            PlayerDamagePacket player_damage_packet(
+                                entity_list1.player_control_list[entity1_idx].client_id);
+                            server.broadcast(*(GamePacket*)&player_damage_packet);
+                        }
+                    }
+                }
+            }
+        }
+ 
         delta_time = time_keeper.get_delta_time_s();
 
         // wait until we've hit 60 fps
-        double time_remaining = 0.1 - delta_time;
+        double time_remaining = 0.01666 - delta_time;
         if (time_remaining > 0.0)
         {
             if (time_remaining > 0.001)
