@@ -29,4 +29,8 @@ struct ServerData
     void accept_client(sockaddr_in client_addr);
 };
 
+#ifdef FAST_BUILD
+#include "server.cpp"
+#endif
+
 #endif // include guard

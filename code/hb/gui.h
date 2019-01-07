@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;
-const uint32_t DEFAULT_CONNECTION_IP = 0x7f000001;
+#define DEFAULT_IP "127.0.0.1"
 
 struct MainMenu
 {
@@ -16,7 +16,7 @@ struct MainMenu
     bool is_server = true;
 
     uint16_t port = DEFAULT_SERVER_PORT;
-    uint32_t ip = DEFAULT_CONNECTION_IP;
+    char ip[16] = DEFAULT_IP;
 
     void draw(bool *server, bool *client);
     bool draw_server_create_gui();

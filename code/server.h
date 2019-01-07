@@ -1,3 +1,5 @@
+#include "hb/server.h"
+
 ClientConnection::ClientConnection(sockaddr_in client_addr)
 :addr(client_addr) {}
 

@@ -1,5 +1,5 @@
-SRC_CLIENT = code/main.cpp
-SRC_SERVER = code/server.cpp
+SRC_CLIENT = code/client_main.cpp
+SRC_SERVER = code/server_main.cpp
 OBJ = impl_imgui.o impl_stb.o impl_tinyobjloader.o
 default: L4client L4server
 

@@ -20,15 +20,7 @@ bool MainMenu::draw_server_connect_gui()
 {
     bool server_connect = false;
 
-    // InputInt4 writes to an array of ints
-    // so we create an array and write it back to ip
-    int ip_bytes[4] = {
-        (int)(ip >> 24) & 0xFF,
-        (int)(ip >> 16) & 0xFF,
-        (int)(ip >> 8) & 0xFF,
-        (int)ip & 0xFF};
-    ImGui::InputInt4("IP", ip_bytes);
-    ip = ip_bytes[0] << 24 | ip_bytes[1] << 16 | ip_bytes[2] << 8 | ip_bytes[3];
+    ImGui::InputText("IP", ip, sizeof(ip));
 
     int port_int = (int)port;
     ImGui::InputInt("Port", &port_int);

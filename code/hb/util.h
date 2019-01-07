@@ -3,4 +3,12 @@
 
 #define ARRAY_LENGTH(x) sizeof(x) / sizeof (*x)
 
+// TODO: probably doesn't belong here
+// returns host byte order
+uint32_t parse_ip4(char *ip);
+
+#ifdef FAST_BUILD
+#include "util.cpp"
+#endif
+
 #endif // include guard

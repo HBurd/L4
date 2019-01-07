@@ -1,8 +1,6 @@
 #include "SDL/SDL.h"
 #include <iostream>
 
-#include "unistd.h"
-
 #include "hb/math.h"
 #include "hb/renderer.h"
 #include "hb/time.h"
@@ -34,7 +32,7 @@ const double TIMESTEP = 1.0 / 60.0;
 const int INITIAL_WINDOW_WIDTH = 800;
 const int INITIAL_WINDOW_HEIGHT = 600;
 
-int main(int argc, char *argv[], char *envp[])
+int main(int argc, char *argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -49,9 +47,6 @@ int main(int argc, char *argv[], char *envp[])
 
     Renderer renderer(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
  
-    //ShaderProgramId skybox_shader_prog = renderer.load_shader("skybox.vert", "skybox.frag");
-    //renderer.load_skybox("skybox.obj", "skymap3.png", skybox_shader_prog);
-
     // Initialize ImGui
     {
         ImGui::CreateContext();
@@ -84,12 +79,18 @@ int main(int argc, char *argv[], char *envp[])
         bool server_proc_connected = false;
 
         EntityHandle player_handle;
-        unsigned int player_health = 3;
 
         EntityHandle guidance_target;
         bool track = false;
         bool stabilize = false;
     } client_state;
+
+    // check if a server address was supplied
+    if (argc == 3)
+    {
+        client.connect(parse_ip4(argv[1]), atoi(argv[2]));
+        client_state.status = ClientState::NOT_SPAWNED;
+    }
 
     vector<GamePacketIn> game_packets;
 
@@ -167,7 +168,7 @@ int main(int argc, char *argv[], char *envp[])
                 }
                 else if (connect_to_server)
                 {
-                    client.connect(main_menu.ip, main_menu.port);
+                    client.connect(parse_ip4(main_menu.ip), main_menu.port);
                     client_state.status = ClientState::NOT_SPAWNED;
                 }
             }
