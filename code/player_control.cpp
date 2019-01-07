@@ -97,7 +97,7 @@ void player_control_update(Physics *physics, PlayerControlState control_state, f
     thrust = thrust * control_state.thrust * dt;
     
     physics->velocity += thrust;
-    physics->angular_velocity = physics->angular_velocity * Rotor::lerp(Rotor(), control_state.torque, dt);
+    physics->angular_velocity = physics->angular_velocity * Rotor::slerp(Rotor(), control_state.torque, dt);
 }
 
 void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)

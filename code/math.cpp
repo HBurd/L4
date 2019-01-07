@@ -352,16 +352,25 @@ Rotor Rotor::exponentiate(float t)
 {
     Vec3 bivector = Vec3(xy, yz, zx);
     float angle = acosf(s);
-    std::cout << angle << std::endl;
+    std::cout << s << std::endl;
     //if (angle < 0) angle += MATH_PI;
     angle *= t;
 
     Rotor result;
     result.s = cosf(angle);
-    bivector = bivector.normalize() * sinf(angle);
-    result.xy = bivector.x;
-    result.yz = bivector.y;
-    result.zx = bivector.z;
+    if (bivector.norm() != 0)
+    {
+        bivector = bivector.normalize() * sinf(angle);
+        result.xy = bivector.x;
+        result.yz = bivector.y;
+        result.zx = bivector.z;
+    }
+    else
+    {
+        result.xy = 0;
+        result.yz = 0;
+        result.zx = 0;
+    }
     return result;
     // (I barely understand this)
 }

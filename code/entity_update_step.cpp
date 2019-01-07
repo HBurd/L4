@@ -14,7 +14,7 @@ void perform_entity_update_step(EntityManager *entity_manager, double dt)
             Physics& physics = entity_list.physics_list[entity_idx];
             physics.position += physics.velocity * dt;
             physics.orientation = physics.orientation
-                * Rotor::lerp(Rotor(), physics.angular_velocity, dt);
+                * Rotor::slerp(Rotor(), physics.angular_velocity, dt);
             
             // we need to normalize orientation and angular velocity every frame,
             // or we get accumulating floating point errors
