@@ -239,8 +239,6 @@ int main(int argc, char *argv[])
                 &past_inputs,
                 &client);
 
-            /*
-
             ControlUpdatePacket control_update(control_state, client_state.id);
             client.send_to_server(*(GamePacket*)&control_update);
 
@@ -251,7 +249,6 @@ int main(int argc, char *argv[])
                 &player_physics,
                 control_state,
                 delta_time);
-                */
         }
 
         perform_entity_update_step(&entity_manager, TIMESTEP);
