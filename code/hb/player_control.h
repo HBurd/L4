@@ -24,6 +24,7 @@ struct PlayerInputBuffer
 {
     PastInput inputs[MAX_PAST_INPUTS] = {};
     uint32_t next_seq_num = 0;
+    uint32_t last_received_seq_num = 0;
 
     void save_input(PlayerControlState control_state, float dt);
 };

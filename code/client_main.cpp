@@ -280,25 +280,42 @@ int main(int argc, char *argv[])
                             &list_idx,
                             &entity_idx))
                     {
-                        entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
-                            packet.packet.packet_data.physics_sync.physics_state;
                         if (entity_manager.entity_lists[list_idx].handles[entity_idx]
                                 == client_state.player_handle)
                         {
-                            // apply later inputs (reconciliation)
-                            for (uint32_t sequence = packet.packet.packet_data.physics_sync.sequence;
-                                 sequence < past_inputs.next_seq_num;
-                                 sequence++)
+                            // if we have received no later physics syncs from the server
+                            if (packet.packet.packet_data.physics_sync.sequence
+                                > past_inputs.last_received_seq_num)
                             {
-                                uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs.inputs);
-                                if (past_inputs.inputs[input_idx].sequence_number == sequence)
+                                cout << "ACCEPT" << endl;
+                                // Apply the physics update
+                                past_inputs.last_received_seq_num =
+                                    packet.packet.packet_data.physics_sync.sequence;
+
+                                // apply later inputs (reconciliation)
+                                for (uint32_t sequence = packet.packet.packet_data.physics_sync.sequence;
+                                     sequence < past_inputs.next_seq_num;
+                                     sequence++)
                                 {
-                                    player_control_update(
-                                        &entity_manager.entity_lists[list_idx].physics_list[entity_idx],
-                                        past_inputs.inputs[input_idx].input,
-                                        past_inputs.inputs[input_idx].dt);
+                                    uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs.inputs);
+                                    if (past_inputs.inputs[input_idx].sequence_number == sequence)
+                                    {
+                                        player_control_update(
+                                            &entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                                            past_inputs.inputs[input_idx].input,
+                                            past_inputs.inputs[input_idx].dt);
+                                    }
                                 }
                             }
+                            else
+                            {
+                                cout << "DISCARD" << endl;
+                            }
+                        }
+                        else    // if the update isn't for the player then always apply it
+                        {
+                            entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
+                            packet.packet.packet_data.physics_sync.physics_state;
                         }
                     }
                     break;
