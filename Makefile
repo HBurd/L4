@@ -8,10 +8,10 @@ clean:
 	rm L4client
 	rm L4server
 
-L4client: $(OBJ) $(SRC_CLIENT)
+L4client: $(OBJ) $(SRC_CLIENT) code/hb/*.h code/*.cpp
 	clang++ $(SRC_CLIENT) $(OBJ) -o L4client -ggdb3 -Iinclude -Icode -Llib -lSDL2 -lGLEW -ldl -lpthread -lsndio -lGL -DFAST_BUILD
 
-L4server: $(OBJ) $(SRC_SERVER)
+L4server: $(OBJ) $(SRC_SERVER) code/hb/*.h code/*.cpp
 	clang++ $(SRC_SERVER) $(OBJ) -o L4server -ggdb3 -Iinclude -Icode -Llib -lSDL2 -lGLEW -ldl -lpthread -lsndio -lGL -DFAST_BUILD
 
 impl_imgui.o:

@@ -96,6 +96,7 @@ struct GamePacketOut
     GamePacketHeader header;
     uint8_t data[sizeof(GamePacket::GamePacketData)];
 
+    // data can be null if size is 0
     GamePacketOut(GamePacketHeader header_, void *data_, size_t data_size);
 };
 

@@ -68,9 +68,6 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
     server_addr.sin_addr.s_addr = htonl(server_ip);
     server_addr.sin_port = htons(server_port);
 
-    ConnectionReqPacket req_packet;
-
-    // keep requesting until response is received
     sockaddr_in from = {};
     size_t fromlen = sizeof(from);
     uint8_t ack_packet_data[sizeof(GamePacket)] = {};
@@ -107,13 +104,13 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         else usleep(100000);
     }
 #else
-    sendto(
+    send_game_packet(
         sock,
-        &req_packet,
-        sizeof(req_packet),
-        0,
-        (sockaddr*)&server_addr,
-        sizeof(server_addr));
+        server_addr,
+        INCOMPLETE_ID,
+        GamePacketType::CONNECTION_REQ,
+        nullptr,
+        0);
 
     int n = recvfrom(
         sock,

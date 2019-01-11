@@ -27,7 +27,7 @@ struct ServerData
         GamePacketType packet_type,
         void *packet,
         size_t packet_size);
-    void accept_client(sockaddr_in client_addr);
+    ClientId accept_client(sockaddr_in client_addr);
 };
 
 #ifdef FAST_BUILD

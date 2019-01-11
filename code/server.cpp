@@ -1,3 +1,5 @@
+#include "hb/server.h"
+
 ClientConnection::ClientConnection(sockaddr_in client_addr)
 :addr(client_addr) {}
 
@@ -28,7 +30,7 @@ void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_s
     }
 }
 
-void ServerData::accept_client(sockaddr_in client_addr)
+ClientId ServerData::accept_client(sockaddr_in client_addr)
 {
     // add to list of known clients
     ClientId client_id = clients.size();
@@ -36,5 +38,13 @@ void ServerData::accept_client(sockaddr_in client_addr)
 
     // send ack
     ConnectionAckPacket ack_packet(client_id);
-    send_game_packet(sock, client_addr, SERVER_ID, GamePacketType::CONNECTION_ACK, &ack_packet, sizeof(ack_packet));
+    send_game_packet(
+        sock,
+        client_addr,
+        SERVER_ID,
+        GamePacketType::CONNECTION_ACK,
+        &ack_packet,
+        sizeof(ack_packet));
+
+    return client_id;
 }

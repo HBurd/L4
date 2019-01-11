@@ -47,7 +47,14 @@ ControlUpdatePacket::ControlUpdatePacket(PlayerControlState _state, uint32_t _se
 GamePacketOut::GamePacketOut(GamePacketHeader header_, void *data_, size_t data_size)
 : header(header_)
 {
-    memcpy(data, data_, data_size);
+    if (!data_)
+    {
+        assert(data_size == 0);
+    }
+    else
+    {
+        memcpy(data, data_, data_size);
+    }
 }
 
 void get_packets(int sock, vector<GamePacketIn>* packet_list)

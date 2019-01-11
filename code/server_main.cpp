@@ -70,8 +70,9 @@ int main(int argc, char* argv[])
             switch (packet.packet.header.type)
             {
                 case GamePacketType::CONNECTION_REQ:
-                    cout << "INCOMING CONNECTION" << endl;
-                    server.accept_client(packet.sender);
+                {
+                    ClientId client_id = server.accept_client(packet.sender);
+                    cout << "Client connected with id " << client_id << endl;
                     // now update the client with all existing entities
                     for (size_t list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
                     {
@@ -82,16 +83,17 @@ int main(int argc, char* argv[])
                             EntityCreatePacket create_packet(
                                 entity,
                                 entity_list.handles[entity_idx]);
-                            sendto(
+                            send_game_packet(
                                 server.sock,
+                                packet.sender,
+                                client_id,
+                                GamePacketType::ENTITY_CREATE,
                                 &create_packet,
-                                sizeof(create_packet),
-                                0,
-                                (sockaddr*)&packet.sender,
-                                sizeof(packet.sender));
+                                sizeof(create_packet));
                         }
                     }
                     break;
+                }
                 case GamePacketType::PLAYER_SPAWN:
                 {
                     Entity ship_entity = create_ship(packet.packet.packet_data.player_spawn.coords);
