@@ -9,7 +9,7 @@ void handle_player_input(
     ClientData *client)
 {
     ControlUpdatePacket control_update(input, player_input_buffer->next_seq_num);
-    client->send_to_server(*(GamePacket*)&control_update);
+    client->send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
 
     // save this input
     player_input_buffer->save_input(input, dt);

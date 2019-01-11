@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
                     break;
                 case GamePacketType::PLAYER_SPAWN:
                 {
-                    Entity ship_entity = create_ship(packet.packet.player_spawn.coords);
+                    Entity ship_entity = create_ship(packet.packet.packet_data.player_spawn.coords);
                     ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
                     ship_entity.player_control = {packet.packet.header.sender};
                     EntityHandle ship_entity_handle = 
@@ -104,19 +104,26 @@ int main(int argc, char* argv[])
 
                     EntityCreatePacket entity_create_packet(ship_entity, ship_entity_handle);
                     
-                    server.broadcast(*(GamePacket*)&entity_create_packet);
+                    server.broadcast(
+                        GamePacketType::ENTITY_CREATE,
+                        &entity_create_packet,
+                        sizeof(entity_create_packet));
+
                     break;
                 }
                 case GamePacketType::CONTROL_UPDATE:
                 {
                     server.clients[packet.packet.header.sender].player_control =
-                        packet.packet.control_update.state;
+                        packet.packet.packet_data.control_update.state;
                     server.clients[packet.packet.header.sender].sequence =
-                        packet.packet.control_update.sequence;
+                        packet.packet.packet_data.control_update.sequence;
                     server.clients[packet.packet.header.sender].received_input = true;
 
                     break;
                 }
+                default:
+                // do nothing
+                break;
             }
         }
 
@@ -147,7 +154,10 @@ int main(int argc, char* argv[])
                         projectile_entity,
                         projectile_handle);
                     
-                    server.broadcast(*(GamePacket*)&entity_create_packet);
+                    server.broadcast(
+                        GamePacketType::ENTITY_CREATE,
+                        &entity_create_packet,
+                        sizeof(entity_create_packet));
                 }
 
                 // Send the sync packet
@@ -155,7 +165,10 @@ int main(int argc, char* argv[])
                     client.player_entity,
                     entity_manager.entity_lists[list_idx].physics_list[entity_idx],
                     client.sequence);
-                server.broadcast(*(GamePacket*)&physics_sync);
+                server.broadcast(
+                   GamePacketType::PHYSICS_SYNC,
+                   &physics_sync,
+                   sizeof(physics_sync));
             }
 
             client.received_input = false;

@@ -7,8 +7,6 @@
 #include "hb/player_control.h"
 #include "hb/entities.h"
 
-union GamePacket;
-
 struct ClientConnection
 {
     ClientConnection(sockaddr_in client_addr);
@@ -25,7 +23,10 @@ struct ServerData
     int sock;
 
     ServerData(uint16_t port);
-    void broadcast(GamePacket &packet);
+    void broadcast(
+        GamePacketType packet_type,
+        void *packet,
+        size_t packet_size);
     void accept_client(sockaddr_in client_addr);
 };
 

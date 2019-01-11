@@ -7,42 +7,21 @@
 #include "hb/player_control.h"
 #include "hb/renderer.h"
 
-namespace GamePacketType
-{
-    enum GamePacketType
-    {
-        CONNECTION_REQ,    // client --> server
-        CONNECTION_ACK,    // server --> client
-        ENTITY_CREATE,     // server --> client
-        PLAYER_SPAWN,      // client --> server
-        CONTROL_UPDATE,    // client --> server
-        PHYSICS_SYNC,      // server --> client
-        PLAYER_DAMAGE,     // server --> client
-
-        // ===============================
-        // ^^ ADD NEW PACKET TYPES HERE ^^
-        // ===============================
-    };
-}
-
 struct GamePacketHeader
 {
-    int type;
+    GamePacketType type;
     ClientId sender;
 
-    GamePacketHeader(int packet_type, ClientId _sender);
+    GamePacketHeader(GamePacketType packet_type, ClientId _sender);
 };
 
 struct ConnectionReqPacket
 {
-    GamePacketHeader header;
-
     ConnectionReqPacket();
 };
 
 struct ConnectionAckPacket
 {
-    GamePacketHeader header;
     ClientId client_id;
     
     ConnectionAckPacket(ClientId new_client_id);
@@ -50,7 +29,6 @@ struct ConnectionAckPacket
 
 struct EntityCreatePacket
 {
-    GamePacketHeader header;
     Entity entity;
     EntityHandle handle;
 
@@ -59,7 +37,6 @@ struct EntityCreatePacket
 
 struct PlayerSpawnPacket
 {
-    GamePacketHeader header;
     Vec3 coords;
 
     PlayerSpawnPacket(Vec3 _coords);
@@ -67,7 +44,6 @@ struct PlayerSpawnPacket
 
 struct ControlUpdatePacket
 {
-    GamePacketHeader header;
     PlayerControlState state;
     uint32_t sequence;
     
@@ -76,7 +52,6 @@ struct ControlUpdatePacket
 
 struct PhysicsSyncPacket
 {
-    GamePacketHeader header;
     EntityHandle entity;
     Physics physics_state;
     uint32_t sequence;
@@ -86,7 +61,6 @@ struct PhysicsSyncPacket
 
 struct PlayerDamagePacket
 {
-    GamePacketHeader header;
     ClientId player;
     // implicitly player entity for now
     
@@ -99,20 +73,30 @@ struct PlayerDamagePacket
 
 // Basically some sort of franken-type which can't be directly instantiated
 // but can be casted to. Useful occasionally for storing lists of packets
-union GamePacket
+struct GamePacket
 {
     GamePacketHeader header;
-    ConnectionReqPacket connection_req;
-    ConnectionAckPacket conncetion_ack;
-    PlayerSpawnPacket player_spawn;
-    EntityCreatePacket entity_create;
-    ControlUpdatePacket control_update;
-    PhysicsSyncPacket physics_sync;
-    PlayerDamagePacket player_damage;
+    union GamePacketData
+    {
+        ConnectionReqPacket connection_req;
+        ConnectionAckPacket connection_ack;
+        PlayerSpawnPacket player_spawn;
+        EntityCreatePacket entity_create;
+        ControlUpdatePacket control_update;
+        PhysicsSyncPacket physics_sync;
+        PlayerDamagePacket player_damage;
+        // ===============================
+        // ^^ ADD NEW PACKET TYPES HERE ^^
+        // ===============================
+    } packet_data;
+};
 
-    // ===============================
-    // ^^ ADD NEW PACKET TYPES HERE ^^
-    // ===============================
+struct GamePacketOut
+{
+    GamePacketHeader header;
+    uint8_t data[sizeof(GamePacket::GamePacketData)];
+
+    GamePacketOut(GamePacketHeader header_, void *data_, size_t data_size);
 };
 
 struct GamePacketIn

@@ -124,31 +124,23 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         (socklen_t*)&fromlen);
 #endif
 
-    ConnectionAckPacket* ack_packet = (ConnectionAckPacket*)ack_packet_data;
+    GamePacket* ack_packet = (GamePacket*)ack_packet_data;
 
     assert(ack_packet->header.type == GamePacketType::CONNECTION_ACK);
     assert(from.sin_addr.s_addr == server_addr.sin_addr.s_addr);
     
-    id = ack_packet->client_id;
+    id = ack_packet->packet_data.connection_ack.client_id;
 
     active = true;
 }
 
-void ClientData::send_to_server(GamePacket &packet)
+void ClientData::send_to_server(GamePacketType type, void *packet_data, size_t data_size)
 {
-    // set sender id
-    packet.header.sender = id;
-    sendto(
-        sock,
-        &packet,
-        sizeof(packet),
-        0,
-        (sockaddr*)&server_addr,
-        sizeof(server_addr));
+    send_game_packet(sock, server_addr, id, type, packet_data, data_size);
 }
 
 void ClientData::spawn(Vec3 coords)
 {
-    PlayerSpawnPacket spawn_packet(coords);;
-    send_to_server(*(GamePacket*)&spawn_packet);
+    PlayerSpawnPacket spawn_packet(coords);
+    send_to_server(GamePacketType::PLAYER_SPAWN, &spawn_packet, sizeof(spawn_packet));
 }

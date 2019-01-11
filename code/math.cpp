@@ -352,8 +352,6 @@ Rotor Rotor::exponentiate(float t)
 {
     Vec3 bivector = Vec3(xy, yz, zx);
     float angle = acosf(s);
-    std::cout << s << std::endl;
-    //if (angle < 0) angle += MATH_PI;
     angle *= t;
 
     Rotor result;

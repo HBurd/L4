@@ -14,17 +14,17 @@ ServerData::ServerData(uint16_t port)
     assert(bind(sock, (sockaddr*)&server_addr, sizeof(server_addr)) >= 0);
 }
 
-void ServerData::broadcast(GamePacket &packet)
+void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_size)
 {
     for (auto client : clients)
     {
-        sendto(
+        send_game_packet(
             sock,
-            &packet,
-            sizeof(packet),
-            0,
-            (sockaddr*)&client.addr,
-            sizeof(client.addr));
+            client.addr,
+            SERVER_ID,
+            type,
+            packet_data,
+            data_size);
     }
 }
 
@@ -36,12 +36,5 @@ void ServerData::accept_client(sockaddr_in client_addr)
 
     // send ack
     ConnectionAckPacket ack_packet(client_id);
-
-    sendto(
-        sock,
-        &ack_packet,
-        sizeof(ack_packet),
-        0,
-        (sockaddr*)&client_addr,
-        sizeof(client_addr));
+    send_game_packet(sock, client_addr, SERVER_ID, GamePacketType::CONNECTION_ACK, &ack_packet, sizeof(ack_packet));
 }

@@ -250,16 +250,16 @@ int main(int argc, char *argv[])
             {
                 case GamePacketType::ENTITY_CREATE:
                     entity_manager.create_entity_with_handle(
-                        packet.packet.entity_create.entity,
-                        packet.packet.entity_create.handle);
+                        packet.packet.packet_data.entity_create.entity,
+                        packet.packet.packet_data.entity_create.handle);
                     // check if created entity is the player entity
-                    if ((packet.packet.entity_create.entity.supported_components
+                    if ((packet.packet.packet_data.entity_create.entity.supported_components
                          & ComponentType::PLAYER_CONTROL)
-                        && packet.packet.entity_create.entity.player_control.client_id == client.id)
+                        && packet.packet.packet_data.entity_create.entity.player_control.client_id == client.id)
                     {
                         assert(client_state.status == ClientState::NOT_SPAWNED);
                         client_state.status = ClientState::SPAWNED;
-                        client_state.player_handle = packet.packet.entity_create.handle;
+                        client_state.player_handle = packet.packet.packet_data.entity_create.handle;
                         ship_console.write(
                             "Welcome to your new AN-111 spaceship!\n"
                             "The buttons marked Q, W, E, A, S and D in the\n"
@@ -275,18 +275,18 @@ int main(int argc, char *argv[])
                     size_t list_idx;
                     size_t entity_idx;
                     if (entity_manager.entity_table.lookup_entity(
-                            packet.packet.physics_sync.entity,
+                            packet.packet.packet_data.physics_sync.entity,
                             entity_manager.entity_lists,
                             &list_idx,
                             &entity_idx))
                     {
                         entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
-                            packet.packet.physics_sync.physics_state;
+                            packet.packet.packet_data.physics_sync.physics_state;
                         if (entity_manager.entity_lists[list_idx].handles[entity_idx]
                                 == client_state.player_handle)
                         {
                             // apply later inputs (reconciliation)
-                            for (uint32_t sequence = packet.packet.physics_sync.sequence;
+                            for (uint32_t sequence = packet.packet.packet_data.physics_sync.sequence;
                                  sequence < past_inputs.next_seq_num;
                                  sequence++)
                             {
@@ -317,6 +317,9 @@ int main(int argc, char *argv[])
                 //    }
                 //    break;
                 //}
+                default:
+                // do nothing
+                break;
             }
         }
 
