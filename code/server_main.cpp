@@ -50,12 +50,12 @@ int main(int argc, char* argv[])
 
     vector<GamePacketIn> game_packets;
 
-    EntityManager entity_manager;
+    EntityManager entity_manager = new EntityManager();
     // add list for projectiles
-    entity_manager.entity_lists.push_back(
+    entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
     // add list for players
-    entity_manager.entity_lists.push_back(
+    entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
@@ -74,9 +74,9 @@ int main(int argc, char* argv[])
                     ClientId client_id = server.accept_client(packet.sender);
                     cout << "Client connected with id " << client_id << endl;
                     // now update the client with all existing entities
-                    for (size_t list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+                    for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
                     {
-                        EntityList& entity_list = entity_manager.entity_lists[list_idx];
+                        EntityList& entity_list = entity_manager->entity_lists[list_idx];
                         for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
                         {
                             Entity entity = entity_list.serialize(entity_idx);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
                     ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
                     ship_entity.player_control = {packet.packet.header.sender};
                     EntityHandle ship_entity_handle = 
-                        entity_manager.create_entity(ship_entity);
+                        entity_manager->create_entity(ship_entity);
 
                     server.clients[packet.packet.header.sender].player_entity = ship_entity_handle;
 
@@ -136,22 +136,22 @@ int main(int argc, char* argv[])
             // look up player entity
             size_t list_idx;
             size_t entity_idx;
-            if (entity_manager.entity_table.lookup_entity(
+            if (entity_manager->entity_table.lookup_entity(
                     client.player_entity,
-                    entity_manager.entity_lists,
+                    entity_manager->entity_lists,
                     &list_idx,
                     &entity_idx))
             { 
-                Physics* player_physics = &entity_manager.entity_lists[list_idx].physics_list[entity_idx];
+                Physics* player_physics = &entity_manager->entity_lists[list_idx].physics_list[entity_idx];
                 player_control_update(player_physics, client.player_control, TIMESTEP);
 
                 // Create an entity if the player shot
                 if (client.player_control.shoot)
                 {
                     Entity projectile_entity = create_projectile(
-                        entity_manager.entity_lists[list_idx].physics_list[entity_idx]);
+                        entity_manager->entity_lists[list_idx].physics_list[entity_idx]);
                     EntityHandle projectile_handle =
-                        entity_manager.create_entity(projectile_entity);
+                        entity_manager->create_entity(projectile_entity);
                     EntityCreatePacket entity_create_packet(
                         projectile_entity,
                         projectile_handle);
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
                 // Send the sync packet
                 PhysicsSyncPacket physics_sync(
                     client.player_entity,
-                    entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                    entity_manager->entity_lists[list_idx].physics_list[entity_idx],
                     client.sequence);
                 server.broadcast(
                    GamePacketType::PHYSICS_SYNC,
@@ -176,20 +176,20 @@ int main(int argc, char* argv[])
             client.received_input = false;
         }
 
-        perform_entity_update_step(&entity_manager, TIMESTEP);
+        perform_entity_update_step(entity_manager, TIMESTEP);
 
         /*
         // check for collisions
-        for (size_t list1_idx = 0; list1_idx < entity_manager.entity_lists.size(); list1_idx++)
+        for (size_t list1_idx = 0; list1_idx < entity_manager->entity_lists.size(); list1_idx++)
         {
-            EntityList& entity_list1 = entity_manager.entity_lists[list1_idx];
+            EntityList& entity_list1 = entity_manager->entity_lists[list1_idx];
             if (!entity_list1.supports_components(ComponentType::PLAYER_CONTROL | ComponentType::PHYSICS))
                 continue;
             for (size_t entity1_idx = 0; entity1_idx < entity_list1.size; entity1_idx++)
             {
-                for (size_t list2_idx = 0; list2_idx < entity_manager.entity_lists.size(); list2_idx++)
+                for (size_t list2_idx = 0; list2_idx < entity_manager->entity_lists.size(); list2_idx++)
                 {
-                    EntityList& entity_list2 = entity_manager.entity_lists[list2_idx];
+                    EntityList& entity_list2 = entity_manager->entity_lists[list2_idx];
                     if (!entity_list2.supports_components(ComponentType::PHYSICS))
                         continue;
                     for (size_t entity2_idx = 0; entity2_idx < entity_list2.size; entity2_idx++)

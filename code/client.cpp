@@ -1,14 +1,16 @@
 #include "hb/client.h"
 #include "hb/packets.h"
 
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifndef _WIN32
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 
 #include <cassert>
 #include <iostream>
 
+// TODO: Implement this on windows
+#ifndef _WIN32
 void ClientData::create_server(uint16_t port)
 {
     int pipefd[2];
@@ -59,6 +61,8 @@ void ClientData::write_server_stdout(Console *console)
     }
 }
 
+#endif
+
 void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -69,7 +73,7 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
     server_addr.sin_port = htons(server_port);
 
     sockaddr_in from = {};
-    size_t fromlen = sizeof(from);
+    int fromlen = sizeof(from);
     uint8_t ack_packet_data[sizeof(GamePacket)] = {};
 
     // TODO: we may need to retry several times if the
@@ -114,11 +118,11 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 
     int n = recvfrom(
         sock,
-        ack_packet_data,
+        (char*)ack_packet_data,
         sizeof(ack_packet_data),
         0,
         (sockaddr*)&from,
-        (socklen_t*)&fromlen);
+        &fromlen);
 #endif
 
     GamePacket* ack_packet = (GamePacket*)ack_packet_data;

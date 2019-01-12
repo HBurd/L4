@@ -4,9 +4,13 @@
 #include <cstdlib>
 #include <stdint.h>
 
-// TODO try to get rid of these!!
+#ifdef __unix__
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
+#ifdef _WIN32
+#include <Winsock.h>
+#endif
 
 typedef size_t ClientId;
 const size_t SERVER_ID = 0xFFFFFFFF;

@@ -4,7 +4,12 @@
 
 using std::vector;
 
-// TODO: check the platform
+#ifdef __unix__
 #include "net_unix.cpp"
+#endif
+
+#ifdef _WIN32
+#include "net_windows.cpp"
+#endif
 
 // (currently everything is platform specific)

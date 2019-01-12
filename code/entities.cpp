@@ -107,7 +107,10 @@ EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
     entries[new_idx].version = -entries[new_idx].version + 1;
     entries[new_idx].list_idx = list_idx;
     entries[new_idx].entity_idx = entity_idx;
-    return EntityHandle { .version = entries[new_idx].version, .idx = new_idx };
+	EntityHandle result;
+	result.version = entries[new_idx].version;
+	result.idx = new_idx;
+	return result;
 }
 
 void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle)

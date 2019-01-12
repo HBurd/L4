@@ -1,4 +1,6 @@
 #include "SDL/SDL.h"
+#undef main
+
 #include <iostream>
 
 #include "hb/math.h"
@@ -96,12 +98,12 @@ int main(int argc, char *argv[])
 
     PlayerInputBuffer past_inputs;
 
-    EntityManager entity_manager;
+    EntityManager entity_manager = new EntityManager();
     // add list for projectiles
-    entity_manager.entity_lists.push_back(
+    entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
     // add list for players
-    entity_manager.entity_lists.push_back(
+    entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
@@ -158,13 +160,15 @@ int main(int argc, char *argv[])
 
                 if (create_server)
                 {
+#ifndef _WIN32
                     client.create_server(main_menu.port);
                     // connect to localhost
                     // TODO: need a better sln
-                    usleep(100000);
+                    SDL_Delay(100);
                     client.connect(0x7f000001, main_menu.port);
                     client_state.server_proc_connected = true;
                     client_state.status = ClientState::NOT_SPAWNED;
+#endif
                 }
                 else if (connect_to_server)
                 {
@@ -181,7 +185,7 @@ int main(int argc, char *argv[])
             if (client_state.status == ClientState::SPAWNED)
             {
                 draw_guidance_menu(
-                    &entity_manager,
+                    entity_manager,
                     client_state.player_handle,
                     &client_state.guidance_target,
                     &client_state.track,
@@ -191,8 +195,10 @@ int main(int argc, char *argv[])
             
             if (client_state.server_proc_connected)
             {
+#ifndef _WIN32
                 client.write_server_stdout(&server_console);
                 server_console.draw();
+#endif
             }
         }
 
@@ -202,26 +208,26 @@ int main(int argc, char *argv[])
             // look up the player entity
             size_t list_idx;
             size_t entity_idx;
-            entity_manager.entity_table.lookup_entity(
+            entity_manager->entity_table.lookup_entity(
                 client_state.player_handle,
-                entity_manager.entity_lists,
+                entity_manager->entity_lists,
                 &list_idx,
                 &entity_idx);
 
-            Physics& player_physics = entity_manager.entity_lists[list_idx].physics_list[entity_idx];
+            Physics& player_physics = entity_manager->entity_lists[list_idx].physics_list[entity_idx];
             
             Physics target_physics;
             if (client_state.track)
             {
                 size_t target_list_idx;
                 size_t target_entity_idx;
-                entity_manager.entity_table.lookup_entity(
+                entity_manager->entity_table.lookup_entity(
                     client_state.guidance_target,
-                    entity_manager.entity_lists,
+                    entity_manager->entity_lists,
                     &target_list_idx,
                     &target_entity_idx);
                 
-                target_physics = entity_manager.entity_lists[target_list_idx].physics_list[target_entity_idx];
+                target_physics = entity_manager->entity_lists[target_list_idx].physics_list[target_entity_idx];
             }
 
             PlayerControlState control_state = player_control_get_state(
@@ -240,7 +246,7 @@ int main(int argc, char *argv[])
                 &client);
         }
 
-        perform_entity_update_step(&entity_manager, TIMESTEP);
+        perform_entity_update_step(entity_manager, TIMESTEP);
 
         // Process incoming packets
         get_packets(client.sock, &game_packets);
@@ -249,7 +255,7 @@ int main(int argc, char *argv[])
             switch (packet.packet.header.type)
             {
                 case GamePacketType::ENTITY_CREATE:
-                    entity_manager.create_entity_with_handle(
+                    entity_manager->create_entity_with_handle(
                         packet.packet.packet_data.entity_create.entity,
                         packet.packet.packet_data.entity_create.handle);
                     // check if created entity is the player entity
@@ -274,13 +280,13 @@ int main(int argc, char *argv[])
                 {
                     size_t list_idx;
                     size_t entity_idx;
-                    if (entity_manager.entity_table.lookup_entity(
+                    if (entity_manager->entity_table.lookup_entity(
                             packet.packet.packet_data.physics_sync.entity,
-                            entity_manager.entity_lists,
+                            entity_manager->entity_lists,
                             &list_idx,
                             &entity_idx))
                     {
-                        if (entity_manager.entity_lists[list_idx].handles[entity_idx]
+                        if (entity_manager->entity_lists[list_idx].handles[entity_idx]
                                 == client_state.player_handle)
                         {
                             // if we have received no later physics syncs from the server
@@ -301,7 +307,7 @@ int main(int argc, char *argv[])
                                     if (past_inputs.inputs[input_idx].sequence_number == sequence)
                                     {
                                         player_control_update(
-                                            &entity_manager.entity_lists[list_idx].physics_list[entity_idx],
+                                            &entity_manager->entity_lists[list_idx].physics_list[entity_idx],
                                             past_inputs.inputs[input_idx].input,
                                             past_inputs.inputs[input_idx].dt);
                                     }
@@ -314,7 +320,7 @@ int main(int argc, char *argv[])
                         }
                         else    // if the update isn't for the player then always apply it
                         {
-                            entity_manager.entity_lists[list_idx].physics_list[entity_idx] = 
+                            entity_manager->entity_lists[list_idx].physics_list[entity_idx] = 
                             packet.packet.packet_data.physics_sync.physics_state;
                         }
                     }
@@ -345,15 +351,15 @@ int main(int argc, char *argv[])
         {
             size_t list_idx;
             size_t entity_idx;
-            if(entity_manager.entity_table.lookup_entity(
+            if(entity_manager->entity_table.lookup_entity(
                    client_state.player_handle,
-                   entity_manager.entity_lists,
+                   entity_manager->entity_lists,
                    &list_idx,
                    &entity_idx))
             {
-                renderer.camera_pos = entity_manager.entity_lists[list_idx].physics_list[entity_idx].position;
+                renderer.camera_pos = entity_manager->entity_lists[list_idx].physics_list[entity_idx].position;
                 renderer.camera_orientation =
-                    entity_manager.entity_lists[list_idx].physics_list[entity_idx].orientation;
+                    entity_manager->entity_lists[list_idx].physics_list[entity_idx].orientation;
             }
         }
         
@@ -365,9 +371,9 @@ int main(int argc, char *argv[])
 
         renderer.draw_skybox();
 
-        for (unsigned int list_idx = 0; list_idx < entity_manager.entity_lists.size(); list_idx++)
+        for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
-            EntityList& entity_list = entity_manager.entity_lists[list_idx];
+            EntityList& entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
             if (!entity_list.supports_components(ComponentType::PHYSICS | ComponentType::MESH))
                 continue;
@@ -386,4 +392,6 @@ int main(int argc, char *argv[])
     }
 
     SDL_Quit();
+
+	return 0;
 }
