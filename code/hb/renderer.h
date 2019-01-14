@@ -11,13 +11,8 @@
 
 using std::vector;
 
-#ifdef _WIN32
-#pragma pack(push)
+#pragma pack(push, 1)
 struct Vertex
-#endif
-#ifdef __unix__
-struct __attribute__((__packed__)) Vertex
-#endif
 {
     Vec3 position;
     Vec3 normal;
@@ -25,9 +20,7 @@ struct __attribute__((__packed__)) Vertex
 
     Vertex(Vec3 _position, Vec3 _normal, Vec2 _uv);
 };
-#ifdef _WIN32
 #pragma pack(pop)
-#endif
 
 struct ShaderProgram
 {

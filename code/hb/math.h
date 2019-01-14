@@ -47,6 +47,7 @@ Vec2 operator*(const Mat22& lhs, const Vec2& rhs);
 Vec2 unit_angle(float angle);
 
 // 3D
+#pragma pack(push, 1)
 struct Vec3
 {
     float x = 0.0f;
@@ -61,6 +62,7 @@ struct Vec3
     float norm() const;
     Vec3 normalize() const;
 };
+#pragma pack(pop)
 
 static_assert(sizeof(Vec3) == 3 * sizeof(float), "There must be no padding between components");
 

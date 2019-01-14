@@ -4,6 +4,11 @@
 #include <cassert>
 #include <iostream>
 
+#ifdef __unix__
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 // TODO: Implement this on windows
 #ifndef _WIN32
 void ClientData::create_server(uint16_t port)
@@ -14,22 +19,23 @@ void ClientData::create_server(uint16_t port)
         std::cout << "error creating pipe" << std::endl;
     }
     // create the server process
-    if (fork() == 0)
+    if (fork() == 0) // we are child process (server)
     {
-        // close the read end of the pipe and remap stdout
+        // close the read end of the pipe and remap stdout to write end
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
 
-        // we are child process
-        char port_arg[6];   // 2^16 has max 5 digits, plus null terminator
+        char port_arg[6] = {};   // 2^16 has max 5 digits, plus null terminator
         snprintf(port_arg, sizeof(port_arg), "%d", port);
-        // replace process
-        execl("L4server", "L4server", port_arg);
+        // replace process with server process
+        execl("L4server", "L4server", port_arg, nullptr);
     }
-    else
+    else // we are parent process
     {
+        // close the write end of the pipe and save the read end
         close(pipefd[1]);
         server_pipe = pipefd[0];
+        // set the pipe to nonblocking
         fcntl(server_pipe, F_SETFL, O_NONBLOCK);
     }
 }
