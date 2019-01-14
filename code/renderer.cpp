@@ -16,7 +16,7 @@ static GLint compile_shader(const char* filename, GLuint shader_type)
 {
     std::ifstream shader_file;
     shader_file.open(filename, std::ios::ate);
-    unsigned int file_len = shader_file.tellg();
+    size_t file_len = shader_file.tellg();
     GLchar* shader_text = (GLchar*) malloc(file_len + 1); // +1 for null terminator
     shader_file.seekg(0, std::ios::beg);
     shader_file.read(shader_text, file_len);
@@ -337,7 +337,7 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "screen");
-    glUniform2f(screen_uniform_location, width, height);
+    glUniform2f(screen_uniform_location, (GLfloat)width, (GLfloat)height);
 
     GLuint origin_uniform_location = 
         glGetUniformLocation(
@@ -366,7 +366,7 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const
     glDrawArrays(
         GL_TRIANGLES,
         0,  // starting idx
-        mesh->vertices.size()
+        (int)mesh->vertices.size()
     );
 }
 
@@ -379,7 +379,7 @@ void Renderer::draw_skybox() const
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "screen");
-    glUniform2f(screen_uniform_location, width, height);
+    glUniform2f(screen_uniform_location, (GLfloat)width, (GLfloat)height);
 
     GLuint camera_pos_uniform_location = 
         glGetUniformLocation(
@@ -405,7 +405,7 @@ void Renderer::draw_skybox() const
     glDrawArrays(
         GL_TRIANGLES,
         0,  // starting idx
-        mesh->vertices.size()
+        (int)mesh->vertices.size()
     );
 
     glDepthMask(GL_TRUE);

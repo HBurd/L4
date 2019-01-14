@@ -102,11 +102,11 @@ struct GamePacketOut
 
 struct GamePacketIn
 {
-    sockaddr_in sender;
+    HbSockaddr sender;
     GamePacket packet;
 };
 
-void get_packets(int sock, vector<GamePacketIn>* packet_list);
+void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list);
 
 #ifdef FAST_BUILD
 #include "packets.cpp"

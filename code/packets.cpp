@@ -57,12 +57,12 @@ GamePacketOut::GamePacketOut(GamePacketHeader header_, void *data_, size_t data_
     }
 }
 
-void get_packets(int sock, vector<GamePacketIn>* packet_list)
+void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list)
 {
     packet_list->clear();
 
     uint8_t packet[sizeof(GamePacket)];
-    sockaddr_in from;
+    HbSockaddr from;
     while (recv_game_packet(sock, (GamePacket*)&packet, &from))
     {
         GamePacket* game_packet = (GamePacket*) packet;

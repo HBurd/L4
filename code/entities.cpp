@@ -116,7 +116,7 @@ EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
 void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle)
 {
     // check if the handle's free
-    int idx = first_free;
+    size_t idx = first_free;
     if (idx == handle.idx)
     {
         first_free = entries[first_free].next_free;

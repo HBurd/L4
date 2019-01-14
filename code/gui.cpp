@@ -108,9 +108,9 @@ void Console::draw()
     // build the string to give to imgui
     char display_data[ARRAY_LENGTH(data) + 1] = {};
     // copy mark to end
-    strncpy(display_data, data + mark, ARRAY_LENGTH(data) - mark);
+    memcpy(display_data, data + mark, ARRAY_LENGTH(data) - mark);
     // copy start to mark
-    strncpy(display_data + strlen(display_data), data, mark);
+    memcpy(display_data + strlen(display_data), data, mark);
 
     ImGui::Begin(name);
 
@@ -128,17 +128,30 @@ void Console::write(const char *string)
     writen(string, string_len);
 }
 
+/*	Writes string_len bytes of string to the console.
+    The string will be copied in segments, so that
+	no section of the string will be copied past the
+	end of the console buffer. If the string is longer
+	than the console buffer, later copies of the string
+	will overwrite earlier copies, so as a result only
+	the end of the string will be in the console buffer.
+*/
 void Console::writen(const char *string, size_t string_len)
 {
     size_t len_copied = 0;
-    while (len_copied < string_len)
+    while (len_copied < string_len)	// while there are still bytes in string to copy
     {
-        // copy length min of string length and remaining length of console array
+        // length to copy is min of string length and remaining length of console buffer
         size_t copy_len = (string_len - len_copied <= ARRAY_LENGTH(data) - mark)
             ? string_len - len_copied : (ARRAY_LENGTH(data) - mark);
-        strncpy(data + mark, string + len_copied, copy_len);//ARRAY_LENGTH(data) - mark);
+
+		// copy copy_len bytes of string to start of circular buffer
+        memcpy(data + mark, string + len_copied, copy_len);
         len_copied += copy_len;
+
+		// adjust the marker of the circular buffer
         mark += copy_len;
+		// wrap marker if necessary
         if (mark == ARRAY_LENGTH(data))
         {
             mark = 0;

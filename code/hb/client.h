@@ -9,8 +9,8 @@
 struct ClientData
 {
     bool active = false;
-    int sock = -1;
-    sockaddr_in server_addr = {};
+    HbSocket sock = HB_INVALID_SOCKET;
+    HbSockaddr server_addr = {};
     ClientId client_id;
 
     ClientId id = INCOMPLETE_ID;

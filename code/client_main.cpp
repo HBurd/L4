@@ -240,13 +240,13 @@ int main(int argc, char *argv[])
 
             handle_player_input(
                 control_state,
-                TIMESTEP,
+                (float)TIMESTEP,
                 &player_physics,
                 &past_inputs,
                 &client);
         }
 
-        perform_entity_update_step(entity_manager, TIMESTEP);
+        perform_entity_update_step(entity_manager, (float)TIMESTEP);
 
         // Process incoming packets
         get_packets(client.sock, &game_packets);

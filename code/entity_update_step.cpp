@@ -1,7 +1,7 @@
 #include "hb/entity_update_step.h"
 #include "hb/projectile.h"
 
-void perform_entity_update_step(EntityManager *entity_manager, double dt)
+void perform_entity_update_step(EntityManager *entity_manager, float dt)
 {
     // Physics updates
     for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)

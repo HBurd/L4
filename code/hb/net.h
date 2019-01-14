@@ -5,12 +5,22 @@
 #include <stdint.h>
 
 #ifdef __unix__
-#include <sys/socket.h>
-#include <netinet/in.h>
+	#include <netinet/in.h>
+
+	typedef int HbSocket;
+	const int HB_INVALID_SOCKET = -1;
+	typedef sockaddr_in HbSockaddr;
 #endif
 #ifdef _WIN32
-#include <Winsock2.h>
+	#include <Winsock2.h>
+
+	typedef SOCKET HbSocket;
+	const SOCKET HB_INVALID_SOCKET = INVALID_SOCKET;
+	typedef sockaddr_in HbSockaddr;
 #endif
+
+// host byte ordering
+HbSockaddr create_sockaddr(uint32_t ip, uint16_t port);
 
 typedef size_t ClientId;
 const size_t SERVER_ID = 0xFFFFFFFF;
@@ -34,17 +44,19 @@ enum class GamePacketType : uint8_t
     // ===============================
 };
 
+HbSocket create_game_socket();
+
 void send_game_packet(
-    int sock,
-    sockaddr_in to,
+    HbSocket sock,
+    HbSockaddr to,
     ClientId sender_id,
     GamePacketType packet_type,
     void *packet_data,
     size_t data_size);
 bool recv_game_packet(
-    int sock,
+    HbSocket sock,
     GamePacket* packet,
-    sockaddr_in* from);
+    HbSockaddr* from);
 
 #ifdef FAST_BUILD
 #include "net.cpp"

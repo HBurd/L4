@@ -3,7 +3,7 @@
 
 #include "hb/entities.h"
 
-void perform_entity_update_step(EntityManager *entity_manager, double dt);
+void perform_entity_update_step(EntityManager *entity_manager, float dt);
 
 #ifdef FAST_BUILD
 #include "entity_update_step.cpp"

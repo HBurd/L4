@@ -1,14 +1,6 @@
 #include "hb/client.h"
 #include "hb/packets.h"
 
-#ifdef __unix__
-#include <unistd.h>
-#include <fcntl.h>
-#endif
-#ifdef _WIN32
-#include <Winsock2.h>
-#endif
-
 #include <cassert>
 #include <iostream>
 
@@ -68,25 +60,8 @@ void ClientData::write_server_stdout(Console *console)
 
 void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
-#ifdef _WIN32
-	WSADATA wsadata;
-	assert(WSAStartup(MAKEWORD(2, 2), &wsadata) == 0);
-#endif
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    assert(sock >= 0);
-
-#ifdef _WIN32
-	u_long mode = 1;
-	ioctlsocket(sock, FIONBIO, &mode);
-#endif
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(server_ip);
-    server_addr.sin_port = htons(server_port);
-
-    sockaddr_in from = {};
-    int fromlen = sizeof(from);
-    uint8_t ack_packet_data[sizeof(GamePacket)] = {};
+	sock = create_game_socket();
+	server_addr = create_sockaddr(server_ip, server_port);
 
     // TODO: we may need to retry several times if the
     // server hasn't started yet (i.e. client creating
@@ -128,18 +103,12 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         nullptr,
         0);
 
-	int n = -1;
+	sockaddr_in from = {};
+	int fromlen = sizeof(from);
+	uint8_t ack_packet_data[sizeof(GamePacket)] = {};
 
-	while (n == -1)
-	{
-		n = recvfrom(
-			sock,
-			(char*)ack_packet_data,
-			sizeof(ack_packet_data),
-			0,
-			(sockaddr*)&from,
-			&fromlen);
-	}
+	while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));	// TODO: add a delay
+
 #endif
 
     GamePacket* ack_packet = (GamePacket*)ack_packet_data;

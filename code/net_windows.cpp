@@ -2,11 +2,36 @@
 
 #include "hb/net.h"
 
-// TODO: Can this be merged with net_unix.cpp?
+HbSocket create_game_socket()
+{
+	// Initialize Winsock2
+	WSADATA wsadata;
+	assert(WSAStartup(MAKEWORD(2, 2), &wsadata) == 0);
+
+	// Create the socket
+	HbSocket sock = socket(AF_INET, SOCK_DGRAM, 0);
+	assert(sock != INVALID_SOCKET);
+
+	// Set it to nonblocking
+	u_long nonblocking = 1;
+	ioctlsocket(sock, FIONBIO, &nonblocking);
+
+	return sock;
+}
+
+HbSockaddr create_sockaddr(uint32_t ip, uint16_t port)
+{
+	HbSockaddr result;
+	result.sin_family = AF_INET;
+	result.sin_addr.s_addr = htonl(ip);
+	result.sin_port = htons(port);
+
+	return result;
+}
 
 void send_game_packet(
-	int sock,
-	sockaddr_in to,
+	HbSocket sock,
+	HbSockaddr to,
 	ClientId sender_id,
 	GamePacketType packet_type,
 	void *packet_data,
@@ -18,13 +43,13 @@ void send_game_packet(
 	sendto(
 		sock,
 		(char*)&packet,
-		sizeof(header) + data_size,
+		(int)(sizeof(header) + data_size),
 		0,
 		(sockaddr*)&to,
 		(int)sizeof(to));
 }
 
-bool recv_game_packet(int sock, GamePacket *packet, sockaddr_in *from)
+bool recv_game_packet(HbSocket sock, GamePacket *packet, HbSockaddr *from)
 {
 	int fromlen = (int)sizeof(*from);
 
