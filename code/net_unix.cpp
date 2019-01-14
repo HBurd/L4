@@ -55,7 +55,7 @@ bool recv_game_packet(HbSocket sock, GamePacket *packet, HbSockaddr *from)
         sock,
         packet,
         sizeof(*packet),
-        MSG_DONTWAIT,   // nonblocking
+        0,
         (sockaddr*)from,
         (socklen_t*)&fromlen);
 
