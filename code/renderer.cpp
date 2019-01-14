@@ -241,22 +241,22 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
             case MeshType::SHIP:
             {
                 ShaderProgramId shader_prog =
-                    load_shader("triangle.vert", "triangle.frag");
-                meshes.push_back(Mesh("ship.obj", shader_prog));
+                    load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
+                meshes.push_back(Mesh("resources/models/ship.obj", shader_prog));
                 break;
             }
             case MeshType::PROJECTILE:
             {
                 ShaderProgramId shader_prog =
-                    load_shader("triangle.vert", "triangle.frag");
-                meshes.push_back(Mesh("projectile.obj", shader_prog));
+                    load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
+                meshes.push_back(Mesh("resources/models/projectile.obj", shader_prog));
                 break;
             }
             case MeshType::SKYBOX:
             {
                 ShaderProgramId shader_prog =
-                    load_shader("skybox.vert", "skybox.frag");
-                meshes.push_back(Mesh("skybox.obj", shader_prog));
+                    load_shader("resources/shaders/skybox.vert", "resources/shaders/skybox.frag");
+                meshes.push_back(Mesh("resources/models/skybox.obj", shader_prog));
                 break;
             }
             default:
@@ -264,7 +264,7 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
         }
     }
 
-    skybox_texture = load_texture("skymap3.png");
+    skybox_texture = load_texture("resources/textures/skymap3.png");
     skybox_mesh = MeshType::SKYBOX;
 }
 

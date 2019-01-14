@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #endif
 #ifdef _WIN32
-#include <Winsock.h>
+#include <Winsock2.h>
 #endif
 
 typedef size_t ClientId;

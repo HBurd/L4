@@ -2,8 +2,6 @@
 #include "hb/packets.h"
 #include "hb/ship.h"
 
-using std::vector;
-
 #ifdef __unix__
 #include "net_unix.cpp"
 #endif

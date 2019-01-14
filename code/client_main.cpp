@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
     PlayerInputBuffer past_inputs;
 
-    EntityManager entity_manager = new EntityManager();
+    EntityManager *entity_manager = new EntityManager();
     // add list for projectiles
     entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
@@ -389,6 +389,26 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         SDL_GL_SwapWindow(window);
+
+		double delta_time = time_keeper.get_delta_time_s_no_reset();
+
+		// wait until we've hit 60 fps
+		double time_remaining = TIMESTEP - delta_time;
+		if (time_remaining > 0.0)
+		{
+			if (time_remaining > 0.001)
+			{
+				SDL_Delay((uint32_t)(1000 * time_remaining));
+			}
+			// busy wait for the rest of the time
+			delta_time = time_keeper.get_delta_time_s_no_reset();
+			while (delta_time < TIMESTEP)
+			{
+				delta_time = time_keeper.get_delta_time_s_no_reset();
+			}
+		}
+
+		delta_time = time_keeper.get_delta_time_s();
     }
 
     SDL_Quit();

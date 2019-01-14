@@ -1,4 +1,4 @@
-#include <Winsock.h>
+#include <Winsock2.h>
 
 #include "hb/net.h"
 

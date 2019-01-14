@@ -1,9 +1,12 @@
 #include "hb/client.h"
 #include "hb/packets.h"
 
-#ifndef _WIN32
+#ifdef __unix__
 #include <unistd.h>
 #include <fcntl.h>
+#endif
+#ifdef _WIN32
+#include <Winsock2.h>
 #endif
 
 #include <cassert>
@@ -65,8 +68,17 @@ void ClientData::write_server_stdout(Console *console)
 
 void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
+#ifdef _WIN32
+	WSADATA wsadata;
+	assert(WSAStartup(MAKEWORD(2, 2), &wsadata) == 0);
+#endif
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     assert(sock >= 0);
+
+#ifdef _WIN32
+	u_long mode = 1;
+	ioctlsocket(sock, FIONBIO, &mode);
+#endif
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(server_ip);
@@ -116,13 +128,18 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         nullptr,
         0);
 
-    int n = recvfrom(
-        sock,
-        (char*)ack_packet_data,
-        sizeof(ack_packet_data),
-        0,
-        (sockaddr*)&from,
-        &fromlen);
+	int n = -1;
+
+	while (n == -1)
+	{
+		n = recvfrom(
+			sock,
+			(char*)ack_packet_data,
+			sizeof(ack_packet_data),
+			0,
+			(sockaddr*)&from,
+			&fromlen);
+	}
 #endif
 
     GamePacket* ack_packet = (GamePacket*)ack_packet_data;
