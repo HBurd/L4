@@ -10,7 +10,7 @@
 #endif
 
 // TODO: Implement this on windows
-#ifndef _WIN32
+#ifdef __unix__
 void ClientData::create_server(uint16_t port)
 {
     int pipefd[2];
@@ -67,7 +67,8 @@ void ClientData::write_server_stdout(Console *console)
 void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
 	sock = create_game_socket();
-	server_addr = create_sockaddr(server_ip, server_port);
+        server_addr.ip = server_ip;
+        server_addr.port = server_port;
 
     // TODO: we may need to retry several times if the
     // server hasn't started yet (i.e. client creating
@@ -109,18 +110,17 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         nullptr,
         0);
 
-	sockaddr_in from = {};
-	int fromlen = sizeof(from);
-	uint8_t ack_packet_data[sizeof(GamePacket)] = {};
+        HbSockaddr from = {};
+        uint8_t ack_packet_data[sizeof(GamePacket)] = {};
 
-	while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));	// TODO: add a delay
+        while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));	// TODO: add a delay
 
 #endif
 
     GamePacket* ack_packet = (GamePacket*)ack_packet_data;
 
     assert(ack_packet->header.type == GamePacketType::CONNECTION_ACK);
-    assert(from.sin_addr.s_addr == server_addr.sin_addr.s_addr);
+    assert(from.ip == server_addr.ip);
     
     id = ack_packet->packet_data.connection_ack.client_id;
 

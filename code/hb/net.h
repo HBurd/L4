@@ -5,22 +5,22 @@
 #include <stdint.h>
 
 #ifdef __unix__
-	#include <netinet/in.h>
-
 	typedef int HbSocket;
 	const int HB_INVALID_SOCKET = -1;
-	typedef sockaddr_in HbSockaddr;
 #endif
 #ifdef _WIN32
 	#include <Winsock2.h>
 
 	typedef SOCKET HbSocket;
 	const SOCKET HB_INVALID_SOCKET = INVALID_SOCKET;
-	typedef sockaddr_in HbSockaddr;
 #endif
 
-// host byte ordering
-HbSockaddr create_sockaddr(uint32_t ip, uint16_t port);
+// host endianness
+struct HbSockaddr
+{
+    uint16_t port;
+    uint32_t ip;
+};
 
 typedef size_t ClientId;
 const size_t SERVER_ID = 0xFFFFFFFF;
