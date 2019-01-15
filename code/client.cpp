@@ -23,17 +23,6 @@ void ClientData::create_server(uint16_t port)
 	security_attributes.bInheritHandle = TRUE;
 	security_attributes.lpSecurityDescriptor = nullptr;
 
-	// create the child's stdout pipe
-	/*HANDLE parent_read_pipe, child_write_pipe;
-	if (!CreatePipe(&parent_read_pipe, &child_write_pipe, &security_attributes, 0))
-	{
-		std::cout << "Error creating pipe" << std::endl;
-	}
-	// make sure the parent side isn't inherited
-	if (!SetHandleInformation(parent_read_pipe, HANDLE_FLAG_INHERIT, 0))
-	{
-		std::cout << "Error setting pipe handle information" << std::endl;
-	}*/
 	HANDLE parent_read_pipe = CreateNamedPipe(
 		"\\\\.\\pipe\\L4server_pipe",
 		PIPE_ACCESS_INBOUND,	// client to server
@@ -43,6 +32,7 @@ void ClientData::create_server(uint16_t port)
 		256,
 		0,
 		nullptr);
+
 	HANDLE child_write_pipe = CreateFile(
 		"\\\\.\\pipe\\L4server_pipe",
 		GENERIC_WRITE,
@@ -84,6 +74,9 @@ void ClientData::create_server(uint16_t port)
 	// Close unneeded handles
 	CloseHandle(process_info.hProcess);
 	CloseHandle(process_info.hThread);
+
+	// Close the handle to the write end of the pipe that the server still owns.
+	// Child should retain its copy of the handle.
 	CloseHandle(child_write_pipe);
 }
 
