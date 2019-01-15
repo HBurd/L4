@@ -6,6 +6,15 @@
 //TODO: shouldn't have this dependency!!
 #include "hb/gui.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+typedef HANDLE HbPipe;
+#endif
+
+#ifdef __unix__
+typedef int HbPipe;
+#endif
+
 struct ClientData
 {
     bool active = false;
@@ -15,7 +24,8 @@ struct ClientData
 
     ClientId id = INCOMPLETE_ID;
 
-    int server_pipe = -1;       // TODO: platform specific
+    HbPipe server_pipe;
+
     // write stdout of the server process to a circular buffer
     void write_server_stdout(Console *console);
 

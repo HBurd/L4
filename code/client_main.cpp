@@ -160,15 +160,13 @@ int main(int argc, char *argv[])
 
                 if (create_server)
                 {
-#ifndef _WIN32
                     client.create_server(main_menu.port);
                     // connect to localhost
-                    // TODO: need a better sln
-                    SDL_Delay(100);
+                    // TODO: need a better solution
+                    SDL_Delay(1000);
                     client.connect(0x7f000001, main_menu.port);
                     client_state.server_proc_connected = true;
                     client_state.status = ClientState::NOT_SPAWNED;
-#endif
                 }
                 else if (connect_to_server)
                 {
@@ -195,10 +193,8 @@ int main(int argc, char *argv[])
             
             if (client_state.server_proc_connected)
             {
-#ifndef _WIN32
                 client.write_server_stdout(&server_console);
                 server_console.draw();
-#endif
             }
         }
 
