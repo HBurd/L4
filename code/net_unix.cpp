@@ -17,6 +17,16 @@ HbSocket create_game_socket()
     return sock;
 }
 
+void bind_game_socket(HbSocket sock, uint16_t port)
+{
+    sockaddr_in server_addr = {};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
+
+    assert(bind(sock, (sockaddr*)&server_addr, sizeof(server_addr)) >= 0);
+}
+
 void send_game_packet(
     HbSocket sock,
     HbSockaddr to,
