@@ -398,7 +398,7 @@ int main(int argc, char *argv[])
 		{
 			if (time_remaining > 0.001)
 			{
-				SDL_Delay((uint32_t)(1000 * time_remaining));
+				SDL_Delay((uint32_t)(1000 * floorf(time_remaining)));
 			}
 			// busy wait for the rest of the time
 			delta_time = time_keeper.get_delta_time_s_no_reset();

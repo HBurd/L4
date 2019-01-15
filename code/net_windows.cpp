@@ -19,16 +19,6 @@ HbSocket create_game_socket()
 	return sock;
 }
 
-HbSockaddr create_sockaddr(uint32_t ip, uint16_t port)
-{
-	HbSockaddr result;
-	result.sin_family = AF_INET;
-	result.sin_addr.s_addr = htonl(ip);
-	result.sin_port = htons(port);
-
-	return result;
-}
-
 void send_game_packet(
 	HbSocket sock,
 	HbSockaddr to,
@@ -40,26 +30,36 @@ void send_game_packet(
 	// Build header
 	GamePacketHeader header(packet_type, sender_id);
 	GamePacketOut packet(header, packet_data, data_size);
+
+	sockaddr_in to_sockaddr = {};
+	to_sockaddr.sin_family = AF_INET;
+	to_sockaddr.sin_addr.s_addr = htonl(to.ip);
+	to_sockaddr.sin_port = htons(to.port);
+
 	sendto(
 		sock,
 		(char*)&packet,
 		(int)(sizeof(header) + data_size),
 		0,
-		(sockaddr*)&to,
-		(int)sizeof(to));
+		(sockaddr*)&to_sockaddr,
+		(int)sizeof(to_sockaddr));
 }
 
 bool recv_game_packet(HbSocket sock, GamePacket *packet, HbSockaddr *from)
 {
-	int fromlen = (int)sizeof(*from);
+	sockaddr_in from_sockaddr = {};
+	int fromlen = (int)sizeof(from_sockaddr);
 
 	int n = recvfrom(
 		sock,
 		(char*)packet,
 		sizeof(*packet),
 		0,
-		(sockaddr*)from,
+		(sockaddr*)&from_sockaddr,
 		&fromlen);
+
+	from->ip = ntohl(from_sockaddr.sin_addr.s_addr);
+	from->port = ntohs(from_sockaddr.sin_port);
 
 	return n != -1;     // returns false if none available (or error)
 }
