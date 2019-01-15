@@ -46,6 +46,8 @@ enum class GamePacketType : uint8_t
 
 HbSocket create_game_socket();
 
+void bind_game_socket(HbSocket sock, uint16_t port);
+
 void send_game_packet(
     HbSocket sock,
     HbSockaddr to,

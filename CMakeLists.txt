@@ -18,13 +18,17 @@ add_library (ImGui code/impl_imgui.cpp)
 add_library (TinyObj code/impl_tinyobjloader.cpp)
 
 add_executable (L4client code/client_main.cpp)
+add_executable (L4server code/server_main.cpp)
 
 target_link_libraries (L4client SDL2 SDL2main StbImage ImGui TinyObj)
+target_link_libraries (L4server SDL2 SDL2main StbImage ImGui TinyObj)
 
 if (WIN32)
     target_link_libraries(L4client opengl32 glew32 Ws2_32)
+    target_link_libraries(L4server opengl32 glew32 Ws2_32)
 else ()
     target_link_libraries(L4client GL GLEW sndio dl pthread)
+    target_link_libraries(L4server GL GLEW sndio dl pthread)
 endif ()
 
 add_definitions (-DFAST_BUILD=Y)

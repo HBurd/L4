@@ -1,8 +1,10 @@
 #include "SDL/SDL.h"
 #include <iostream>
 
+#ifdef __unix__
 #include <sys/prctl.h>
 #include <signal.h>
+#endif
 
 #include "hb/math.h"
 #include "hb/renderer.h"
@@ -25,8 +27,10 @@ using std::vector;
 
 int main(int argc, char* argv[])
 {
+#ifdef __unix__
     // exit when parent exits
     prctl(PR_SET_PDEATHSIG, SIGHUP);
+#endif
 
     // parse command line arguments
     uint16_t port;
@@ -50,7 +54,7 @@ int main(int argc, char* argv[])
 
     vector<GamePacketIn> game_packets;
 
-    EntityManager entity_manager = new EntityManager();
+    EntityManager *entity_manager = new EntityManager();
     // add list for projectiles
     entity_manager->entity_lists.push_back(
         EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));

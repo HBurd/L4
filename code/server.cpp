@@ -1,19 +1,12 @@
 #include "hb/server.h"
 
-ClientConnection::ClientConnection(sockaddr_in client_addr)
+ClientConnection::ClientConnection(HbSockaddr client_addr)
 :addr(client_addr) {}
 
 ServerData::ServerData(uint16_t port)
 {
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    assert(sock >= 0);
-
-    sockaddr_in server_addr = {};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(port);
-    
-    assert(bind(sock, (sockaddr*)&server_addr, sizeof(server_addr)) >= 0);
+	sock = create_game_socket();
+	bind_game_socket(sock, port);
 }
 
 void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_size)
@@ -30,7 +23,7 @@ void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_s
     }
 }
 
-ClientId ServerData::accept_client(sockaddr_in client_addr)
+ClientId ServerData::accept_client(HbSockaddr client_addr)
 {
     // add to list of known clients
     ClientId client_id = clients.size();

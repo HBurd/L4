@@ -9,7 +9,11 @@
 #include <fcntl.h>
 #endif
 
-// TODO: Implement this on windows
+#ifdef _WIN32
+//void ClientData::create_server(uint16_t port)
+
+#endif
+
 #ifdef __unix__
 void ClientData::create_server(uint16_t port)
 {

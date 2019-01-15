@@ -1,16 +1,15 @@
 #ifndef HBSERVER_H
 #define HBSERVER_H
 
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include "hb/net.h"
 
 #include "hb/player_control.h"
 #include "hb/entities.h"
 
 struct ClientConnection
 {
-    ClientConnection(sockaddr_in client_addr);
-    sockaddr_in addr;
+    ClientConnection(HbSockaddr client_addr);
+    HbSockaddr addr;
     EntityHandle player_entity;
     bool received_input = false;
     uint32_t sequence;
@@ -20,14 +19,14 @@ struct ClientConnection
 struct ServerData
 {
     std::vector<ClientConnection> clients;
-    int sock;
+    HbSocket sock;
 
     ServerData(uint16_t port);
     void broadcast(
         GamePacketType packet_type,
         void *packet,
         size_t packet_size);
-    ClientId accept_client(sockaddr_in client_addr);
+    ClientId accept_client(HbSockaddr client_addr);
 };
 
 #ifdef FAST_BUILD
