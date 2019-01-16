@@ -348,6 +348,24 @@ Rotor Rotor::yaw(float angle)
     return Rotor(start, end);
 }
 
+Rotor Rotor::angle_axis(Vec3 bivector)
+{
+    float angle = bivector.norm();
+    if (angle == 0.0f)
+    {
+        return Rotor(); // no rotation
+    }
+    else
+    {
+        Rotor result;
+        result.s  = cosf(0.5f * angle);
+        result.xy = (sinf(0.5f * angle) / angle) * bivector.x;
+        result.yz = (sinf(0.5f * angle) / angle) * bivector.y;
+        result.zx = (sinf(0.5f * angle) / angle) * bivector.z;
+        return result;
+    }
+}
+
 Rotor Rotor::exponentiate(float t)
 {
     Vec3 bivector = Vec3(xy, yz, zx);

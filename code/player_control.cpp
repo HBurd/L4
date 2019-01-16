@@ -41,9 +41,9 @@ PlayerControlState player_control_get_state(
     }
     else if (stabilize)  // the two do not work together
     {
-        float roll = player.angular_velocity.xy;
-        float pitch = player.angular_velocity.yz;
-        float yaw = player.angular_velocity.zx;
+        float roll = player.angular_velocity.x;   // xy
+        float pitch = player.angular_velocity.y; // yz
+        float yaw = player.angular_velocity.z;   // zx
 
         roll_torque = -roll;
         pitch_torque = -pitch;
@@ -86,7 +86,7 @@ PlayerControlState player_control_get_state(
     pitch_torque *= factor;
     yaw_torque *= factor;
  
-    control_state.torque = Rotor::roll(roll_torque) * Rotor::pitch(pitch_torque) * Rotor::yaw(yaw_torque);
+    control_state.torque = Vec3(roll_torque, pitch_torque, yaw_torque);
 
     return control_state;
 }
@@ -97,7 +97,7 @@ void player_control_update(Physics *physics, PlayerControlState control_state, f
     thrust = thrust * control_state.thrust * dt;
     
     physics->velocity += thrust;
-    physics->angular_velocity = physics->angular_velocity * Rotor::slerp(Rotor(), control_state.torque, dt);
+    physics->angular_velocity += control_state.torque * dt;
 }
 
 void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)

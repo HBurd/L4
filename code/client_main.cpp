@@ -289,7 +289,6 @@ int main(int argc, char *argv[])
                             if (packet.packet.packet_data.physics_sync.sequence
                                 > past_inputs.last_received_seq_num)
                             {
-                                cout << "ACCEPT" << endl;
                                 // Apply the physics update
                                 past_inputs.last_received_seq_num =
                                     packet.packet.packet_data.physics_sync.sequence;
@@ -308,10 +307,6 @@ int main(int argc, char *argv[])
                                             past_inputs.inputs[input_idx].dt);
                                     }
                                 }
-                            }
-                            else
-                            {
-                                cout << "DISCARD" << endl;
                             }
                         }
                         else    // if the update isn't for the player then always apply it

@@ -9,7 +9,7 @@ const size_t MAX_PAST_INPUTS = 128;
 struct PlayerControlState
 {
     float thrust = 0.0f;
-    Rotor torque;
+    Vec3 torque;
     bool shoot = false;
 };
 

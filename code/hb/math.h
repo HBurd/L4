@@ -92,12 +92,15 @@ struct Rotor
     Mat33 to_matrix() const;
     Rotor inverse() const;
     Rotor normalize() const;
+    Rotor exponentiate(float t);
 
     static Rotor roll(float angle);
     static Rotor pitch(float angle);
     static Rotor yaw(float angle);
 
-    Rotor exponentiate(float t);
+    // takes a bivector with magnitude of the rotation
+    static Rotor angle_axis(Vec3 bivector);
+
     static Rotor lerp(const Rotor &start, const Rotor &end, float t);
     static Rotor slerp(const Rotor &start, const Rotor &end, float t);
 };

@@ -28,7 +28,7 @@ struct Physics
     Vec3 position;
     Vec3 velocity;
     Rotor orientation;
-    Rotor angular_velocity;
+    Vec3 angular_velocity;
 
     Physics() = default;
     Physics(Vec3 _position);
