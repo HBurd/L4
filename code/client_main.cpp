@@ -290,6 +290,8 @@ int main(int argc, char *argv[])
                                 > past_inputs.last_received_seq_num)
                             {
                                 // Apply the physics update
+                                entity_manager->entity_lists[list_idx].physics_list[entity_idx] = 
+                                    packet.packet.packet_data.physics_sync.physics_state;
                                 past_inputs.last_received_seq_num =
                                     packet.packet.packet_data.physics_sync.sequence;
 
@@ -312,7 +314,7 @@ int main(int argc, char *argv[])
                         else    // if the update isn't for the player then always apply it
                         {
                             entity_manager->entity_lists[list_idx].physics_list[entity_idx] = 
-                            packet.packet.packet_data.physics_sync.physics_state;
+                                packet.packet.packet_data.physics_sync.physics_state;
                         }
                     }
                     break;
