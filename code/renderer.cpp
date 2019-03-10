@@ -242,7 +242,7 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
             {
                 ShaderProgramId shader_prog =
                     load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
-                meshes.push_back(Mesh("resources/models/ship.obj", shader_prog));
+                meshes.push_back(Mesh("resources/models/ship2.obj", shader_prog));
                 break;
             }
             case MeshType::PROJECTILE:
