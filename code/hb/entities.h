@@ -51,7 +51,7 @@ struct Projectile
 // Values are copied into new components
 struct Entity
 {
-    uint32_t supported_components;   // bitfield containing implemented components
+    uint32_t supported_components = 0;   // bitfield containing implemented components
 
     Physics physics;
     MeshId mesh_id;

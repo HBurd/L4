@@ -66,7 +66,7 @@ void ClientData::create_server(uint16_t port)
 
 	if (!success)
 	{
-		std::cout << "Eror creating server process" << std::endl;
+		std::cout << "Error creating server process" << std::endl;
 	}
 
 	server_pipe = parent_read_pipe;

@@ -8,6 +8,7 @@ namespace MeshType
         SHIP,
         PROJECTILE,
         SKYBOX,
+        PLANET,
         NUM_MESH_TYPES,
     };
 }

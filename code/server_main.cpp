@@ -11,6 +11,7 @@
 #include "hb/time.h"
 #include "hb/entities.h"
 #include "hb/ship.h"
+#include "hb/planet.h"
 #include "hb/util.h"
 #include "hb/player_control.h"
 #include "hb/server.h"
@@ -55,13 +56,10 @@ int main(int argc, char* argv[])
     vector<GamePacketIn> game_packets;
 
     EntityManager *entity_manager = new EntityManager();
-    // add list for projectiles
-    entity_manager->entity_lists.push_back(
-        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
-    // add list for players
-    entity_manager->entity_lists.push_back(
-        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
+
+    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -40.0f), 1.0f));
  
+    
     TimeKeeper time_keeper;
 
     bool running = true;

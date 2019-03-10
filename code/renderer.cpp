@@ -259,6 +259,12 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
                 meshes.push_back(Mesh("resources/models/skybox.obj", shader_prog));
                 break;
             }
+            case MeshType::PLANET:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
+                meshes.push_back(Mesh("resources/models/planet.obj", shader_prog));
+            } break;
             default:
                 assert(false); // Unimplemeneted mesh type
         }

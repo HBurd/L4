@@ -99,12 +99,6 @@ int main(int argc, char *argv[])
     PlayerInputBuffer past_inputs;
 
     EntityManager *entity_manager = new EntityManager();
-    // add list for projectiles
-    entity_manager->entity_lists.push_back(
-        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE));
-    // add list for players
-    entity_manager->entity_lists.push_back(
-        EntityList(ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PLAYER_CONTROL));
  
     TimeKeeper time_keeper;
 

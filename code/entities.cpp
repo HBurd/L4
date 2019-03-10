@@ -190,42 +190,59 @@ void EntityTable::update_handle(EntityHandle handle, size_t new_list_idx, size_t
 EntityHandle EntityManager::create_entity(Entity entity)
 {
     // find a suitable EntityList for this entity
-    for (size_t list_idx = 0; list_idx < entity_lists.size(); list_idx++)
+    EntityList *entity_list = nullptr;
+    size_t list_idx;
+    for (list_idx = 0; list_idx < entity_lists.size(); list_idx++)
     {
-        EntityList& entity_list = entity_lists[list_idx];
-
         // components must match exactly
-        if (entity_list.supported_components == entity.supported_components)
+        if (entity_lists[list_idx].supported_components == entity.supported_components)
         {
-            size_t entity_idx = entity_list.size;
-            EntityHandle handle = entity_table.add_entry(list_idx, entity_idx);
-            entity_list.add_entity(entity, handle);
-            return handle;
+            entity_list = &entity_lists[list_idx];
+            break;
         }
     }
 
-    assert(false);  // unable to find suitable list
-    return {};
+    // make a new list if a suitable one wasn't found
+    if (entity_list == nullptr)
+    {
+        list_idx = entity_lists.size();
+        entity_lists.push_back(EntityList(entity.supported_components));
+        entity_list = &entity_lists.back();
+    }
+
+    size_t entity_idx = entity_list->size;
+    EntityHandle handle = entity_table.add_entry(list_idx, entity_idx);
+    entity_list->add_entity(entity, handle);
+    return handle;
 }
 
 void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity_handle)
 {
     // find a suitable EntityList for this entity
-    for (size_t list_idx = 0; list_idx < entity_lists.size(); list_idx++)
+    EntityList *entity_list = nullptr;
+    size_t list_idx;
+    for (list_idx = 0; list_idx < entity_lists.size(); list_idx++)
     {
-        EntityList& entity_list = entity_lists[list_idx];
-
         // components must match exactly
-        if (entity_list.supported_components == entity.supported_components)
+        if (entity_lists[list_idx].supported_components == entity.supported_components)
         {
-            size_t entity_idx = entity_list.size;
-            entity_table.add_entry_with_handle(list_idx, entity_idx, entity_handle);
-            entity_list.add_entity(entity, entity_handle);
-            return;
+            entity_list = &entity_lists[list_idx];
+            break;
         }
     }
 
-    assert(false);  // unable to find suitable list
+    // make a new list if a suitable one wasn't found
+    if (entity_list == nullptr)
+    {
+        list_idx = entity_lists.size();
+        entity_lists.push_back(EntityList(entity.supported_components));
+        entity_list = &entity_lists.back();
+    }
+
+    size_t entity_idx = entity_list->size;
+    entity_table.add_entry_with_handle(list_idx, entity_idx, entity_handle);
+    entity_list->add_entity(entity, entity_handle);
+    return;
 }
 
 void EntityManager::kill_entity(EntityHandle handle)
