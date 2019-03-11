@@ -16,6 +16,7 @@ namespace ComponentType
         MESH = 2,               // TODO: can we include component dependencies in here?
         PLAYER_CONTROL = 4,
         PROJECTILE = 8,
+        TRANSFORM = 16,
 
         // =======================================
         // Add components here as they are created
@@ -23,15 +24,21 @@ namespace ComponentType
     };
 }
 
-struct Physics
+struct Transform
 {
     Vec3 position;
     Vec3 velocity;
     Rotor orientation;
     Vec3 angular_velocity;
+    Vec3 scale = Vec3(1.0f, 1.0f, 1.0f);
 
-    Physics() = default;
-    Physics(Vec3 _position);
+    Transform() = default;
+    Transform(Vec3 transform_position);
+};
+
+struct Physics
+{
+    float mass = 1.0f;
 };
 
 // TODO: this doesn't belong here
@@ -53,6 +60,7 @@ struct Entity
 {
     uint32_t supported_components = 0;   // bitfield containing implemented components
 
+    Transform transform;
     Physics physics;
     MeshId mesh_id;
     PlayerControl player_control;
@@ -82,6 +90,7 @@ struct EntityList
 
     size_t size = 0;
     uint32_t supported_components;   // bitfield containing implemented components
+    vector<Transform> transform_list;
     vector<Physics> physics_list;
     vector<MeshId> mesh_list;
     vector<PlayerControl> player_control_list;

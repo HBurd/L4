@@ -55,7 +55,7 @@ struct Renderer
     ShaderProgramId load_shader(const char* vshader, const char* fshader);
     GLuint load_texture(const char* texture_filename);
     void set_screen_size(unsigned int w, unsigned int h);
-    void draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const;
+    void draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const;
     void draw_skybox() const;
     void clear() const;
 

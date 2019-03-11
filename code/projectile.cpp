@@ -1,17 +1,17 @@
 #include "hb/projectile.h"
 #include "hb/mesh_type.h"
 
-Entity create_projectile(Physics shooter_physics)
+Entity create_projectile(Transform shooter_transform)
 {
     Entity result;
-    result.supported_components = ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE;
-    result.physics = shooter_physics;
-    result.physics.velocity += 0.7f * (shooter_physics.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f));
-    result.physics.angular_velocity;
+    result.supported_components = ComponentType::TRANSFORM | ComponentType::PHYSICS | ComponentType::MESH | ComponentType::PROJECTILE;
+    result.transform = shooter_transform;
+    result.transform.velocity += 0.7f * (shooter_transform.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f));
+    result.transform.angular_velocity;
     result.mesh_id = MeshType::PROJECTILE;
 
     // push projectile forward so it doesn't collide with shooter
-    result.physics.position += 2 * result.physics.velocity;
+    result.transform.position += 2 * result.transform.velocity;
 
     return result;
 }

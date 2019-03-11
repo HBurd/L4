@@ -4,7 +4,8 @@
 void handle_player_input(
     PlayerControlState input,
     float dt,
-    Physics *player_physics,
+    Transform *player_transform,
+    float mass,
     PlayerInputBuffer *player_input_buffer,
     ClientData *client)
 {
@@ -16,7 +17,8 @@ void handle_player_input(
 
     // client side prediction:
     player_control_update(
-        player_physics,
+        player_transform,
+        mass,
         input,
         dt);
 }

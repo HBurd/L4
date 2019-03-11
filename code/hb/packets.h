@@ -50,13 +50,16 @@ struct ControlUpdatePacket
     ControlUpdatePacket(PlayerControlState _state, uint32_t _sequence);
 };
 
-struct PhysicsSyncPacket
+struct TransformSyncPacket
 {
     EntityHandle entity;
-    Physics physics_state;
+    Transform transform_state;
     uint32_t sequence;
 
-    PhysicsSyncPacket(EntityHandle _entity, Physics physics, uint32_t _sequence);
+    TransformSyncPacket(
+        EntityHandle transform_entity,
+        Transform transform,
+        uint32_t packet_sequence);
 };
 
 struct PlayerDamagePacket
@@ -83,7 +86,7 @@ struct GamePacket
         PlayerSpawnPacket player_spawn;
         EntityCreatePacket entity_create;
         ControlUpdatePacket control_update;
-        PhysicsSyncPacket physics_sync;
+        TransformSyncPacket transform_sync;
         PlayerDamagePacket player_damage;
         // ===============================
         // ^^ ADD NEW PACKET TYPES HERE ^^

@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
     EntityManager *entity_manager = new EntityManager();
 
-    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -40.0f), 1.0f));
+    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f));
  
     
     TimeKeeper time_keeper;
@@ -144,14 +144,15 @@ int main(int argc, char* argv[])
                     &list_idx,
                     &entity_idx))
             { 
+                Transform* player_transform = &entity_manager->entity_lists[list_idx].transform_list[entity_idx];
                 Physics* player_physics = &entity_manager->entity_lists[list_idx].physics_list[entity_idx];
-                player_control_update(player_physics, client.player_control, TIMESTEP);
+                player_control_update(player_transform, player_physics->mass, client.player_control, TIMESTEP);
 
                 // Create an entity if the player shot
                 if (client.player_control.shoot)
                 {
                     Entity projectile_entity = create_projectile(
-                        entity_manager->entity_lists[list_idx].physics_list[entity_idx]);
+                        entity_manager->entity_lists[list_idx].transform_list[entity_idx]);
                     EntityHandle projectile_handle =
                         entity_manager->create_entity(projectile_entity);
                     EntityCreatePacket entity_create_packet(
@@ -165,14 +166,14 @@ int main(int argc, char* argv[])
                 }
 
                 // Send the sync packet
-                PhysicsSyncPacket physics_sync(
+                TransformSyncPacket transform_sync(
                     client.player_entity,
-                    entity_manager->entity_lists[list_idx].physics_list[entity_idx],
+                    entity_manager->entity_lists[list_idx].transform_list[entity_idx],
                     client.sequence);
                 server.broadcast(
                    GamePacketType::PHYSICS_SYNC,
-                   &physics_sync,
-                   sizeof(physics_sync));
+                   &transform_sync,
+                   sizeof(transform_sync));
             }
 
             client.received_input = false;
@@ -199,8 +200,8 @@ int main(int argc, char* argv[])
                         if (list1_idx == list2_idx && entity1_idx == entity2_idx)
                             continue;
                         const float collision_distance = 1.0f;
-                        if ((entity_list1.physics_list[entity1_idx].position
-                             - entity_list2.physics_list[entity2_idx].position)
+                        if ((entity_list1.transform_list[entity1_idx].position
+                             - entity_list2.transform_list[entity2_idx].position)
                              .norm() < collision_distance)
                         {
                             PlayerDamagePacket player_damage_packet(

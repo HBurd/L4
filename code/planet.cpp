@@ -4,8 +4,9 @@
 Entity create_planet(Vec3 position, float radius)
 {
     Entity result;
-    result.supported_components = ComponentType::PHYSICS | ComponentType::MESH;
-    result.physics = Physics(position);
+    result.supported_components = ComponentType::TRANSFORM | ComponentType::MESH;
+    result.transform= Transform(position);
+    result.transform.scale = radius * Vec3(1.0f, 1.0f, 1.0f);
     result.mesh_id = MeshType::PLANET;
 
     return result;

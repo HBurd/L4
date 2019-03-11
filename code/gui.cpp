@@ -181,15 +181,16 @@ static void draw_guidance_stats(
               &other_entity_idx))
     {
         const EntityList& player_list = entity_manager->entity_lists[player_list_idx];
-        Physics player_physics = player_list.physics_list[player_entity_idx];
+        Transform player_transform = player_list.transform_list[player_entity_idx];
 
         const EntityList& other_list = entity_manager->entity_lists[other_list_idx];
-        Physics other_physics = other_list.physics_list[other_entity_idx];
+        Transform other_transform = other_list.transform_list[other_entity_idx];
 
-        float distance = (player_physics.position - other_physics.position).norm();
+        float distance = (player_transform.position - other_transform.position).norm();
         ImGui::Text("Distance: %f", distance);
 
-        float relative_velocity = (player_physics.velocity - other_physics.velocity).norm();
+        float relative_velocity =
+            (player_transform.velocity - other_transform.velocity).norm();
         ImGui::Text("Relative velocity: %f", relative_velocity);
     }
 }

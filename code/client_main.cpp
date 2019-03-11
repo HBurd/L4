@@ -204,9 +204,12 @@ int main(int argc, char *argv[])
                 &list_idx,
                 &entity_idx);
 
-            Physics& player_physics = entity_manager->entity_lists[list_idx].physics_list[entity_idx];
+            Transform& player_transform =
+                entity_manager->entity_lists[list_idx].transform_list[entity_idx];
+            Physics& player_physics =
+                entity_manager->entity_lists[list_idx].physics_list[entity_idx];
             
-            Physics target_physics;
+            Transform target_transform;
             if (client_state.track)
             {
                 size_t target_list_idx;
@@ -217,21 +220,25 @@ int main(int argc, char *argv[])
                     &target_list_idx,
                     &target_entity_idx);
                 
-                target_physics = entity_manager->entity_lists[target_list_idx].physics_list[target_entity_idx];
+                target_transform =
+                    entity_manager
+                        ->entity_lists[target_list_idx]
+                        .transform_list[target_entity_idx];
             }
 
             PlayerControlState control_state = player_control_get_state(
                 kb,
                 client_state.stabilize,
-                player_physics,
+                player_transform,
                 client_state.track,
-                target_physics);
+                target_transform);
             control_state.shoot = kb.down.enter;
 
             handle_player_input(
                 control_state,
                 (float)TIMESTEP,
-                &player_physics,
+                &player_transform,
+                player_physics.mass,
                 &past_inputs,
                 &client);
         }
@@ -271,7 +278,7 @@ int main(int argc, char *argv[])
                     size_t list_idx;
                     size_t entity_idx;
                     if (entity_manager->entity_table.lookup_entity(
-                            packet.packet.packet_data.physics_sync.entity,
+                            packet.packet.packet_data.transform_sync.entity,
                             entity_manager->entity_lists,
                             &list_idx,
                             &entity_idx))
@@ -279,18 +286,18 @@ int main(int argc, char *argv[])
                         if (entity_manager->entity_lists[list_idx].handles[entity_idx]
                                 == client_state.player_handle)
                         {
-                            // if we have received no later physics syncs from the server
-                            if (packet.packet.packet_data.physics_sync.sequence
+                            // if we have received no later transform syncs from the server
+                            if (packet.packet.packet_data.transform_sync.sequence
                                 > past_inputs.last_received_seq_num)
                             {
-                                // Apply the physics update
-                                entity_manager->entity_lists[list_idx].physics_list[entity_idx] = 
-                                    packet.packet.packet_data.physics_sync.physics_state;
+                                // Apply the transform update
+                                entity_manager->entity_lists[list_idx].transform_list[entity_idx] = 
+                                    packet.packet.packet_data.transform_sync.transform_state;
                                 past_inputs.last_received_seq_num =
-                                    packet.packet.packet_data.physics_sync.sequence;
+                                    packet.packet.packet_data.transform_sync.sequence;
 
                                 // apply later inputs (reconciliation)
-                                for (uint32_t sequence = packet.packet.packet_data.physics_sync.sequence;
+                                for (uint32_t sequence = packet.packet.packet_data.transform_sync.sequence;
                                      sequence < past_inputs.next_seq_num;
                                      sequence++)
                                 {
@@ -298,7 +305,8 @@ int main(int argc, char *argv[])
                                     if (past_inputs.inputs[input_idx].sequence_number == sequence)
                                     {
                                         player_control_update(
-                                            &entity_manager->entity_lists[list_idx].physics_list[entity_idx],
+                                            &entity_manager->entity_lists[list_idx].transform_list[entity_idx],
+                                            entity_manager->entity_lists[list_idx].physics_list[entity_idx].mass,
                                             past_inputs.inputs[input_idx].input,
                                             past_inputs.inputs[input_idx].dt);
                                     }
@@ -307,8 +315,8 @@ int main(int argc, char *argv[])
                         }
                         else    // if the update isn't for the player then always apply it
                         {
-                            entity_manager->entity_lists[list_idx].physics_list[entity_idx] = 
-                                packet.packet.packet_data.physics_sync.physics_state;
+                            entity_manager->entity_lists[list_idx].transform_list[entity_idx] = 
+                                packet.packet.packet_data.transform_sync.transform_state;
                         }
                     }
                     break;
@@ -344,9 +352,9 @@ int main(int argc, char *argv[])
                    &list_idx,
                    &entity_idx))
             {
-                renderer.camera_pos = entity_manager->entity_lists[list_idx].physics_list[entity_idx].position;
+                renderer.camera_pos = entity_manager->entity_lists[list_idx].transform_list[entity_idx].position;
                 renderer.camera_orientation =
-                    entity_manager->entity_lists[list_idx].physics_list[entity_idx].orientation;
+                    entity_manager->entity_lists[list_idx].transform_list[entity_idx].orientation;
             }
         }
         
@@ -362,13 +370,17 @@ int main(int argc, char *argv[])
         {
             EntityList& entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
-            if (!entity_list.supports_components(ComponentType::PHYSICS | ComponentType::MESH))
+            if (!entity_list.supports_components(ComponentType::TRANSFORM | ComponentType::MESH))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
                 MeshId ship_mesh = entity_list.mesh_list[entity_idx];
-                Physics ship_physics = entity_list.physics_list[entity_idx];
-                renderer.draw_mesh(ship_mesh, ship_physics.position, ship_physics.orientation);
+                Transform ship_transform = entity_list.transform_list[entity_idx];
+                renderer.draw_mesh(
+                    ship_mesh,
+                    ship_transform.position,
+                    ship_transform.scale,
+                    ship_transform.orientation);
             }
         }
 
@@ -377,25 +389,25 @@ int main(int argc, char *argv[])
 
         SDL_GL_SwapWindow(window);
 
-		double delta_time = time_keeper.get_delta_time_s_no_reset();
+        double delta_time = time_keeper.get_delta_time_s_no_reset();
 
-		// wait until we've hit 60 fps
-		double time_remaining = TIMESTEP - delta_time;
-		if (time_remaining > 0.0)
-		{
-			if (time_remaining > 0.001)
-			{
-				SDL_Delay((uint32_t)(1000 * floorf(time_remaining)));
-			}
-			// busy wait for the rest of the time
-			delta_time = time_keeper.get_delta_time_s_no_reset();
-			while (delta_time < TIMESTEP)
-			{
-				delta_time = time_keeper.get_delta_time_s_no_reset();
-			}
-		}
+        // wait until we've hit 60 fps
+        double time_remaining = TIMESTEP - delta_time;
+        if (time_remaining > 0.0)
+        {
+            if (time_remaining > 0.001)
+            {
+                SDL_Delay((uint32_t)(1000 * floorf(time_remaining)));
+            }
+            // busy wait for the rest of the time
+            delta_time = time_keeper.get_delta_time_s_no_reset();
+            while (delta_time < TIMESTEP)
+            {
+                delta_time = time_keeper.get_delta_time_s_no_reset();
+            }
+        }
 
-		delta_time = time_keeper.get_delta_time_s();
+        delta_time = time_keeper.get_delta_time_s();
     }
 
     SDL_Quit();

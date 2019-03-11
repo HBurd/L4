@@ -8,7 +8,8 @@
 void handle_player_input(
     PlayerControlState input,
     float delta_time,
-    Physics *player_physics,
+    Transform *player_transform,
+    float mass,
     PlayerInputBuffer *player_input_buffer,
     ClientData *client);
 

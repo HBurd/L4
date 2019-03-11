@@ -2,8 +2,8 @@
 #include "hb/util.h"
 #include <cassert>
 
-Physics::Physics(Vec3 _position)
-:position(_position) {}
+Transform::Transform(Vec3 transform_position)
+:position(transform_position) {}
 
 EntityList::EntityList(uint32_t _supported_components)
 :supported_components(_supported_components) {}
@@ -13,6 +13,11 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
     assert(entity.supported_components == supported_components);
     size++;
 
+    if (supported_components & ComponentType::TRANSFORM)
+    {
+        transform_list.push_back(entity.transform);
+        assert(transform_list.size() == size);
+    }
     if (supported_components & ComponentType::PHYSICS)
     {
         physics_list.push_back(entity.physics);
@@ -44,6 +49,11 @@ Entity EntityList::serialize(size_t entity_idx)
     Entity entity;
     // we aren't setting entity's supported components directly
     // so that we can test at the end that everything's been added
+    if (supported_components & ComponentType::TRANSFORM)
+    {
+        entity.supported_components |= ComponentType::TRANSFORM;
+        entity.transform = transform_list[entity_idx];
+    }
     if (supported_components & ComponentType::PHYSICS)
     {
         entity.supported_components |= ComponentType::PHYSICS;
@@ -280,6 +290,12 @@ void EntityManager::kill_entity(EntityHandle handle)
     // Now remove actual components
     // we have to modify each list individually
     uint32_t removed_components = 0;
+    if (entity_list.supports_components(ComponentType::TRANSFORM))
+    {
+        entity_list.transform_list[entity_idx] = entity_list.transform_list.back();
+        entity_list.transform_list.pop_back();
+        removed_components |= ComponentType::TRANSFORM;
+    }
     if (entity_list.supports_components(ComponentType::PHYSICS))
     {
         entity_list.physics_list[entity_idx] = entity_list.physics_list.back();

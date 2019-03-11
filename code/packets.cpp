@@ -19,10 +19,13 @@ EntityCreatePacket::EntityCreatePacket(
     handle(entity_handle)
 {}
 
-PhysicsSyncPacket::PhysicsSyncPacket(EntityHandle _entity, Physics physics, uint32_t _sequence)
-: entity(_entity),
-    physics_state(physics),
-    sequence(_sequence)
+TransformSyncPacket::TransformSyncPacket(
+    EntityHandle transform_entity,
+    Transform transform,
+    uint32_t packet_sequence)
+: entity(transform_entity),
+    transform_state(transform),
+    sequence(packet_sequence)
 {}
 
 PlayerDamagePacket::PlayerDamagePacket(ClientId _player)

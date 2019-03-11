@@ -322,7 +322,7 @@ void Renderer::set_screen_size(unsigned int w, unsigned int h)
     glViewport(0, 0, width, height);
 }
 
-void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const
+void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const
 {
     Mat33 rotation_matrix = orientation.to_matrix();
     
@@ -367,6 +367,12 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Rotor orientation) const
         1,
         GL_TRUE,
         (GLfloat*)&camera_orientation_inverse.data);
+
+    GLuint scale_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "scale");
+    glUniform3fv(scale_uniform_location, 1, (GLfloat*)&scale);
 
     glBindVertexArray(mesh->vao);
     glDrawArrays(

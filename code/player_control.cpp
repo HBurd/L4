@@ -11,9 +11,9 @@ const float MAX_TORQUE = 1.0f;
 PlayerControlState player_control_get_state(
     const Keyboard kb,
     bool stabilize,
-    Physics player,
+    Transform player,
     bool track,
-    Physics target)
+    Transform target)
 {
     // build the control packet and send it to the server
 
@@ -91,13 +91,13 @@ PlayerControlState player_control_get_state(
     return control_state;
 }
 
-void player_control_update(Physics *physics, PlayerControlState control_state, float dt)
+void player_control_update(Transform *transform, float mass, PlayerControlState control_state, float dt)
 {
-    Vec3 thrust = physics->orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
-    thrust = thrust * control_state.thrust * dt;
+    Vec3 thrust = transform->orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
+    thrust = thrust * control_state.thrust;
     
-    physics->velocity += thrust;
-    physics->angular_velocity += control_state.torque * dt;
+    transform->velocity += thrust * (dt / mass);
+    transform->angular_velocity += control_state.torque * (dt / mass);
 }
 
 void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)

@@ -32,11 +32,11 @@ struct PlayerInputBuffer
 PlayerControlState player_control_get_state(
     const Keyboard kb,
     bool stabilize,
-    Physics player,
+    Transform player,
     bool track,
-    Physics target);
+    Transform target);
 
-void player_control_update(Physics *physics, PlayerControlState control_state, float dt);
+void player_control_update(Transform *transform, float mass, PlayerControlState control_state, float dt);
 
 #ifdef FAST_BUILD
 #include "player_control.cpp"
