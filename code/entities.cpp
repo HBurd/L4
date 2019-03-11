@@ -5,6 +5,9 @@
 Transform::Transform(Vec3 transform_position)
 :position(transform_position) {}
 
+Planet::Planet(float planet_radius, float planet_mass)
+:radius(planet_radius), mass(planet_mass) {}
+
 EntityList::EntityList(uint32_t _supported_components)
 :supported_components(_supported_components) {}
 
@@ -37,6 +40,11 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
     {
         projectile_list.push_back(entity.projectile);
         assert(projectile_list.size() == size);
+    }
+    if (supported_components & ComponentType::PLANET)
+    {
+        planet_list.push_back(entity.planet);
+        assert(planet_list.size() == size);
     }
     
     handles.push_back(handle);
@@ -73,6 +81,11 @@ Entity EntityList::serialize(size_t entity_idx)
     {
         entity.supported_components |= ComponentType::PROJECTILE;
         entity.projectile = projectile_list[entity_idx];
+    }
+    if (supported_components & ComponentType::PLANET)
+    {
+        entity.supported_components |= ComponentType::PLANET;
+        entity.planet = planet_list[entity_idx];
     }
 
     // see above
@@ -319,6 +332,12 @@ void EntityManager::kill_entity(EntityHandle handle)
         entity_list.projectile_list[entity_idx] = entity_list.projectile_list.back();
         entity_list.projectile_list.pop_back();
         removed_components |= ComponentType::PROJECTILE;
+    }
+    if (entity_list.supports_components(ComponentType::PLANET))
+    {
+        entity_list.planet_list[entity_idx] = entity_list.planet_list.back();
+        entity_list.planet_list.pop_back();
+        removed_components |= ComponentType::PLANET;
     }
 
     // verify we removed all of this entity's components

@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
     EntityManager *entity_manager = new EntityManager();
 
-    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f));
+    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f));
  
     
     TimeKeeper time_keeper;

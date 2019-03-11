@@ -17,6 +17,7 @@ namespace ComponentType
         PLAYER_CONTROL = 4,
         PROJECTILE = 8,
         TRANSFORM = 16,
+        PLANET = 32,
 
         // =======================================
         // Add components here as they are created
@@ -34,6 +35,15 @@ struct Transform
 
     Transform() = default;
     Transform(Vec3 transform_position);
+};
+
+struct Planet
+{
+    float radius = 1.0f;
+    float mass = 1.0f;
+
+    Planet() = default;
+    Planet(float planet_radius, float planet_mass);
 };
 
 struct Physics
@@ -65,6 +75,7 @@ struct Entity
     MeshId mesh_id;
     PlayerControl player_control;
     Projectile projectile;
+    Planet planet;
 
     // =======================================
     // Add components here as they are created
@@ -95,6 +106,7 @@ struct EntityList
     vector<MeshId> mesh_list;
     vector<PlayerControl> player_control_list;
     vector<Projectile> projectile_list;
+    vector<Planet> planet_list;
 
     // =======================================
     // Add components here as they are created
