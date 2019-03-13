@@ -2,9 +2,6 @@
 #include "hb/util.h"
 #include <cassert>
 
-Transform::Transform(Vec3 transform_position)
-:position(transform_position) {}
-
 Planet::Planet(float planet_radius, float planet_mass)
 :radius(planet_radius), mass(planet_mass) {}
 

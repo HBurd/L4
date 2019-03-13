@@ -2,6 +2,7 @@
 #define HBENTITIES_H
 
 #include <vector>
+#include "hb/TransformComponent.h"
 #include "hb/renderer.h"
 
 using std::vector;
@@ -24,18 +25,6 @@ namespace ComponentType
         // =======================================
     };
 }
-
-struct Transform
-{
-    Vec3 position;
-    Vec3 velocity;
-    Rotor orientation;
-    Vec3 angular_velocity;
-    Vec3 scale = Vec3(1.0f, 1.0f, 1.0f);
-
-    Transform() = default;
-    Transform(Vec3 transform_position);
-};
 
 struct Planet
 {
