@@ -144,15 +144,30 @@ int main(int argc, char* argv[])
                     &list_idx,
                     &entity_idx))
             { 
-                Transform* player_transform = &entity_manager->entity_lists[list_idx].transform_list[entity_idx];
-                Physics* player_physics = &entity_manager->entity_lists[list_idx].physics_list[entity_idx];
-                player_control_update(player_transform, player_physics->mass, client.player_control, TIMESTEP);
+                Transform &player_transform = entity_manager->entity_lists[list_idx].transform_list[entity_idx];
+                Physics &player_physics = entity_manager->entity_lists[list_idx].physics_list[entity_idx];
+                Vec3 ship_thrust;
+                Vec3 ship_torque;
+                get_ship_thrust(
+                    client.player_control,
+                    player_transform.orientation,
+                    &ship_thrust,
+                    &ship_torque);
+
+                apply_impulse(
+                    ship_thrust * TIMESTEP,
+                    &player_transform.velocity,
+                    player_physics.mass);
+                apply_angular_impulse(
+                    ship_torque * TIMESTEP,
+                    &player_transform.angular_velocity,
+                    player_physics.mass);
 
                 // Create an entity if the player shot
                 if (client.player_control.shoot)
                 {
-                    Entity projectile_entity = create_projectile(
-                        entity_manager->entity_lists[list_idx].transform_list[entity_idx]);
+                    Entity projectile_entity =
+                        create_projectile(player_transform);
                     EntityHandle projectile_handle =
                         entity_manager->create_entity(projectile_entity);
                     EntityCreatePacket entity_create_packet(
@@ -168,7 +183,7 @@ int main(int argc, char* argv[])
                 // Send the sync packet
                 TransformSyncPacket transform_sync(
                     client.player_entity,
-                    entity_manager->entity_lists[list_idx].transform_list[entity_idx],
+                    player_transform,
                     client.sequence);
                 server.broadcast(
                    GamePacketType::PHYSICS_SYNC,

@@ -2,6 +2,7 @@
 #include "hb/net.h"
 #include "hb/packets.h"
 #include "hb/util.h"
+#include "hb/physics.h"
 #include "imgui/imgui.h"
 #include <cmath>
 
@@ -91,13 +92,11 @@ PlayerControlState player_control_get_state(
     return control_state;
 }
 
-void player_control_update(Transform *transform, float mass, PlayerControlState control_state, float dt)
+void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque)
 {
-    Vec3 thrust = transform->orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
-    thrust = thrust * control_state.thrust;
-    
-    transform->velocity += thrust * (dt / mass);
-    transform->angular_velocity += control_state.torque * (dt / mass);
+    *thrust = ship_orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
+    *thrust = *thrust * input.thrust;
+    *torque = input.torque;
 }
 
 void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)

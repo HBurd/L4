@@ -36,7 +36,7 @@ PlayerControlState player_control_get_state(
     bool track,
     Transform target);
 
-void player_control_update(Transform *transform, float mass, PlayerControlState control_state, float dt);
+void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 
 #ifdef FAST_BUILD
 #include "player_control.cpp"
