@@ -1,4 +1,5 @@
 #include "hb/renderer.h"
+#include "hb/util.h"
 #include "GL/glew.h"
 #include <string>
 #include <cassert>
@@ -71,9 +72,57 @@ GLuint link_program(GLint vshader, GLint fshader)
     return program;
 }
 
-Mesh::Mesh(const char* filename, ShaderProgramId _shader_program)
+Mesh::Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, ShaderProgramId mesh_shader_program)
 {
-    shader_program = _shader_program;
+    shader_program = mesh_shader_program;
+
+	assert(vertex_size == sizeof(Vec3));
+	for (uint32_t i = 0; i < num_vertices; i++)
+	{
+		vertices.push_back(
+			Vertex(
+				((Vec3*)mesh_vertices)[i],
+				Vec3(1.0f, 0.0f, 0.0f),
+				Vec2(0.0f, 0.0f)
+			)
+		);
+	}
+
+    // create and fill vbo
+    vbo = 0;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        num_vertices * vertex_size,
+        mesh_vertices,
+        GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    {
+        unsigned int stride = sizeof(vertex_size);
+        unsigned int location = 0;  // pos
+        GLvoid* offset = 0;
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(
+            location,
+            3,  // # components
+            GL_FLOAT,
+            GL_FALSE, // normalized int conversion
+            stride,
+            offset);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+Mesh::Mesh(const char* filename, ShaderProgramId mesh_shader_program)
+{
+    shader_program = mesh_shader_program;
 
     // load model
     tinyobj::attrib_t attrib;
@@ -265,6 +314,13 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
                     load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
                 meshes.push_back(Mesh("resources/models/planet.obj", shader_prog));
             } break;
+            case MeshType::CROSSHAIR:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("resources/shaders/line.vert", "resources/shaders/line.frag");
+                Vec3 crosshair_mesh[] = { Vec3(-0.5f, -0.5f, 0.0f), Vec3(0.5f, 0.5f, 0.0f), Vec3(-0.5f, 0.5f, 0.0f), Vec3(0.5f, -0.5f, 0.0f) };
+                meshes.push_back(Mesh(crosshair_mesh, ARRAY_LENGTH(crosshair_mesh), sizeof(*crosshair_mesh), shader_prog));
+            } break;
             default:
                 assert(false); // Unimplemeneted mesh type
         }
@@ -423,6 +479,55 @@ void Renderer::draw_skybox() const
     glDepthMask(GL_TRUE);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
+}
+
+void Renderer::draw_crosshair(Vec3 position, float scale) const
+{
+    Vec3 scale_v(scale, scale, 1.0f);
+    const Mesh* mesh = &meshes[MeshType::CROSSHAIR];
+    glUseProgram(shader_programs[0].program);
+
+    GLuint screen_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "screen");
+    glUniform2f(screen_uniform_location, (GLfloat)width, (GLfloat)height);
+
+    GLuint origin_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "origin");
+    glUniform3fv(origin_uniform_location, 1, (GLfloat*)&position);
+
+    GLuint camera_pos_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_pos");
+    glUniform3fv(camera_pos_uniform_location, 1, (GLfloat*)&camera_pos);
+
+    GLuint camera_orientation_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_orientation");
+    Mat33 camera_orientation_inverse = camera_orientation.inverse().to_matrix();
+    glUniformMatrix3fv(
+        camera_orientation_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&camera_orientation_inverse.data);
+
+    GLuint scale_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "scale");
+    glUniform3fv(scale_uniform_location, 1, (GLfloat*)&scale_v);
+
+    glBindVertexArray(mesh->vao);
+    glDrawArrays(
+        GL_LINES,
+        0,  // starting idx
+        (int)mesh->vertices.size()
+    );
 }
 
 void Renderer::clear() const

@@ -373,14 +373,18 @@ int main(int argc, char *argv[])
             if (!entity_list.supports_components(ComponentType::TRANSFORM | ComponentType::MESH))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
-            {
-                MeshId ship_mesh = entity_list.mesh_list[entity_idx];
-                Transform ship_transform = entity_list.transform_list[entity_idx];
+			{
+                MeshId mesh = entity_list.mesh_list[entity_idx];
+                Transform transform = entity_list.transform_list[entity_idx];
                 renderer.draw_mesh(
-                    ship_mesh,
-                    ship_transform.position,
-                    ship_transform.scale,
-                    ship_transform.orientation);
+                    mesh,
+                    transform.position,
+                    transform.scale,
+                    transform.orientation);
+				if (!entity_list.supports_components(ComponentType::PLAYER_CONTROL))
+				{
+					renderer.draw_crosshair(transform.position, 0.5f);
+				}
             }
         }
 

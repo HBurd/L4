@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 #include "GL/glew.h"
 
 #include "hb/mesh_type.h"
@@ -35,7 +36,8 @@ typedef size_t ShaderProgramId;
 
 struct Mesh
 {
-    Mesh(const char* filename, ShaderProgramId _shader_program);
+    Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, ShaderProgramId mesh_shader_program);
+    Mesh(const char* filename, ShaderProgramId mesh_shader_program);
 
     ShaderProgramId shader_program;
 
@@ -57,6 +59,7 @@ struct Renderer
     void set_screen_size(unsigned int w, unsigned int h);
     void draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const;
     void draw_skybox() const;
+	void draw_crosshair(Vec3 position, float scale) const;
     void clear() const;
 
     unsigned int width;
