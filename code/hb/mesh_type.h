@@ -9,6 +9,7 @@ namespace MeshType
         PROJECTILE,
         SKYBOX,
         PLANET,
+        CROSSHAIR,
         NUM_MESH_TYPES,
     };
 }

@@ -31,7 +31,7 @@ else ()
     target_link_libraries(L4server GL GLEW sndio dl pthread)
 endif ()
 
-add_definitions (-DFAST_BUILD=Y)
+add_definitions (-DFAST_BUILD=Y -DGLEW_NO_GLU)
 
 add_custom_command(TARGET L4client POST_BUILD      # Adds a post-build event to MyTest
     COMMAND ${CMAKE_COMMAND} -E copy               # which executes "cmake - E copy_if_different..."

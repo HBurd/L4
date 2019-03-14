@@ -8,13 +8,10 @@ out vec2 Texcoord;
 uniform vec2 screen;
 uniform vec3 camera_pos;
 uniform mat3 camera_orientation; // inverse
+uniform mat4 perspective;
 
 void main()
 {
-    float near = 0.1f;
-    float far = 1000.0f;
-    float scale = 0.07f;
-
     float aspect = screen.y / screen.x;
      
     float boxsize = 1.0f;
@@ -24,13 +21,18 @@ void main()
         0.0f, 0.0f, boxsize
     );
 
+/*
+    float near = 0.1f;
+    float far = 1000.0f;
+    float scale = 0.07f;
+
     mat4 perspective = mat4(
         near * aspect / scale, 0.0f, 0.0f, 0.0f,
         0.0f, near / scale, 0.0f, 0.0f,
         0.0f, 0.0f, -(near + far) / (far - near), -1,
         0.0f, 0.0f, -2 * near * far / (far - near), 0.0f
     );
-
+*/
     vec3 out_position = camera_orientation * scalemat * Position;
     gl_Position = perspective * vec4(out_position, 1.0f);
     Texcoord = Uv;
