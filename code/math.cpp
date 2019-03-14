@@ -244,6 +244,25 @@ Mat33 operator-(const Mat33& lhs, const Mat33& rhs)
     return result;
 }
 
+Mat44::Mat44(float *mat_data)
+{
+    memcpy(data, mat_data, sizeof(data));
+}
+
+Mat44 Mat44::perspective(float near, float far, float aspect_ratio)
+{
+    float scale = 0.07f;
+    float data[16] = 
+    {
+        near * aspect_ratio / scale, 0.0f, 0.0f, 0.0f,
+        0.0f, near / scale, 0.0f, 0.0f,
+        0.0f, 0.0f, -(near + far) / (far - near), -2 * near * far / (far - near),
+        0.0f, 0.0f, -1.0f, 0.0f
+    };
+
+    return Mat44(data);
+}
+
 Vec3 operator*(const Mat33& lhs, const Vec3& rhs)
 {
     return Vec3(

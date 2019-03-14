@@ -76,17 +76,17 @@ Mesh::Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, Sha
 {
     shader_program = mesh_shader_program;
 
-	assert(vertex_size == sizeof(Vec3));
-	for (uint32_t i = 0; i < num_vertices; i++)
-	{
-		vertices.push_back(
-			Vertex(
-				((Vec3*)mesh_vertices)[i],
-				Vec3(1.0f, 0.0f, 0.0f),
-				Vec2(0.0f, 0.0f)
-			)
-		);
-	}
+    assert(vertex_size == sizeof(Vec3));
+    for (uint32_t i = 0; i < num_vertices; i++)
+    {
+        vertices.push_back(
+            Vertex(
+                ((Vec3*)mesh_vertices)[i],
+                Vec3(1.0f, 0.0f, 0.0f),
+                Vec2(0.0f, 0.0f)
+            )
+        );
+    }
 
     // create and fill vbo
     vbo = 0;
@@ -104,7 +104,7 @@ Mesh::Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, Sha
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     {
-        unsigned int stride = sizeof(vertex_size);
+        unsigned int stride = vertex_size;
         unsigned int location = 0;  // pos
         GLvoid* offset = 0;
         glEnableVertexAttribArray(location);
@@ -430,6 +430,17 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
             "scale");
     glUniform3fv(scale_uniform_location, 1, (GLfloat*)&scale);
 
+    GLuint perspective_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "perspective");
+    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
+    glUniformMatrix4fv(
+        perspective_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&perspective.data);
+
     glBindVertexArray(mesh->vao);
     glDrawArrays(
         GL_TRIANGLES,
@@ -466,6 +477,17 @@ void Renderer::draw_skybox() const
         GL_TRUE,
         (GLfloat*)&camera_orientation_inverse.data);
 
+    GLuint perspective_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "perspective");
+    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
+    glUniformMatrix4fv(
+        perspective_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&perspective.data);
+
     glBindVertexArray(mesh->vao);
     glBindTexture(GL_TEXTURE_2D, skybox_texture);
     glDepthMask(GL_FALSE);
@@ -485,7 +507,7 @@ void Renderer::draw_crosshair(Vec3 position, float scale) const
 {
     Vec3 scale_v(scale, scale, 1.0f);
     const Mesh* mesh = &meshes[MeshType::CROSSHAIR];
-    glUseProgram(shader_programs[0].program);
+    glUseProgram(shader_programs[mesh->shader_program].program);
 
     GLuint screen_uniform_location =
         glGetUniformLocation(
@@ -515,6 +537,17 @@ void Renderer::draw_crosshair(Vec3 position, float scale) const
         1,
         GL_TRUE,
         (GLfloat*)&camera_orientation_inverse.data);
+
+    GLuint perspective_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "perspective");
+    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
+    glUniformMatrix4fv(
+        perspective_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&perspective.data);
 
     GLuint scale_uniform_location =
         glGetUniformLocation(

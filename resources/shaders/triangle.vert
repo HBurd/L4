@@ -9,6 +9,7 @@ uniform vec3 origin;
 uniform vec2 screen;
 uniform vec3 camera_pos;
 uniform mat3 camera_orientation; // inverse
+uniform mat4 perspective;
 
 out VS_OUTPUT
 {
@@ -19,11 +20,13 @@ void main()
 {
     mat3 rotation_matrix = rotation;
 
+
+    float aspect = screen.y / screen.x;
+
+/*
     float near = 0.1f;
     float far = 100000.0f;
     float pscale = 0.07f;
-
-    float aspect = screen.y / screen.x;
 
     mat4 perspective = mat4(
         near * aspect / pscale, 0.0f, 0.0f, 0.0f,
@@ -31,6 +34,7 @@ void main()
         0.0f, 0.0f, -(near + far) / (far - near), -1,
         0.0f, 0.0f, -2 * near * far / (far - near), 0.0f
     );
+    */
 
     mat3 scale_mat = mat3(
         scale.x, 0.0f, 0.0f,

@@ -79,6 +79,15 @@ struct Mat33
 
 static_assert(sizeof(Mat33) == 9 * sizeof(float), "There must be no padding between components");
 
+struct Mat44
+{
+    float data[16] = {}; // row major
+    Mat44() = default;
+    Mat44(float *mat_data);
+    
+    static Mat44 perspective(float near, float far, float aspect_ratio);
+};
+
 struct Rotor
 {
     float s = 1.0f;    // scalar part
