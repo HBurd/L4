@@ -11,7 +11,8 @@ Windows:
     mkdir build
     cd build
     cmake -G "Visual Studio 15 2017 Win64" ..
-    make
+    
+This will generate the Visual Studio solution. In theory this should also work with other versions of Visual Studio
   
 Linux:
 
@@ -19,3 +20,5 @@ Linux:
     cd build
     cmake ..
     make
+
+This will build the client and server application, `L4client and L4server`.
