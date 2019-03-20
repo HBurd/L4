@@ -21,4 +21,4 @@ Linux:
     cmake ..
     make
 
-This will build the client and server application, `L4client and L4server`.
+This will build the client and server application, `L4client` and `L4server`.
