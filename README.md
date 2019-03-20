@@ -7,13 +7,15 @@ Not much to do yet.
 You need CMake to build this project.
 
 Windows:
-  mkdir build
-  cd build
-  cmake -G "Visual Studio 15 2017 Win64" ..
-  make
+
+    mkdir build
+    cd build
+    cmake -G "Visual Studio 15 2017 Win64" ..
+    make
   
 Linux:
-  mkdir build
-  cd build
-  cmake ..
-  make
+
+    mkdir build
+    cd build
+    cmake ..
+    make
