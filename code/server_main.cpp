@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
                 apply_angular_impulse(
                     ship_torque * TIMESTEP,
                     &player_transform.angular_velocity,
-                    player_physics.mass);
+                    player_physics.angular_mass);
 
                 // Create an entity if the player shot
                 if (client.player_control.shoot)

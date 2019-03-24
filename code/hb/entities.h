@@ -38,6 +38,7 @@ struct Planet
 struct Physics
 {
     float mass = 1.0f;
+    float angular_mass = 1.0f; // moment of ineria
 };
 
 // TODO: this doesn't belong here

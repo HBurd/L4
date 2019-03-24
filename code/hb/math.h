@@ -97,11 +97,12 @@ struct Rotor
     float zx = 0.0f;   //
 
     Rotor() = default;
-    Rotor(const Vec3& v1, const Vec3& lhs);
+    Rotor(const Vec3 &v1, const Vec3 &lhs);
     Mat33 to_matrix() const;
     Rotor inverse() const;
     Rotor normalize() const;
     Rotor exponentiate(float t);
+    void to_angle_axis(float *angle, Vec3 *axis) const;
 
     static Rotor roll(float angle);
     static Rotor pitch(float angle);

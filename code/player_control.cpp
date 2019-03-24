@@ -30,15 +30,41 @@ PlayerControlState player_control_get_state(
 
     if (track)
     {
-        Vec3 target_direction = target.velocity - player.velocity;
-        if (target_direction.norm() >= 0.0001f)
-        {
-            // find the rotor representing the rotation to the thrust vector
-            Rotor err = Rotor(player.orientation.to_matrix() * Vec3(0.0f, 0.0f, 1.0f),
-                              target_direction.normalize());
-            
+        /*  Tracking will point the ship in a desired orientation.
+         *  It is achieved by finding the axis that rotates from the
+         *  player's direction to the target direction, and applying
+         *  torque on that axis using a PD controller (controlling angle).
+         *  This does not work if the player's angular velocity has a
+         *  component orthogonal to the plane of rotation, so a P controller
+         *  is used additionally to neutralize the angular velocity in this
+         *  direction.
+         *
+         *  Everything here is in the corrdinate frame of the player's ship.
+         */
+        Vec3 target_orientation = player.orientation.inverse().to_matrix() * (target.position - player.position).normalize();
 
-        }
+        Vec3 player_orientation = Vec3(0.0f, 0.0f, -1.0f);
+        
+        Rotor rotor(player_orientation, target_orientation);
+        float angle;
+        Vec3 axis;
+        rotor.to_angle_axis(&angle, &axis);
+
+        float derivative = dot(player.angular_velocity, axis);
+
+        // these values were picked using pidTuner in matlab
+        float torque = -0.96 * angle - 2.605 * derivative;
+
+        roll_torque  += torque * axis.x;
+        pitch_torque += torque * axis.y;
+        yaw_torque   += torque * axis.z;
+
+        Vec3 stabilize_axis = cross(axis, player_orientation);
+        // didn't do any tuning here, just picked Kp = 1
+        float stabilize_torque = -dot(player.angular_velocity, stabilize_axis);
+        roll_torque  += stabilize_torque * stabilize_axis.x;
+        pitch_torque += stabilize_torque * stabilize_axis.y;
+        yaw_torque   += stabilize_torque * stabilize_axis.z;
     }
     else if (stabilize)  // the two do not work together
     {
@@ -59,7 +85,6 @@ PlayerControlState player_control_get_state(
     if (kb.held.d) yaw_torque = MAX_TORQUE;
 
     // clamp torque
-
     float factor = 1.0f;
     if (fabs(roll_torque) > MAX_TORQUE)
     {

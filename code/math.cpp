@@ -1,6 +1,7 @@
 #include "hb/math.h"
 #include <cmath>
 #include <iostream>
+#include <cassert>
 
 using std::cout;
 using std::endl;
@@ -174,6 +175,13 @@ Vec3 operator*(const Vec3& lhs, float rhs)
 float dot(const Vec3& lhs, const Vec3& rhs)
 {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
+Vec3 cross(const Vec3& lhs, const Vec3& rhs)
+{
+    return Vec3(lhs.y * rhs.z - lhs.z * rhs.y,
+                lhs.z * rhs.x - lhs.x * rhs.z,
+                lhs.x * rhs.y - lhs.y * rhs.z);
 }
 
 Mat33::Mat33(float e11, float e12, float e13,
@@ -408,6 +416,24 @@ Rotor Rotor::exponentiate(float t)
     }
     return result;
     // (I barely understand this)
+}
+
+void Rotor::to_angle_axis(float *angle, Vec3 *axis) const
+{
+    // rotor has form: cos(a) + sin(a)v
+    // where v is a unit bivector
+    *angle = acosf(s);
+
+    float sin_angle = sin(*angle);
+    if (sin_angle != 0.0f)
+    {
+        *axis = Vec3(xy, yz, zx);
+        *axis = *axis * (1.0f / sin_angle);
+    }
+    else
+    {
+        *axis = Vec3(1.0f, 0.0f, 0.0f);
+    }
 }
 
 Rotor Rotor::lerp(const Rotor &start, const Rotor &end, float t)

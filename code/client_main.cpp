@@ -234,6 +234,9 @@ int main(int argc, char *argv[])
                 target_transform);
             control_state.shoot = kb.down.enter;
 
+            ControlUpdatePacket control_update(control_state, past_inputs.next_seq_num);
+            client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
+
             past_inputs.save_input(control_state, (float)TIMESTEP);
 
             Vec3 ship_thrust;
@@ -251,7 +254,7 @@ int main(int argc, char *argv[])
             apply_angular_impulse(
                 ship_torque * TIMESTEP,
                 &player_transform.angular_velocity,
-                player_physics.mass);
+                player_physics.angular_mass);
         }
 
         perform_entity_update_step(entity_manager, (float)TIMESTEP);
@@ -330,7 +333,7 @@ int main(int argc, char *argv[])
                                         apply_angular_impulse(
                                             ship_torque * past_inputs.inputs[input_idx].dt,
                                             &list.transform_list[entity_idx].angular_velocity,
-                                            list.physics_list[entity_idx].mass);
+                                            list.physics_list[entity_idx].angular_mass);
                                     }
                                 }
                             }
