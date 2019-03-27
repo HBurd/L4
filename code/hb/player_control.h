@@ -11,6 +11,9 @@ struct PlayerControlState
     float thrust = 0.0f;
     Vec3 torque;
     bool shoot = false;
+
+    // clamps torque and thrust to physical limits
+    void clamp();
 };
 
 struct PastInput
@@ -29,12 +32,18 @@ struct PlayerInputBuffer
     void save_input(PlayerControlState control_state, float dt);
 };
 
-PlayerControlState player_control_get_state(
-    const Keyboard kb,
-    bool stabilize,
-    Transform player,
-    bool track,
-    Transform target);
+Vec3 compute_target_tracking_torque(
+    Transform player_transform,
+    Physics player_physics,
+    Transform target_transform);
+
+Vec3 compute_stabilization_torque(
+    Transform transform,
+    Physics physics);
+
+Vec3 compute_player_input_torque(Keyboard kb);
+
+float compute_player_input_thrust(Keyboard kb);
 
 void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 

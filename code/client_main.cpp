@@ -208,30 +208,43 @@ int main(int argc, char *argv[])
                 entity_manager->entity_lists[list_idx].transform_list[entity_idx];
             Physics &player_physics =
                 entity_manager->entity_lists[list_idx].physics_list[entity_idx];
+
+            PlayerControlState control_state;
             
-            Transform target_transform;
             if (client_state.track)
             {
+                // Target tracking is enabled, overriding other control methods
                 size_t target_list_idx;
                 size_t target_entity_idx;
-                entity_manager->entity_table.lookup_entity(
+                if (entity_manager->entity_table.lookup_entity(
                     client_state.guidance_target,
                     entity_manager->entity_lists,
                     &target_list_idx,
-                    &target_entity_idx);
-                
-                target_transform =
-                    entity_manager
-                        ->entity_lists[target_list_idx]
-                        .transform_list[target_entity_idx];
+                    &target_entity_idx))
+                {
+                    Transform target_transform =
+                        entity_manager
+                            ->entity_lists[target_list_idx]
+                            .transform_list[target_entity_idx];
+                    control_state.torque += compute_target_tracking_torque(
+                        player_transform,
+                        player_physics,
+                        target_transform);
+                }
+            }
+            else if (client_state.stabilize)
+            {
+                control_state.torque += compute_stabilization_torque(
+                    player_transform,
+                    player_physics);
             }
 
-            PlayerControlState control_state = player_control_get_state(
-                kb,
-                client_state.stabilize,
-                player_transform,
-                client_state.track,
-                target_transform);
+            // The player always has some control even when some controller is acting
+            control_state.torque += compute_player_input_torque(kb);
+            control_state.thrust += compute_player_input_thrust(kb);
+
+            control_state.clamp();
+
             control_state.shoot = kb.down.enter;
 
             ControlUpdatePacket control_update(control_state, past_inputs.next_seq_num);

@@ -1,0 +1,17 @@
+Todo
+=====
+- Ship control system needs to take mass into account
+- Stabilization controller can be optimized
+
+Testing
+=======
+- Multiplayer synchronization?
+- Target tracking effectiveness?
+- Server clamps client torque?
+
+Known Bugs
+==========
+- Hanging indefinitely when failing to connect
+- Unable to find material files
+
+
