@@ -120,7 +120,7 @@ Mesh::Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, Sha
     glBindVertexArray(0);
 }
 
-Mesh::Mesh(const char* filename, ShaderProgramId mesh_shader_program)
+Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
 {
     shader_program = mesh_shader_program;
 
@@ -130,7 +130,16 @@ Mesh::Mesh(const char* filename, ShaderProgramId mesh_shader_program)
     std::vector<tinyobj::material_t> materials;
     string obj_warn;
     string obj_err;
-    tinyobj::LoadObj(&attrib, &shapes, &materials, &obj_warn, &obj_err, filename);
+    char mtl_path[256] = {};
+    memcpy(mtl_path, filename, strrchr(filename, '/') - filename);
+    tinyobj::LoadObj(
+        &attrib,
+        &shapes,
+        &materials,
+        &obj_warn,
+        &obj_err,
+        filename,
+        mtl_path);
 
     if (!obj_warn.empty())
     {
