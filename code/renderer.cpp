@@ -284,7 +284,7 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
     {
         assert(meshes.size() == mesh_type);
         // this is really weird... better way?
-        // TODO: also, we should load shaders separatly so there isn't duplication
+        // TODO: also, we should load shaders seperatly so there isn't duplication
         switch (mesh_type)
         {
             case MeshType::SHIP:

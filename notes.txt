@@ -13,5 +13,4 @@ Testing
 Known Bugs
 ==========
 - Unable to find material files
-
-
+- Heap corruption on windows when running client from the Debug directory
