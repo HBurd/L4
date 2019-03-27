@@ -43,9 +43,14 @@ Vec3 compute_target_tracking_torque(
     // these values were picked using pidTuner in matlab
     float torque = -0.96 * angle - 2.605 * derivative;
 
+
     Vec3 stabilize_axis = cross(axis, player_dir_rel);
     // didn't do any tuning here, just picked Kp = 1
     float stabilize_torque = -dot(player_omega, stabilize_axis);
+
+    // angular mass essentially divides the OL gain so we must account for that
+    torque *= player_physics.angular_mass;
+    stabilize_torque *= player_physics.angular_mass;
 
     return torque * axis + stabilize_torque * stabilize_axis;
 }
@@ -58,7 +63,7 @@ Vec3 compute_stabilization_torque(
     float pitch = transform.angular_velocity.y; // yz
     float yaw   = transform.angular_velocity.z; // zx
 
-    return -Vec3(roll, pitch, yaw);
+    return -Vec3(roll, pitch, yaw) * physics.angular_mass;
 }
 
 Vec3 compute_player_input_torque(

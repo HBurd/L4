@@ -1,6 +1,5 @@
 Todo
 =====
-- Ship control system needs to take mass into account
 - Stabilization controller can be optimized
 - Better in-game console (not attached to ship)
 
