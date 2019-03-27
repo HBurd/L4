@@ -5,8 +5,8 @@ ClientConnection::ClientConnection(HbSockaddr client_addr)
 
 ServerData::ServerData(uint16_t port)
 {
-	sock = create_game_socket();
-	bind_game_socket(sock, port);
+    sock = create_game_socket();
+    bind_game_socket(sock, port);
 }
 
 void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_size)

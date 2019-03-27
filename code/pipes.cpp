@@ -16,7 +16,7 @@ HbPipe create_subproc_with_redirected_stdout(char *command_line)
     // Create the server side of the pipe (for reading)
     HANDLE parent_read_pipe = CreateNamedPipe(
         "\\\\.\\pipe\\L4server_pipe",
-        PIPE_ACCESS_INBOUND,	// client to server
+        PIPE_ACCESS_INBOUND,    // client to server
         PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT,
         1,
         0,

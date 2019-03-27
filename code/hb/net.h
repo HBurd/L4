@@ -5,14 +5,14 @@
 #include <stdint.h>
 
 #ifdef __unix__
-	typedef int HbSocket;
-	const int HB_INVALID_SOCKET = -1;
+    typedef int HbSocket;
+    const int HB_INVALID_SOCKET = -1;
 #endif
 #ifdef _WIN32
-	#include <Winsock2.h>
+    #include <Winsock2.h>
 
-	typedef SOCKET HbSocket;
-	const SOCKET HB_INVALID_SOCKET = INVALID_SOCKET;
+    typedef SOCKET HbSocket;
+    const SOCKET HB_INVALID_SOCKET = INVALID_SOCKET;
 #endif
 
 // host endianness

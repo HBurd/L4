@@ -29,6 +29,7 @@ using std::vector;
 int main(int argc, char* argv[])
 {
 #ifdef __unix__
+    // TODO: doesn't belong here
     // exit when parent exits
     prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif

@@ -18,89 +18,89 @@ const size_t PIPE_READ_BUFFER_SIZE = 256;
 #ifdef _WIN32
 void ClientData::create_server(uint16_t port)
 {
-	SECURITY_ATTRIBUTES security_attributes = {};
-	security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
-	security_attributes.bInheritHandle = TRUE;
-	security_attributes.lpSecurityDescriptor = nullptr;
+    SECURITY_ATTRIBUTES security_attributes = {};
+    security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+    security_attributes.bInheritHandle = TRUE;
+    security_attributes.lpSecurityDescriptor = nullptr;
 
-	HANDLE parent_read_pipe = CreateNamedPipe(
-		"\\\\.\\pipe\\L4server_pipe",
-		PIPE_ACCESS_INBOUND,	// client to server
-		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT,
-		1,
-		0,
-		256,
-		0,
-		nullptr);
+    HANDLE parent_read_pipe = CreateNamedPipe(
+        "\\\\.\\pipe\\L4server_pipe",
+        PIPE_ACCESS_INBOUND,    // client to server
+        PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT,
+        1,
+        0,
+        256,
+        0,
+        nullptr);
 
-	HANDLE child_write_pipe = CreateFile(
-		"\\\\.\\pipe\\L4server_pipe",
-		GENERIC_WRITE,
-		0,
-		&security_attributes,
-		OPEN_EXISTING,
-		0,
-		0);
+    HANDLE child_write_pipe = CreateFile(
+        "\\\\.\\pipe\\L4server_pipe",
+        GENERIC_WRITE,
+        0,
+        &security_attributes,
+        OPEN_EXISTING,
+        0,
+        0);
 
-	// Create the server process
-	STARTUPINFO startup_info = {};
-	startup_info.cb = sizeof(STARTUPINFO);
-	startup_info.hStdError = child_write_pipe;
-	startup_info.hStdOutput = child_write_pipe;
-	startup_info.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-	startup_info.dwFlags = STARTF_USESTDHANDLES;
+    // Create the server process
+    STARTUPINFO startup_info = {};
+    startup_info.cb = sizeof(STARTUPINFO);
+    startup_info.hStdError = child_write_pipe;
+    startup_info.hStdOutput = child_write_pipe;
+    startup_info.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    startup_info.dwFlags = STARTF_USESTDHANDLES;
 
-	PROCESS_INFORMATION process_info = {};
+    PROCESS_INFORMATION process_info = {};
 
-	bool success = CreateProcess(
-		nullptr,
-		"Debug\\L4server 4444",
-		nullptr,
-		nullptr,
-		true,
-		0,
-		nullptr,
-		nullptr,
-		&startup_info,
-		&process_info);
+    bool success = CreateProcess(
+        nullptr,
+        "Debug\\L4server 4444",
+        nullptr,
+        nullptr,
+        true,
+        0,
+        nullptr,
+        nullptr,
+        &startup_info,
+        &process_info);
 
-	if (!success)
-	{
-		std::cout << "Error creating server process" << std::endl;
-	}
+    if (!success)
+    {
+        std::cout << "Error creating server process" << std::endl;
+    }
 
-	server_pipe = parent_read_pipe;
+    server_pipe = parent_read_pipe;
 
-	// Close unneeded handles
-	CloseHandle(process_info.hProcess);
-	CloseHandle(process_info.hThread);
+    // Close unneeded handles
+    CloseHandle(process_info.hProcess);
+    CloseHandle(process_info.hThread);
 
-	// Close the handle to the write end of the pipe that the server still owns.
-	// Child should retain its copy of the handle.
-	CloseHandle(child_write_pipe);
+    // Close the handle to the write end of the pipe that the server still owns.
+    // Child should retain its copy of the handle.
+    CloseHandle(child_write_pipe);
 }
 
 void ClientData::write_server_stdout(Console *console)
 {
-	DWORD n = 0;
-	char buf[PIPE_READ_BUFFER_SIZE];
-	while (true)
-	{
-		bool success = ReadFile(server_pipe, buf, sizeof(buf), &n, nullptr);
-		if (success)
-		{
-			if (n == 0) break;
-			console->writen(buf, n);
-		}
-		else
-		{
-			if (GetLastError() != ERROR_NO_DATA)
-			{
-				std::cout << "Error reading server pipe" << std::endl;
-			}
-			break;
-		}
-	}
+    DWORD n = 0;
+    char buf[PIPE_READ_BUFFER_SIZE];
+    while (true)
+    {
+        bool success = ReadFile(server_pipe, buf, sizeof(buf), &n, nullptr);
+        if (success)
+        {
+            if (n == 0) break;
+            console->writen(buf, n);
+        }
+        else
+        {
+            if (GetLastError() != ERROR_NO_DATA)
+            {
+                std::cout << "Error reading server pipe" << std::endl;
+            }
+            break;
+        }
+    }
 }
 
 #endif
@@ -161,9 +161,9 @@ void ClientData::write_server_stdout(Console *console)
 
 void ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
-	sock = create_game_socket();
-        server_addr.ip = server_ip;
-        server_addr.port = server_port;
+    sock = create_game_socket();
+    server_addr.ip = server_ip;
+    server_addr.port = server_port;
 
     // TODO: we may need to retry several times if the
     // server hasn't started yet (i.e. client creating
@@ -208,7 +208,7 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
         HbSockaddr from = {};
         uint8_t ack_packet_data[sizeof(GamePacket)] = {};
 
-        while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));	// TODO: add a delay
+        while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));    // TODO: add a delay
 
 #endif
 

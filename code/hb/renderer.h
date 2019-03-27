@@ -59,7 +59,7 @@ struct Renderer
     void set_screen_size(unsigned int w, unsigned int h);
     void draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const;
     void draw_skybox() const;
-	void draw_crosshair(Vec3 position, float scale) const;
+    void draw_crosshair(Vec3 position, float scale) const;
     void clear() const;
 
     unsigned int width;
