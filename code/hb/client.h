@@ -29,7 +29,7 @@ struct ClientData
     // write stdout of the server process to a circular buffer
     void write_server_stdout(Console *console);
 
-    void connect(uint32_t server_ip, uint16_t server_port);
+    bool connect(uint32_t server_ip, uint16_t server_port);
     void send_to_server(GamePacketType type, void *packet_data, size_t data_size);
     void spawn(Vec3 coords);
     void create_server(uint16_t port);

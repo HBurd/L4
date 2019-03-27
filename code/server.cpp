@@ -25,6 +25,15 @@ void ServerData::broadcast(GamePacketType type, void *packet_data, size_t data_s
 
 ClientId ServerData::accept_client(HbSockaddr client_addr)
 {
+    // check if we already have this client
+    for (auto client : clients)
+    {
+        if (client.addr == client_addr)
+        {
+            return INCOMPLETE_ID;
+        }
+    }
+
     // add to list of known clients
     ClientId client_id = clients.size();
     clients.push_back(ClientConnection(client_addr));

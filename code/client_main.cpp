@@ -90,8 +90,14 @@ int main(int argc, char *argv[])
     // check if a server address was supplied
     if (argc == 3)
     {
-        client.connect(parse_ip4(argv[1]), atoi(argv[2]));
-        client_state.status = ClientState::NOT_SPAWNED;
+        if(client.connect(parse_ip4(argv[1]), atoi(argv[2])))
+        {
+            client_state.status = ClientState::NOT_SPAWNED;
+        }
+        else
+        {
+            cout << "Unable to connect to server" << endl;
+        }
     }
 
     vector<GamePacketIn> game_packets;
@@ -156,16 +162,20 @@ int main(int argc, char *argv[])
                 {
                     client.create_server(main_menu.port);
                     // connect to localhost
-                    // TODO: need a better solution
-                    SDL_Delay(1000);
                     client.connect(0x7f000001, main_menu.port);
                     client_state.server_proc_connected = true;
                     client_state.status = ClientState::NOT_SPAWNED;
                 }
                 else if (connect_to_server)
                 {
-                    client.connect(parse_ip4(main_menu.ip), main_menu.port);
-                    client_state.status = ClientState::NOT_SPAWNED;
+                    if (client.connect(parse_ip4(main_menu.ip), main_menu.port))
+                    {
+                        client_state.status = ClientState::NOT_SPAWNED;
+                    }
+                    else
+                    {
+                        cout << "Unable to connect to server" << endl;
+                    }
                 }
             }
 

@@ -14,6 +14,8 @@
 #endif
 
 const size_t PIPE_READ_BUFFER_SIZE = 256;
+const unsigned int SERVER_CONNECTION_POLL_TIME_MS = 50;
+const unsigned int MAX_SERVER_CONNECTION_TIME_MS = 2000;
 
 #ifdef _WIN32
 void ClientData::create_server(uint16_t port)
@@ -159,58 +161,40 @@ void ClientData::write_server_stdout(Console *console)
 
 #endif
 
-void ClientData::connect(uint32_t server_ip, uint16_t server_port)
+bool ClientData::connect(uint32_t server_ip, uint16_t server_port)
 {
     sock = create_game_socket();
     server_addr.ip = server_ip;
     server_addr.port = server_port;
 
-    // TODO: we may need to retry several times if the
-    // server hasn't started yet (i.e. client creating
-    // server and connecting right away). This implementation
-    // doesn't work because an extra request gets sent
-    // and the server has two connections to the client.
-    // Maybe the connection requires another step?
-    // -- dec 27 '18
-#if 0
-    bool ack_received = false;
-    while (!ack_received)
+    HbSockaddr from = {};
+    unsigned int ack_packet_data[sizeof(GamePacket)] = {};
+
     {
-        sendto(
-            sock,
-            &req_packet,
-            sizeof(req_packet),
-            0,
-            (sockaddr*)&server_addr,
-            sizeof(server_addr));
+        bool ack_received = false;
+        unsigned int wait_time = 0;
+        while (!ack_received)
+        {
+            send_game_packet(
+                sock,
+                server_addr,
+                INCOMPLETE_ID,
+                GamePacketType::CONNECTION_REQ,
+                nullptr,
+                0);
 
+            // TODO: wrap this for windows support
+            usleep(1000 * SERVER_CONNECTION_POLL_TIME_MS);
+            wait_time += SERVER_CONNECTION_POLL_TIME_MS;
 
-        int n = recvfrom(
-            sock,
-            ack_packet_data,
-            sizeof(ack_packet_data),
-            MSG_DONTWAIT,   // nonblocking
-            (sockaddr*)&from,
-            (socklen_t*)&fromlen);
+            if (wait_time > MAX_SERVER_CONNECTION_TIME_MS)
+            {
+                return false;
+            }
 
-        if (n >= 0) ack_received = true;
-        else usleep(100000);
+            ack_received = recv_game_packet(sock, (GamePacket*)ack_packet_data, &from);
+        }
     }
-#else
-    send_game_packet(
-        sock,
-        server_addr,
-        INCOMPLETE_ID,
-        GamePacketType::CONNECTION_REQ,
-        nullptr,
-        0);
-
-        HbSockaddr from = {};
-        uint8_t ack_packet_data[sizeof(GamePacket)] = {};
-
-        while (!recv_game_packet(sock, (GamePacket*)ack_packet_data, &from));    // TODO: add a delay
-
-#endif
 
     GamePacket* ack_packet = (GamePacket*)ack_packet_data;
 
@@ -220,6 +204,8 @@ void ClientData::connect(uint32_t server_ip, uint16_t server_port)
     id = ack_packet->packet_data.connection_ack.client_id;
 
     active = true;
+
+    return true;
 }
 
 void ClientData::send_to_server(GamePacketType type, void *packet_data, size_t data_size)

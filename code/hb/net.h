@@ -20,6 +20,8 @@ struct HbSockaddr
 {
     uint16_t port;
     uint32_t ip;
+
+    bool operator==(const HbSockaddr &rhs) const;
 };
 
 typedef size_t ClientId;

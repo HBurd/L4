@@ -2,6 +2,7 @@ Todo
 =====
 - Ship control system needs to take mass into account
 - Stabilization controller can be optimized
+- Better in-game console (not attached to ship)
 
 Testing
 =======
@@ -11,7 +12,6 @@ Testing
 
 Known Bugs
 ==========
-- Hanging indefinitely when failing to connect
 - Unable to find material files
 
 

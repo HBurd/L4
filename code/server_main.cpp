@@ -75,6 +75,10 @@ int main(int argc, char* argv[])
                 case GamePacketType::CONNECTION_REQ:
                 {
                     ClientId client_id = server.accept_client(packet.sender);
+                    if (client_id == INCOMPLETE_ID)
+                    {
+                        break;
+                    }
                     cout << "Client connected with id " << client_id << endl;
                     // now update the client with all existing entities
                     for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
