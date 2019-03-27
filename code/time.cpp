@@ -24,3 +24,8 @@ double TimeKeeper::get_delta_time_s()
 
     return delta_t;
 }
+
+void hb_sleep(uint32_t time_ms)
+{
+    SDL_Delay(time_ms);
+}

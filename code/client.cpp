@@ -1,5 +1,6 @@
 #include "hb/client.h"
 #include "hb/packets.h"
+#include "hb/time.h"
 
 #include <cassert>
 #include <iostream>
@@ -184,7 +185,7 @@ bool ClientData::connect(uint32_t server_ip, uint16_t server_port)
                 0);
 
             // TODO: wrap this for windows support
-            usleep(1000 * SERVER_CONNECTION_POLL_TIME_MS);
+            hb_sleep(SERVER_CONNECTION_POLL_TIME_MS);
             wait_time += SERVER_CONNECTION_POLL_TIME_MS;
 
             if (wait_time > MAX_SERVER_CONNECTION_TIME_MS)
