@@ -287,6 +287,7 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glEnable(GL_MULTISAMPLE);
 
     // load meshes
     for (int mesh_type = 0; mesh_type < MeshType::NUM_MESH_TYPES; mesh_type++)
