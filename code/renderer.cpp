@@ -131,7 +131,14 @@ Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
     string obj_warn;
     string obj_err;
     char mtl_path[256] = {};
-    memcpy(mtl_path, filename, strrchr(filename, '/') - filename);
+    char mtl_path_length = strrchr(filename, '/') - filename;
+    memcpy(
+        mtl_path,
+        filename,
+        mtl_path_length <= (sizeof(mtl_path) - 1)
+            ? mtl_path_length
+            : (sizeof(mtl_path) - 1));
+
     tinyobj::LoadObj(
         &attrib,
         &shapes,
