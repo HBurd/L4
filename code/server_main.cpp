@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
 
     entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f));
  
-    
     TimeKeeper time_keeper;
 
     bool running = true;
@@ -140,60 +139,63 @@ int main(int argc, char* argv[])
         for (auto client : server.clients)
         {
             if (!client.received_input) continue;
-            // look up player entity
-            size_t list_idx;
-            size_t entity_idx;
-            if (entity_manager->entity_table.lookup_entity(
+
+            LOOKUP_COMPONENT(
+                TRANSFORM_COMPONENT,
+                client.player_entity,
+                *entity_manager,
+                Transform &player_transform)
+            {
+                LOOKUP_COMPONENT(
+                    PHYSICS_COMPONENT,
                     client.player_entity,
-                    entity_manager->entity_lists,
-                    &list_idx,
-                    &entity_idx))
-            { 
-                Transform &player_transform = entity_manager->entity_lists[list_idx].transform_list[entity_idx];
-                Physics &player_physics = entity_manager->entity_lists[list_idx].physics_list[entity_idx];
-                Vec3 ship_thrust;
-                Vec3 ship_torque;
-                get_ship_thrust(
-                    client.player_control,
-                    player_transform.orientation,
-                    &ship_thrust,
-                    &ship_torque);
-
-                apply_impulse(
-                    ship_thrust * TIMESTEP,
-                    &player_transform.velocity,
-                    player_physics.mass);
-                apply_angular_impulse(
-                    ship_torque * TIMESTEP,
-                    &player_transform.angular_velocity,
-                    player_physics.angular_mass);
-
-                // Create an entity if the player shot
-                if (client.player_control.shoot)
+                    *entity_manager,
+                    Physics player_physics)
                 {
-                    Entity projectile_entity =
-                        create_projectile(player_transform);
-                    EntityHandle projectile_handle =
-                        entity_manager->create_entity(projectile_entity);
-                    EntityCreatePacket entity_create_packet(
-                        projectile_entity,
-                        projectile_handle);
-                    
-                    server.broadcast(
-                        GamePacketType::ENTITY_CREATE,
-                        &entity_create_packet,
-                        sizeof(entity_create_packet));
-                }
+                    Vec3 ship_thrust;
+                    Vec3 ship_torque;
+                    get_ship_thrust(
+                        client.player_control,
+                        player_transform.orientation,
+                        &ship_thrust,
+                        &ship_torque);
 
-                // Send the sync packet
-                TransformSyncPacket transform_sync(
-                    client.player_entity,
-                    player_transform,
-                    client.sequence);
-                server.broadcast(
-                   GamePacketType::PHYSICS_SYNC,
-                   &transform_sync,
-                   sizeof(transform_sync));
+                    apply_impulse(
+                        ship_thrust * TIMESTEP,
+                        &player_transform.velocity,
+                        player_physics.mass);
+                    apply_angular_impulse(
+                        ship_torque * TIMESTEP,
+                        &player_transform.angular_velocity,
+                        player_physics.angular_mass);
+
+                    // Create an entity if the player shot
+                    if (client.player_control.shoot)
+                    {
+                        Entity projectile_entity =
+                            create_projectile(player_transform);
+                        EntityHandle projectile_handle =
+                            entity_manager->create_entity(projectile_entity);
+                        EntityCreatePacket entity_create_packet(
+                            projectile_entity,
+                            projectile_handle);
+                        
+                        server.broadcast(
+                            GamePacketType::ENTITY_CREATE,
+                            &entity_create_packet,
+                            sizeof(entity_create_packet));
+                    }
+
+                    // Send the sync packet
+                    TransformSyncPacket transform_sync(
+                        client.player_entity,
+                        player_transform,
+                        client.sequence);
+                    server.broadcast(
+                       GamePacketType::PHYSICS_SYNC,
+                       &transform_sync,
+                       sizeof(transform_sync));
+                }
             }
 
             client.received_input = false;

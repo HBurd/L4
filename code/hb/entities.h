@@ -13,6 +13,9 @@ using std::vector;
 
 const size_t MAX_ENTITIES = 65536;
 
+typedef uint32_t EntityListIdx;
+typedef uint32_t EntityIdx;
+
 #define COMPONENT_ID(C) COMPONENT_ID2(C)
 #define COMPONENT_ID2(type, name, id) id
 
@@ -21,6 +24,23 @@ const size_t MAX_ENTITIES = 65536;
 
 #define COMPONENT_LIST_DECLARATION(C) COMPONENT_LIST_DECLARATION2(C)
 #define COMPONENT_LIST_DECLARATION2(type, name, id) std::vector<type> name##_list
+
+#define LOOKUP_COMPONENT(C, handle, entity_manager, varname) \
+    LOOKUP_COMPONENT2(C, handle, entity_manager, varname)
+#define LOOKUP_COMPONENT2(type, compname, id, handle, entity_manager, declaration) \
+    EntityListIdx list_idx; \
+    EntityIdx entity_idx; \
+    int TMP_##__LINE__ = 1;\
+    if ((entity_manager).entity_table.lookup_entity( \
+            handle, \
+            (entity_manager).entity_lists, \
+            &list_idx, \
+            &entity_idx)) \
+        if ((entity_manager).entity_lists[list_idx].supports_components(ComponentType::id)) \
+            for (declaration = \
+                    (entity_manager).entity_lists[list_idx].compname##_list[entity_idx]; \
+                 TMP_##__LINE__ > 0; \
+                 TMP_##__LINE__--)
 
 namespace ComponentType
 {
@@ -120,8 +140,8 @@ struct EntityTable
     bool lookup_entity(
         EntityHandle handle,
         const vector<EntityList>& entity_lists,
-        size_t* list_idx,
-        size_t* entity_idx) const;
+        EntityListIdx* list_idx,
+        EntityIdx* entity_idx) const;
 
     void free_handle(EntityHandle handle);
     void update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx);

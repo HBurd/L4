@@ -165,33 +165,25 @@ static void draw_guidance_stats(
     EntityHandle player_handle,
     EntityHandle other_handle)
 {
-    size_t player_list_idx;
-    size_t player_entity_idx;
-    size_t other_list_idx;
-    size_t other_entity_idx;
-    if(entity_manager->entity_table.lookup_entity(
-           player_handle,
-           entity_manager->entity_lists,
-           &player_list_idx,
-           &player_entity_idx)
-       && entity_manager->entity_table.lookup_entity(
-              other_handle,
-              entity_manager->entity_lists,
-              &other_list_idx,
-              &other_entity_idx))
+    LOOKUP_COMPONENT(
+        TRANSFORM_COMPONENT,
+        player_handle,
+        *entity_manager,
+        Transform player_transform)
     {
-        const EntityList& player_list = entity_manager->entity_lists[player_list_idx];
-        Transform player_transform = player_list.transform_list[player_entity_idx];
+        LOOKUP_COMPONENT(
+            TRANSFORM_COMPONENT,
+            other_handle,
+            *entity_manager,
+            Transform other_transform)
+        {
+            float distance = (player_transform.position - other_transform.position).norm();
+            ImGui::Text("Distance: %f", distance);
 
-        const EntityList& other_list = entity_manager->entity_lists[other_list_idx];
-        Transform other_transform = other_list.transform_list[other_entity_idx];
-
-        float distance = (player_transform.position - other_transform.position).norm();
-        ImGui::Text("Distance: %f", distance);
-
-        float relative_velocity =
-            (player_transform.velocity - other_transform.velocity).norm();
-        ImGui::Text("Relative velocity: %f", relative_velocity);
+            float relative_velocity =
+                (player_transform.velocity - other_transform.velocity).norm();
+            ImGui::Text("Relative velocity: %f", relative_velocity);
+        }
     }
 }
 
@@ -257,8 +249,8 @@ bool draw_guidance_menu(
     {
         char entity_id_name[32];
 
-        size_t list_idx;
-        size_t entity_idx;
+        EntityListIdx list_idx;
+        EntityIdx entity_idx;
         assert(entity_manager->entity_table.lookup_entity(
             hovered_entity,
             entity_manager->entity_lists,
@@ -277,8 +269,8 @@ bool draw_guidance_menu(
     }
     else if (target_handle->is_initialized())
     {
-        size_t list_idx;
-        size_t entity_idx;
+        EntityListIdx list_idx;
+        EntityIdx entity_idx;
         if(entity_manager->entity_table.lookup_entity(
             *target_handle,
             entity_manager->entity_lists,

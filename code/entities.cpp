@@ -144,8 +144,8 @@ void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, Enti
 bool EntityTable::lookup_entity(
     EntityHandle handle,
     const vector<EntityList>& entity_lists,
-    size_t* list_idx,
-    size_t* entity_idx) const
+    EntityListIdx* list_idx,
+    EntityIdx* entity_idx) const
 {
     if (handle.version == 0 || handle.version != entries[handle.idx].version)
     {
@@ -248,8 +248,8 @@ void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity
 void EntityManager::kill_entity(EntityHandle handle)
 {
     // cache list_idx and entity_idx
-    size_t list_idx;
-    size_t entity_idx;
+    EntityListIdx list_idx;
+    EntityIdx entity_idx;
     entity_table.lookup_entity(
         handle,
         entity_lists,
