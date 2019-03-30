@@ -2,6 +2,15 @@
 #include "hb/util.h"
 #include <cassert>
 
+#define ADD_COMPONENT(C) ADD_COMPONENT2(C)
+#define ADD_COMPONENT2(type, name, id) { \
+    if (supports_components(ComponentType::id)) \
+    { \
+        name##_list.push_back(entity.name); \
+        assert(name##_list.size() == size); \
+    } \
+}
+
 Planet::Planet(float planet_radius, float planet_mass)
 :radius(planet_radius), mass(planet_mass) {}
 
@@ -13,77 +22,38 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
     assert(entity.supported_components == supported_components);
     size++;
 
-    if (supported_components & ComponentType::TRANSFORM)
-    {
-        transform_list.push_back(entity.transform);
-        assert(transform_list.size() == size);
-    }
-    if (supported_components & ComponentType::PHYSICS)
-    {
-        physics_list.push_back(entity.physics);
-        assert(physics_list.size() == size);
-    }
-    if (supported_components & ComponentType::MESH)
-    {
-        mesh_list.push_back(entity.mesh_id);
-        assert(mesh_list.size() == size);
-    }
-    if (supported_components & ComponentType::PLAYER_CONTROL)
-    {
-        player_control_list.push_back(entity.player_control);
-        assert(player_control_list.size() == size);
-    }
-    if (supported_components & ComponentType::PROJECTILE)
-    {
-        projectile_list.push_back(entity.projectile);
-        assert(projectile_list.size() == size);
-    }
-    if (supported_components & ComponentType::PLANET)
-    {
-        planet_list.push_back(entity.planet);
-        assert(planet_list.size() == size);
-    }
+    ADD_COMPONENT(TRANSFORM_COMPONENT);
+    ADD_COMPONENT(PHYSICS_COMPONENT);
+    ADD_COMPONENT(MESH_COMPONENT);
+    ADD_COMPONENT(PLAYER_CONTROL_COMPONENT);
+    ADD_COMPONENT(PROJECTILE_COMPONENT);
+    ADD_COMPONENT(PLANET_COMPONENT);
     
     handles.push_back(handle);
     
     assert(handles.size() == size);
 }
 
+#define SERIALIZE_COMPONENT(C) SERIALIZE_COMPONENT2(C)
+#define SERIALIZE_COMPONENT2(type, name, id) { \
+    if (supports_components(ComponentType::id)) \
+    { \
+        entity.supported_components |= ComponentType::id; \
+        entity.name = name##_list[entity_idx]; \
+    } \
+}
+
 Entity EntityList::serialize(size_t entity_idx)
 {
     Entity entity;
-    // we aren't setting entity's supported components directly
+    // we aren't setting entity's supported components directly (it is set in macro)
     // so that we can test at the end that everything's been added
-    if (supported_components & ComponentType::TRANSFORM)
-    {
-        entity.supported_components |= ComponentType::TRANSFORM;
-        entity.transform = transform_list[entity_idx];
-    }
-    if (supported_components & ComponentType::PHYSICS)
-    {
-        entity.supported_components |= ComponentType::PHYSICS;
-        entity.physics = physics_list[entity_idx];
-    }
-    if (supported_components & ComponentType::MESH)
-    {
-        entity.supported_components |= ComponentType::MESH;
-        entity.mesh_id = mesh_list[entity_idx];
-    }
-    if (supported_components & ComponentType::PLAYER_CONTROL)
-    {
-        entity.supported_components |= ComponentType::PLAYER_CONTROL;
-        entity.player_control = player_control_list[entity_idx];
-    }
-    if (supported_components & ComponentType::PROJECTILE)
-    {
-        entity.supported_components |= ComponentType::PROJECTILE;
-        entity.projectile = projectile_list[entity_idx];
-    }
-    if (supported_components & ComponentType::PLANET)
-    {
-        entity.supported_components |= ComponentType::PLANET;
-        entity.planet = planet_list[entity_idx];
-    }
+    SERIALIZE_COMPONENT(TRANSFORM_COMPONENT);
+    SERIALIZE_COMPONENT(PHYSICS_COMPONENT);
+    SERIALIZE_COMPONENT(MESH_COMPONENT);
+    SERIALIZE_COMPONENT(PLAYER_CONTROL_COMPONENT);
+    SERIALIZE_COMPONENT(PROJECTILE_COMPONENT);
+    SERIALIZE_COMPONENT(PLANET_COMPONENT);
 
     // see above
     assert(entity.supported_components == supported_components);
@@ -265,6 +235,16 @@ void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity
     return;
 }
 
+#define REMOVE_COMPONENT(C) REMOVE_COMPONENT2(C)
+#define REMOVE_COMPONENT2(type, name, id) {\
+    if (entity_list.supports_components(ComponentType::id)) \
+    { \
+        entity_list.name##_list[entity_idx] = entity_list.name##_list.back(); \
+        entity_list.name##_list.pop_back(); \
+        removed_components |= ComponentType::id; \
+    } \
+}
+
 void EntityManager::kill_entity(EntityHandle handle)
 {
     // cache list_idx and entity_idx
@@ -300,42 +280,12 @@ void EntityManager::kill_entity(EntityHandle handle)
     // Now remove actual components
     // we have to modify each list individually
     uint32_t removed_components = 0;
-    if (entity_list.supports_components(ComponentType::TRANSFORM))
-    {
-        entity_list.transform_list[entity_idx] = entity_list.transform_list.back();
-        entity_list.transform_list.pop_back();
-        removed_components |= ComponentType::TRANSFORM;
-    }
-    if (entity_list.supports_components(ComponentType::PHYSICS))
-    {
-        entity_list.physics_list[entity_idx] = entity_list.physics_list.back();
-        entity_list.physics_list.pop_back();
-        removed_components |= ComponentType::PHYSICS;
-    }
-    if (entity_list.supports_components(ComponentType::MESH))
-    {
-        entity_list.mesh_list[entity_idx] = entity_list.mesh_list.back();
-        entity_list.mesh_list.pop_back();
-        removed_components |= ComponentType::MESH;
-    }
-    if (entity_list.supports_components(ComponentType::PLAYER_CONTROL))
-    {
-        entity_list.player_control_list[entity_idx] = entity_list.player_control_list.back();
-        entity_list.player_control_list.pop_back();
-        removed_components |= ComponentType::PLAYER_CONTROL;
-    }
-    if (entity_list.supports_components(ComponentType::PROJECTILE))
-    {
-        entity_list.projectile_list[entity_idx] = entity_list.projectile_list.back();
-        entity_list.projectile_list.pop_back();
-        removed_components |= ComponentType::PROJECTILE;
-    }
-    if (entity_list.supports_components(ComponentType::PLANET))
-    {
-        entity_list.planet_list[entity_idx] = entity_list.planet_list.back();
-        entity_list.planet_list.pop_back();
-        removed_components |= ComponentType::PLANET;
-    }
+    REMOVE_COMPONENT(TRANSFORM_COMPONENT);
+    REMOVE_COMPONENT(PHYSICS_COMPONENT);
+    REMOVE_COMPONENT(MESH_COMPONENT);
+    REMOVE_COMPONENT(PLAYER_CONTROL_COMPONENT);
+    REMOVE_COMPONENT(PROJECTILE_COMPONENT);
+    REMOVE_COMPONENT(PLANET_COMPONENT);
 
     // verify we removed all of this entity's components
     assert(removed_components == entity_list.supported_components);

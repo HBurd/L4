@@ -8,7 +8,7 @@ Entity create_projectile(Transform shooter_transform)
     result.transform = shooter_transform;
     result.transform.velocity += 0.7f * (shooter_transform.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f));
     result.transform.angular_velocity;
-    result.mesh_id = MeshType::PROJECTILE;
+    result.mesh = MeshType::PROJECTILE;
 
     // push projectile forward so it doesn't collide with shooter
     result.transform.position += 2 * result.transform.velocity;

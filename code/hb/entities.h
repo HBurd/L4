@@ -3,22 +3,37 @@
 
 #include <vector>
 #include "hb/TransformComponent.h"
-#include "hb/renderer.h"
+#include "hb/PhysicsComponent.h"
+#include "hb/PlayerControlComponent.h"
+#include "hb/ProjectileComponent.h"
+#include "hb/PlanetComponent.h"
+#include "hb/MeshComponent.h"
 
 using std::vector;
 
 const size_t MAX_ENTITIES = 65536;
 
+#define COMPONENT_ID(C) COMPONENT_ID2(C)
+#define COMPONENT_ID2(type, name, id) id
+
+#define COMPONENT_DECLARATION(C) COMPONENT_DECLARATION2(C)
+#define COMPONENT_DECLARATION2(type, name, id) type name
+
+#define COMPONENT_LIST_DECLARATION(C) COMPONENT_LIST_DECLARATION2(C)
+#define COMPONENT_LIST_DECLARATION2(type, name, id) std::vector<type> name##_list
+
 namespace ComponentType
 {
     enum ComponentType
     {
-        PHYSICS = 1,
-        MESH = 2,               // TODO: can we include component dependencies in here?
-        PLAYER_CONTROL = 4,
-        PROJECTILE = 8,
-        TRANSFORM = 16,
-        PLANET = 32,
+        // TODO: can we include component dependencies in here?
+        COMPONENT_ID(PHYSICS_COMPONENT) = 1,
+        COMPONENT_ID(MESH_COMPONENT) = 2,
+        COMPONENT_ID(PLAYER_CONTROL_COMPONENT) = 4,
+        COMPONENT_ID(PROJECTILE_COMPONENT) = 8,
+        COMPONENT_ID(TRANSFORM_COMPONENT) = 16,
+        COMPONENT_ID(PLANET_COMPONENT) = 32,
+        COMPONENT_ID(WORLD_SECTOR_COMPONENT) = 64,
 
         // =======================================
         // Add components here as they are created
@@ -26,46 +41,19 @@ namespace ComponentType
     };
 }
 
-struct Planet
-{
-    float radius = 1.0f;
-    float mass = 1.0f;
-
-    Planet() = default;
-    Planet(float planet_radius, float planet_mass);
-};
-
-struct Physics
-{
-    float mass = 1.0f;
-    float angular_mass = 1.0f; // moment of ineria
-};
-
-// TODO: this doesn't belong here
-typedef size_t ClientId;
-
-struct PlayerControl
-{
-    ClientId client_id;
-};
-
-struct Projectile
-{
-    unsigned int timeout = 60; // 1 second
-};
-
 // Used for initializing the components of new entities
 // Values are copied into new components
 struct Entity
 {
     uint32_t supported_components = 0;   // bitfield containing implemented components
 
-    Transform transform;
-    Physics physics;
-    MeshId mesh_id;
-    PlayerControl player_control;
-    Projectile projectile;
-    Planet planet;
+    COMPONENT_DECLARATION(WORLD_SECTOR_COMPONENT);
+    COMPONENT_DECLARATION(TRANSFORM_COMPONENT);
+    COMPONENT_DECLARATION(PHYSICS_COMPONENT);
+    COMPONENT_DECLARATION(MESH_COMPONENT);
+    COMPONENT_DECLARATION(PLAYER_CONTROL_COMPONENT);
+    COMPONENT_DECLARATION(PROJECTILE_COMPONENT);
+    COMPONENT_DECLARATION(PLANET_COMPONENT);
 
     // =======================================
     // Add components here as they are created
@@ -91,12 +79,13 @@ struct EntityList
 
     size_t size = 0;
     uint32_t supported_components;   // bitfield containing implemented components
-    vector<Transform> transform_list;
-    vector<Physics> physics_list;
-    vector<MeshId> mesh_list;
-    vector<PlayerControl> player_control_list;
-    vector<Projectile> projectile_list;
-    vector<Planet> planet_list;
+
+    COMPONENT_LIST_DECLARATION(TRANSFORM_COMPONENT);
+    COMPONENT_LIST_DECLARATION(PHYSICS_COMPONENT);
+    COMPONENT_LIST_DECLARATION(MESH_COMPONENT);
+    COMPONENT_LIST_DECLARATION(PLAYER_CONTROL_COMPONENT);
+    COMPONENT_LIST_DECLARATION(PROJECTILE_COMPONENT);
+    COMPONENT_LIST_DECLARATION(PLANET_COMPONENT);
 
     // =======================================
     // Add components here as they are created

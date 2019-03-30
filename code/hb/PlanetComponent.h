@@ -1,0 +1,18 @@
+#ifndef HBPLANET_COMPONENT_H
+#define HBPLANET_COMPONENT_H
+
+#define PLANET_COMPONENT Planet, planet, PLANET
+struct Planet
+{
+    float radius = 1.0f;
+    float mass = 1.0f;
+
+    Planet() = default;
+    Planet(float planet_radius, float planet_mass);
+};
+
+//#ifdef FAST_BUILD
+//#include "PlanetComponent.cpp"
+//#endif
+
+#endif

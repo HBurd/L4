@@ -8,7 +8,7 @@ Entity create_planet(Vec3 position, float radius, float mass)
     result.transform= Transform(position);
     result.transform.scale = radius * Vec3(1.0f, 1.0f, 1.0f);
     result.planet = Planet(radius, mass);
-    result.mesh_id = MeshType::PLANET;
+    result.mesh = MeshType::PLANET;
 
     return result;
 }

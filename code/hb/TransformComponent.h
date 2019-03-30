@@ -3,6 +3,15 @@
 
 #include "hb/math.h"
 
+#define WORLD_SECTOR_COMPONENT WorldSector, world_sector, WORLD_SECTOR
+struct WorldSector
+{
+    int64_t x = 0;
+    int64_t y = 0;
+    int64_t z = 0;
+};
+
+#define TRANSFORM_COMPONENT Transform, transform, TRANSFORM
 struct Transform
 {
     Vec3 position;

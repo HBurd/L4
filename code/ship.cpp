@@ -9,7 +9,7 @@ Entity create_ship(Vec3 position)
     result.transform = Transform(position);
     result.physics.mass = 1.0f;
     result.physics.angular_mass = 1.0f;
-    result.mesh_id = MeshType::SHIP;
+    result.mesh = MeshType::SHIP;
 
     return result;
 }
