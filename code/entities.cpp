@@ -2,7 +2,7 @@
 #include "hb/util.h"
 #include <cassert>
 
-#define ADD_COMPONENT(C) ADD_COMPONENT2(C)
+#define ADD_COMPONENT(C) EXPAND_MACRO(ADD_COMPONENT2(C))
 #define ADD_COMPONENT2(type, name, id) { \
     if (supports_components(ComponentType::id)) \
     { \
@@ -34,7 +34,7 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
     assert(handles.size() == size);
 }
 
-#define SERIALIZE_COMPONENT(C) SERIALIZE_COMPONENT2(C)
+#define SERIALIZE_COMPONENT(C) EXPAND_MACRO(SERIALIZE_COMPONENT2(C))
 #define SERIALIZE_COMPONENT2(type, name, id) { \
     if (supports_components(ComponentType::id)) \
     { \
@@ -235,7 +235,7 @@ void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity
     return;
 }
 
-#define REMOVE_COMPONENT(C) REMOVE_COMPONENT2(C)
+#define REMOVE_COMPONENT(C) EXPAND_MACRO(REMOVE_COMPONENT2(C))
 #define REMOVE_COMPONENT2(type, name, id) {\
     if (entity_list.supports_components(ComponentType::id)) \
     { \

@@ -16,17 +16,22 @@ const size_t MAX_ENTITIES = 65536;
 typedef uint32_t EntityListIdx;
 typedef uint32_t EntityIdx;
 
-#define COMPONENT_ID(C) COMPONENT_ID2(C)
+// This is a workaround for the microsoft compiler,
+// which disregards the standards and treats macros that
+// expand to a list of arguments as a single argument
+#define EXPAND_MACRO(x) x
+
+#define COMPONENT_ID(C) EXPAND_MACRO(COMPONENT_ID2(C))
 #define COMPONENT_ID2(type, name, id) id
 
-#define COMPONENT_DECLARATION(C) COMPONENT_DECLARATION2(C)
+#define COMPONENT_DECLARATION(C) EXPAND_MACRO(COMPONENT_DECLARATION2(C))
 #define COMPONENT_DECLARATION2(type, name, id) type name
 
-#define COMPONENT_LIST_DECLARATION(C) COMPONENT_LIST_DECLARATION2(C)
+#define COMPONENT_LIST_DECLARATION(C) EXPAND_MACRO(COMPONENT_LIST_DECLARATION2(C))
 #define COMPONENT_LIST_DECLARATION2(type, name, id) std::vector<type> name##_list
 
 #define LOOKUP_COMPONENT(C, handle, entity_manager, varname) \
-    LOOKUP_COMPONENT2(C, handle, entity_manager, varname)
+    EXPAND_MACRO(LOOKUP_COMPONENT2(C, handle, entity_manager, varname))
 #define LOOKUP_COMPONENT2(type, compname, id, handle, entity_manager, declaration) \
     EntityListIdx list_idx; \
     EntityIdx entity_idx; \
