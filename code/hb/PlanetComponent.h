@@ -11,8 +11,8 @@ struct Planet
     Planet(float planet_radius, float planet_mass);
 };
 
-//#ifdef FAST_BUILD
-//#include "PlanetComponent.cpp"
-//#endif
+#ifdef FAST_BUILD
+#include "PlanetComponent.cpp"
+#endif
 
 #endif

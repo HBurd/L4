@@ -2,6 +2,9 @@
 #include "hb/util.h"
 #include <cassert>
 
+EntityList::EntityList(uint32_t _supported_components)
+:supported_components(_supported_components) {}
+
 #define ADD_COMPONENT(C) ADD_COMPONENT2(C)
 #define ADD_COMPONENT2(type, name, id) { \
     if (supports_components(ComponentType::id)) \
@@ -10,12 +13,6 @@
         assert(name##_list.size() == size); \
     } \
 }
-
-Planet::Planet(float planet_radius, float planet_mass)
-:radius(planet_radius), mass(planet_mass) {}
-
-EntityList::EntityList(uint32_t _supported_components)
-:supported_components(_supported_components) {}
 
 void EntityList::add_entity(Entity entity, EntityHandle handle)
 {
