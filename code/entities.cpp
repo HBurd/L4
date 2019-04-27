@@ -19,6 +19,7 @@ void EntityList::add_entity(Entity entity, EntityHandle handle)
     assert(entity.supported_components == supported_components);
     size++;
 
+    ADD_COMPONENT(WORLD_SECTOR_COMPONENT);
     ADD_COMPONENT(TRANSFORM_COMPONENT);
     ADD_COMPONENT(PHYSICS_COMPONENT);
     ADD_COMPONENT(MESH_COMPONENT);
@@ -45,6 +46,7 @@ Entity EntityList::serialize(size_t entity_idx)
     Entity entity;
     // we aren't setting entity's supported components directly (it is set in macro)
     // so that we can test at the end that everything's been added
+    SERIALIZE_COMPONENT(WORLD_SECTOR_COMPONENT);
     SERIALIZE_COMPONENT(TRANSFORM_COMPONENT);
     SERIALIZE_COMPONENT(PHYSICS_COMPONENT);
     SERIALIZE_COMPONENT(MESH_COMPONENT);
@@ -277,6 +279,7 @@ void EntityManager::kill_entity(EntityHandle handle)
     // Now remove actual components
     // we have to modify each list individually
     uint32_t removed_components = 0;
+    REMOVE_COMPONENT(WORLD_SECTOR_COMPONENT);
     REMOVE_COMPONENT(TRANSFORM_COMPONENT);
     REMOVE_COMPONENT(PHYSICS_COMPONENT);
     REMOVE_COMPONENT(MESH_COMPONENT);

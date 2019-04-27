@@ -105,6 +105,7 @@ struct EntityList
     size_t size = 0;
     uint32_t supported_components;   // bitfield containing implemented components
 
+    COMPONENT_LIST_DECLARATION(WORLD_SECTOR_COMPONENT);
     COMPONENT_LIST_DECLARATION(TRANSFORM_COMPONENT);
     COMPONENT_LIST_DECLARATION(PHYSICS_COMPONENT);
     COMPONENT_LIST_DECLARATION(MESH_COMPONENT);

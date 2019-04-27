@@ -8,10 +8,13 @@ void perform_entity_update_step(EntityManager *entity_manager, float dt)
     for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
     {
         EntityList& entity_list = entity_manager->entity_lists[list_idx];
-        if (!entity_list.supports_components(ComponentType::TRANSFORM))
+       if (!entity_list.supports_components(ComponentType::WORLD_SECTOR | ComponentType::TRANSFORM))
             continue;
 
-        update_transform_components(&entity_list.transform_list, dt);
+        update_transform_components(
+            &entity_list.world_sector_list,
+            &entity_list.transform_list,
+            dt);
     }
 
     // Projectile updates

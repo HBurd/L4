@@ -400,13 +400,20 @@ int main(int argc, char *argv[])
         if (client_state.status == ClientState::SPAWNED)
         {
             LOOKUP_COMPONENT(
-                TRANSFORM_COMPONENT,
+                WORLD_SECTOR_COMPONENT,
                 client_state.player_handle,
                 *entity_manager,
-                Transform transform)
+                WorldSector world_sector)
             {
-                renderer.camera_pos = transform.position;
-                renderer.camera_orientation = transform.orientation;
+                LOOKUP_COMPONENT(
+                    TRANSFORM_COMPONENT,
+                    client_state.player_handle,
+                    *entity_manager,
+                    Transform transform)
+                {
+                    renderer.camera_pos = to_world_position(world_sector, transform.position);
+                    renderer.camera_orientation = transform.orientation;
+                }
             }
         }
         
@@ -422,21 +429,18 @@ int main(int argc, char *argv[])
         {
             EntityList& entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
-            if (!entity_list.supports_components(ComponentType::TRANSFORM | ComponentType::MESH))
+            if (!entity_list.supports_components(ComponentType::WORLD_SECTOR | ComponentType::TRANSFORM | ComponentType::MESH))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
                 MeshId mesh = entity_list.mesh_list[entity_idx];
+                WorldSector world_sector = entity_list.world_sector_list[entity_idx];
                 Transform transform = entity_list.transform_list[entity_idx];
                 renderer.draw_mesh(
                     mesh,
-                    transform.position,
+                    to_world_position(world_sector, transform.position),
                     transform.scale,
                     transform.orientation);
-                if (!entity_list.supports_components(ComponentType::PLAYER_CONTROL))
-                {
-                    renderer.draw_crosshair(transform.position, 0.1f);
-                }
             }
         }
 

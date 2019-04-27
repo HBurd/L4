@@ -24,6 +24,13 @@ struct Transform
     Transform(Vec3 transform_position);
 };
 
+void update_transform_components(
+    vector<WorldSector> *world_sector_components,
+    vector<Transform> *transform_components,
+    float dt);
+
+Vec3 to_world_position(WorldSector sector, Transform transform);
+
 #ifdef FAST_BUILD
 #include "TransformComponent.cpp"
 #endif

@@ -1,3 +1,19 @@
+Entity System Plan:
+==================
+Introduce the notion of a system:
+- They have implicitly been present all along
+- Just a transformation that happens on a group of components periodically
+- May depend on several component types
+    - i.e. may need to update component A with data from component B, both
+      belonging to entity E
+- Dependencies between components are entirely defined by systems
+    - i.e. System S assumes that every component B has a corresponding
+      component A
+    - System should fail otherwise
+    - Dependency does not exist outside the realm of systems
+- Move existing systems into their own files
+
+
 Todo
 =====
 - Stabilization controller can be optimized
