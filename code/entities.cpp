@@ -74,70 +74,48 @@ bool operator==(const EntityHandle& lhs, const EntityHandle& rhs)
     return lhs.version == rhs.version && lhs.idx == rhs.idx;
 }
 
-EntityTable::EntityTable()
-{
-    first_free = 0;
-    for (size_t i = 0; i < ARRAY_LENGTH(entries); i++)
-    {
-        entries[i].next_free = i + 1;
-        entries[i].version = -1;
-    }
-}
-
 EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
 {
-    size_t new_idx = first_free;
-    assert(new_idx < ARRAY_LENGTH(entries));
-
-    first_free = entries[first_free].next_free;
+    // find a free entry
+    uint32_t i;
+    for (i = 0; i < ARRAY_LENGTH(used_entries); i++)
+    {
+        if (used_entries[i] != 0xFF) break;
+    }
     
-    assert(entries[new_idx].version < 0);
+    uint32_t index = i * 8 * sizeof(*used_entries);
+    uint8_t used_entries_bits = used_entries[i];
+    while(used_entries_bits & 1)
+    {
+        used_entries_bits >>= 1;
+        index++;
+    }
 
-    entries[new_idx].version = -entries[new_idx].version + 1;
-    entries[new_idx].list_idx = list_idx;
-    entries[new_idx].entity_idx = entity_idx;
-    EntityHandle result;
-    result.version = entries[new_idx].version;
-    result.idx = new_idx;
-    return result;
+    entries[index].version = -entries[index].version + 1;
+    entries[index].list_idx = list_idx;
+    entries[index].entity_idx = entity_idx;
+
+    EntityHandle new_handle;
+    new_handle.version = entries[index].version;
+    new_handle.idx = index;
+
+    add_entry_with_handle(list_idx, entity_idx, new_handle);
+
+    return new_handle;
 }
 
 void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle)
 {
-    // check if the handle's free
-    size_t idx = first_free;
-    if (idx == handle.idx)
-    {
-        first_free = entries[first_free].next_free;
+    // mark the entry as used
+    uint32_t used_entries_idx = handle.idx / (8 * sizeof(*used_entries));
+    uint32_t bit_offset = handle.idx % (8 * sizeof(*used_entries));
+    assert((used_entries[used_entries_idx] & 1 << bit_offset) == 0);
+    used_entries[used_entries_idx] |= 1 << bit_offset;
 
-        // check the version corresponds to inactive entry
-        assert(entries[handle.idx].version <= 0);
-
-        entries[handle.idx].version = -entries[handle.idx].version + 1;
-        entries[handle.idx].list_idx = list_idx;
-        entries[handle.idx].entity_idx = entity_idx;
-        return;
-    }
-    while (idx <= ARRAY_LENGTH(entries))
-    {
-        if (entries[idx].next_free == handle.idx)
-        {
-            entries[idx].next_free = entries[handle.idx].next_free;
-
-            // check the version corresponds to inactive entry
-            // if it doesn't something has gone wrong
-            assert(entries[handle.idx].version <= 0);
-
-            entries[handle.idx].version = -entries[handle.idx].version + 1;
-            entries[handle.idx].list_idx = list_idx;
-            entries[handle.idx].entity_idx = entity_idx;
-            return;
-        }
-        idx = entries[idx].next_free;
-    }
-
-    // this means the entry for this handle is already used
-    assert(false);
+    // now set the entry
+    entries[handle.idx].version = handle.version;
+    entries[handle.idx].list_idx = list_idx;
+    entries[handle.idx].entity_idx = entity_idx;
 }
 
 bool EntityTable::lookup_entity(
@@ -162,11 +140,17 @@ void EntityTable::free_handle(EntityHandle handle)
     if (handle.version != entries[handle.idx].version)
     {
         // this handle has already been freed
+        cout << "warning, freeing handle multiple times" << endl;
         return;
     }
-    
+
+    uint32_t used_entries_idx = handle.idx / (8 * sizeof(*used_entries));
+    uint32_t bit_offset = handle.idx % (8 * sizeof(*used_entries));
+
     // swap version sign to indicate handle freed
     entries[handle.idx].version = -entries[handle.idx].version;
+    // clear the used bit
+    used_entries[used_entries_idx] &= ~(1 << bit_offset);
 }
 
 void EntityTable::update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx)

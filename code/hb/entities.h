@@ -123,22 +123,13 @@ struct EntityList
 struct EntityTableEntry
 {
     int32_t version;
-    union
-    {
-        struct
-        {
-            size_t list_idx;
-            size_t entity_idx;
-        };
-        size_t next_free;
-    };
+    size_t list_idx;
+    size_t entity_idx;
 };
 
 struct EntityTable
 {
-    EntityTable();
-
-    size_t first_free;
+    uint8_t used_entries[(MAX_ENTITIES + 7) / 8] = {}; // rounding up to nearest 8
     EntityTableEntry entries[MAX_ENTITIES] = {};
 
     EntityHandle add_entry(size_t list_idx, size_t entity_idx);
