@@ -13,10 +13,10 @@ ConnectionAckPacket::ConnectionAckPacket(ClientId new_client_id)
 {}
 
 EntityCreatePacket::EntityCreatePacket(
-    Entity _entity,
     EntityHandle entity_handle)
-: entity(_entity),
+:
     handle(entity_handle)
+    // caller has to set the entity data
 {}
 
 TransformSyncPacket::TransformSyncPacket(
@@ -47,17 +47,9 @@ ControlUpdatePacket::ControlUpdatePacket(PlayerControlState _state, uint32_t _se
     sequence(_sequence)
 {}
 
-GamePacketOut::GamePacketOut(GamePacketHeader header_, void *data_, size_t data_size)
+GamePacketOut::GamePacketOut(GamePacketHeader header_)
 : header(header_)
 {
-    if (!data_)
-    {
-        assert(data_size == 0);
-    }
-    else
-    {
-        memcpy(data, data_, data_size);
-    }
 }
 
 void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list)
@@ -71,4 +63,19 @@ void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list)
         GamePacket* game_packet = (GamePacket*) packet;
         packet_list->push_back({from, *game_packet});
     }
+
+}
+
+size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, uint8_t *data, size_t size)
+{
+    // TODO this is tricky
+    EntityCreatePacket *create_packet = new (data) EntityCreatePacket(entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx]);
+
+    assert(size > sizeof(EntityCreatePacket));
+    create_packet->handle = entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx];
+    create_packet->data_size = size - sizeof(EntityCreatePacket);
+    assert(create_packet->data_size >= entity_manager->serialize_entity_size(ref));
+    entity_manager->serialize_entity(ref, create_packet->entity_data, &create_packet->data_size);
+
+    return sizeof(EntityCreatePacket) + create_packet->data_size;
 }

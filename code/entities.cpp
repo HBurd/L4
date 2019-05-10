@@ -2,66 +2,84 @@
 #include "hb/util.h"
 #include <cassert>
 
-EntityList::EntityList(uint32_t _supported_components)
-:supported_components(_supported_components) {}
-
-#define ADD_COMPONENT(C) EXPAND_MACRO(ADD_COMPONENT2(C))
-#define ADD_COMPONENT2(type, name, id) { \
-    if (supports_components(ComponentType::id)) \
-    { \
-        name##_list.push_back(entity.name); \
-        assert(name##_list.size() == size); \
-    } \
-}
-
-void EntityList::add_entity(Entity entity, EntityHandle handle)
+bool EntityListInfo::supports_component(uint32_t component_type) const
 {
-    assert(entity.supported_components == supported_components);
-    size++;
-
-    ADD_COMPONENT(WORLD_SECTOR_COMPONENT);
-    ADD_COMPONENT(TRANSFORM_COMPONENT);
-    ADD_COMPONENT(PHYSICS_COMPONENT);
-    ADD_COMPONENT(MESH_COMPONENT);
-    ADD_COMPONENT(PLAYER_CONTROL_COMPONENT);
-    ADD_COMPONENT(PROJECTILE_COMPONENT);
-    ADD_COMPONENT(PLANET_COMPONENT);
-    
-    handles.push_back(handle);
-    
-    assert(handles.size() == size);
+    return components[component_type] != nullptr;
 }
 
-#define SERIALIZE_COMPONENT(C) EXPAND_MACRO(SERIALIZE_COMPONENT2(C))
-#define SERIALIZE_COMPONENT2(type, name, id) { \
-    if (supports_components(ComponentType::id)) \
-    { \
-        entity.supported_components |= ComponentType::id; \
-        entity.name = name##_list[entity_idx]; \
-    } \
-}
-
-Entity EntityList::serialize(size_t entity_idx)
+void EntityManager::serialize_entity(
+    EntityRef ref,
+    uint8_t *data,
+    size_t *size)
 {
-    Entity entity;
-    // we aren't setting entity's supported components directly (it is set in macro)
-    // so that we can test at the end that everything's been added
-    SERIALIZE_COMPONENT(WORLD_SECTOR_COMPONENT);
-    SERIALIZE_COMPONENT(TRANSFORM_COMPONENT);
-    SERIALIZE_COMPONENT(PHYSICS_COMPONENT);
-    SERIALIZE_COMPONENT(MESH_COMPONENT);
-    SERIALIZE_COMPONENT(PLAYER_CONTROL_COMPONENT);
-    SERIALIZE_COMPONENT(PROJECTILE_COMPONENT);
-    SERIALIZE_COMPONENT(PLANET_COMPONENT);
-
-    // see above
-    assert(entity.supported_components == supported_components);
-    return entity;
+    size_t used_size = 0;
+    for (uint32_t i = 0; i < num_components; i++)
+    {
+        if (entity_lists[ref.list_idx].components[i] != nullptr)
+        {
+            ComponentWrapper *wrapper = (ComponentWrapper*)(data + used_size);
+            size_t component_entry_size = sizeof(ComponentWrapper) + component_info[i].size;
+            used_size += component_entry_size;
+            assert(used_size <= *size);
+            wrapper->type = i;
+            wrapper->size = component_info[i].size;
+            memcpy(
+                wrapper->data,
+                lookup_component(ref, i),
+                component_info[i].size);
+        }
+    }
+    *size = used_size;
 }
 
-bool EntityList::supports_components(uint32_t components) const
+void EntityManager::create_entity_from_serialized(
+    uint8_t *entity_data,
+    size_t data_size,
+    EntityHandle handle)
 {
-    return (supported_components & components) == components;
+    // find what components are required
+    uint32_t required_components[ComponentType::NUM_COMPONENT_TYPES];
+    uint32_t num_required_components = 0;
+
+    size_t read_size = 0;
+    while (read_size < data_size)
+    {
+        ComponentWrapper *wrapper = (ComponentWrapper*)(entity_data + read_size);
+        required_components[num_required_components] = wrapper->type;
+        num_required_components++;
+        read_size += wrapper->size + sizeof(ComponentWrapper);
+    }
+
+    create_entity_with_handle(required_components, num_required_components, handle);
+
+    EntityRef ref;
+    entity_table.lookup_entity(handle, &ref);
+
+    // copy in the component data
+    read_size = 0;
+    for (uint32_t i = 0; i < num_required_components; i++)
+    {
+        ComponentWrapper *wrapper = (ComponentWrapper*)(entity_data + read_size);
+        memcpy(
+            lookup_component(ref, required_components[i]),
+            wrapper->data,
+            wrapper->size);
+        read_size += wrapper->size + sizeof(ComponentWrapper);
+    }
+}
+
+size_t EntityManager::serialize_entity_size(EntityRef ref)
+{
+    size_t size = 0;
+    for (uint32_t i = 0; i < num_components; i++)
+    {
+        if (entity_lists[ref.list_idx].components[i] != nullptr)
+        {
+            size_t component_entry_size = sizeof(ComponentWrapper) + component_info[i].size;
+            size += component_entry_size;
+        }
+    }
+    return size;
 }
 
 bool EntityHandle::is_initialized() const
@@ -69,12 +87,12 @@ bool EntityHandle::is_initialized() const
     return version != 0;
 }
 
-bool operator==(const EntityHandle& lhs, const EntityHandle& rhs)
+bool operator==(const EntityHandle &lhs, const EntityHandle &rhs)
 {
     return lhs.version == rhs.version && lhs.idx == rhs.idx;
 }
 
-EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
+EntityHandle EntityTable::pick_handle()
 {
     // find a free entry
     uint32_t i;
@@ -91,20 +109,21 @@ EntityHandle EntityTable::add_entry(size_t list_idx, size_t entity_idx)
         index++;
     }
 
-    entries[index].version = -entries[index].version + 1;
-    entries[index].list_idx = list_idx;
-    entries[index].entity_idx = entity_idx;
+    EntityHandle handle;
+    handle.version = -entries[index].version + 1;
+    handle.idx = index;
 
-    EntityHandle new_handle;
-    new_handle.version = entries[index].version;
-    new_handle.idx = index;
+    return handle;
+}
 
-    add_entry_with_handle(list_idx, entity_idx, new_handle);
-
+EntityHandle EntityTable::add_entry(EntityRef ref)
+{
+    EntityHandle new_handle = pick_handle();
+    add_entry_with_handle(ref, new_handle);
     return new_handle;
 }
 
-void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle)
+void EntityTable::add_entry_with_handle(EntityRef ref, EntityHandle handle)
 {
     // mark the entry as used
     uint32_t used_entries_idx = handle.idx / (8 * sizeof(*used_entries));
@@ -114,23 +133,19 @@ void EntityTable::add_entry_with_handle(size_t list_idx, size_t entity_idx, Enti
 
     // now set the entry
     entries[handle.idx].version = handle.version;
-    entries[handle.idx].list_idx = list_idx;
-    entries[handle.idx].entity_idx = entity_idx;
+    entries[handle.idx].entity_ref = ref;
 }
 
 bool EntityTable::lookup_entity(
     EntityHandle handle,
-    const vector<EntityList>& entity_lists,
-    EntityListIdx* list_idx,
-    EntityIdx* entity_idx) const
+    EntityRef *ref) const
 {
     if (handle.version == 0 || handle.version != entries[handle.idx].version)
     {
         return false;
     }
 
-    *list_idx = entries[handle.idx].list_idx;
-    *entity_idx = entries[handle.idx].entity_idx;
+    *ref = entries[handle.idx].entity_ref;
 
     return true;
 }
@@ -153,125 +168,150 @@ void EntityTable::free_handle(EntityHandle handle)
     used_entries[used_entries_idx] &= ~(1 << bit_offset);
 }
 
-void EntityTable::update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx)
+void EntityTable::update_handle(EntityHandle handle, EntityRef new_ref)
 {
     assert(handle.version == entries[handle.idx].version);
-    entries[handle.idx].list_idx = new_list_idx;
-    entries[handle.idx].entity_idx = new_entity_idx;
+    entries[handle.idx].entity_ref = new_ref;
 }
 
-EntityHandle EntityManager::create_entity(Entity entity)
+EntityManager::EntityManager(
+    ComponentInfo *components,
+    uint32_t num_components_,
+    uint8_t *component_data_,
+    size_t size)
 {
-    // find a suitable EntityList for this entity
-    EntityList *entity_list = nullptr;
-    size_t list_idx;
-    for (list_idx = 0; list_idx < entity_lists.size(); list_idx++)
-    {
-        // components must match exactly
-        if (entity_lists[list_idx].supported_components == entity.supported_components)
-        {
-            entity_list = &entity_lists[list_idx];
-            break;
-        }
-    }
+    component_info = components;
+    num_components = num_components_;
+    component_data = component_data_;
+    component_data_size = size;
+}
 
-    // make a new list if a suitable one wasn't found
-    if (entity_list == nullptr)
-    {
-        list_idx = entity_lists.size();
-        entity_lists.push_back(EntityList(entity.supported_components));
-        entity_list = &entity_lists.back();
-    }
-
-    size_t entity_idx = entity_list->size;
-    EntityHandle handle = entity_table.add_entry(list_idx, entity_idx);
-    entity_list->add_entity(entity, handle);
+EntityHandle EntityManager::create_entity(
+    uint32_t *required_components,
+    uint32_t num_required_components)
+{
+    EntityHandle handle = entity_table.pick_handle();
+    create_entity_with_handle(
+        required_components,
+        num_required_components,
+        handle);
     return handle;
 }
 
-void EntityManager::create_entity_with_handle(Entity entity, EntityHandle entity_handle)
+void EntityManager::create_entity_with_handle(
+    uint32_t *required_components,
+    uint32_t num_required_components,
+    EntityHandle handle)
 {
-    // find a suitable EntityList for this entity
-    EntityList *entity_list = nullptr;
-    size_t list_idx;
-    for (list_idx = 0; list_idx < entity_lists.size(); list_idx++)
+    uint32_t li;
+    bool found_list = false;
+    for(li = 0; li < entity_lists.size(); li++)
     {
-        // components must match exactly
-        if (entity_lists[list_idx].supported_components == entity.supported_components)
+        // Unfortunately this is a little complicated, since
+        // it's not sufficient to find a list that supports a
+        // superset of the components required by the entity;
+        // it must also not support any extras. So for now
+        // we'll just do this the simplest way possible.
+        uint32_t list_num_components = 0;
+        for (uint32_t lci = 0;
+             lci < num_components;
+             lci++)
         {
-            entity_list = &entity_lists[list_idx];
-            break;
+            if (entity_lists[li].components[lci] != nullptr)
+            {
+                list_num_components++;
+            }
+        }
+        if (list_num_components == num_required_components
+            && entity_lists[li].size < entity_lists[li].max_size)
+        {
+            found_list = true;
+            for (uint32_t eci = 0;
+                 eci < num_required_components;
+                 eci++)
+            {
+                if (entity_lists[li].components[required_components[eci]] == nullptr)
+                {
+                    found_list = false;
+                    break;
+                }
+            }
+            if (found_list) break;
         }
     }
-
     // make a new list if a suitable one wasn't found
-    if (entity_list == nullptr)
+    if (!found_list)
     {
-        list_idx = entity_lists.size();
-        entity_lists.push_back(EntityList(entity.supported_components));
-        entity_list = &entity_lists.back();
+        EntityListInfo list_info;
+        list_info.max_size = COMPONENT_LIST_SIZE_INCREMENT;
+
+        for (uint32_t i = 0; i < num_required_components; i++)
+        {
+            list_info.components[required_components[i]] = component_data + component_data_used;
+            component_data_used += COMPONENT_LIST_SIZE_INCREMENT * component_info[required_components[i]].size;
+        }
+        list_info.handles = (EntityHandle*)(component_data + component_data_used);
+        component_data_used += COMPONENT_LIST_SIZE_INCREMENT * sizeof(EntityHandle);
+
+        assert(component_data_used <= component_data_size);
+
+        li = entity_lists.size();
+        entity_lists.push_back(list_info);
     }
 
-    size_t entity_idx = entity_list->size;
-    entity_table.add_entry_with_handle(list_idx, entity_idx, entity_handle);
-    entity_list->add_entity(entity, entity_handle);
-    return;
-}
+    uint32_t entity_idx = entity_lists[li].size;
 
-#define REMOVE_COMPONENT(C) EXPAND_MACRO(REMOVE_COMPONENT2(C))
-#define REMOVE_COMPONENT2(type, name, id) {\
-    if (entity_list.supports_components(ComponentType::id)) \
-    { \
-        entity_list.name##_list[entity_idx] = entity_list.name##_list.back(); \
-        entity_list.name##_list.pop_back(); \
-        removed_components |= ComponentType::id; \
-    } \
+    entity_lists[li].handles[entity_idx] = handle;
+
+    EntityRef ref;
+    ref.entity_idx = entity_idx;
+    ref.list_idx = li;
+
+    entity_table.add_entry_with_handle(ref, handle);
+    entity_lists[li].size++;
 }
 
 void EntityManager::kill_entity(EntityHandle handle)
 {
-    // cache list_idx and entity_idx
-    EntityListIdx list_idx;
-    EntityIdx entity_idx;
+    // cache entity reference
+    EntityRef ref;
+    // TODO: Check if we actually found the entity
     entity_table.lookup_entity(
         handle,
-        entity_lists,
-        &list_idx,
-        &entity_idx);
-
-    EntityList& entity_list = entity_lists[list_idx];
+        &ref);
 
     // invalidate handle
     entity_table.free_handle(handle);
 
-    // We are replacing this entity with the last entity in the list
-    // so we must update its handle
-    if (entity_idx == entity_list.size - 1)
+    EntityListInfo &entity_list = entity_lists[ref.list_idx];
+
+    EntityRef back;
+    back.list_idx = ref.list_idx;
+    back.entity_idx = entity_list.size - 1;
+
+    if (ref.entity_idx != back.entity_idx)
     {
-        entity_list.handles.pop_back();
-    }
-    else
-    {
-        entity_list.handles[entity_idx] = entity_list.handles.back();
-        entity_list.handles.pop_back();
-        if (entity_list.handles.size() >  0)
+        entity_list.handles[ref.entity_idx] = entity_list.handles[back.entity_idx];
+        entity_table.update_handle(entity_list.handles[ref.entity_idx], ref);
+
+        for (uint32_t i = 0; i < num_components; i++)
         {
-            entity_table.update_handle(entity_list.handles[entity_idx], list_idx, entity_idx);
+            if (entity_list.components[i])
+            {
+                memcpy(
+                    lookup_component(ref, i),
+                    lookup_component(back, i),
+                    component_info[i].size);
+            }
         }
     }
 
-    // Now remove actual components
-    // we have to modify each list individually
-    uint32_t removed_components = 0;
-    REMOVE_COMPONENT(WORLD_SECTOR_COMPONENT);
-    REMOVE_COMPONENT(TRANSFORM_COMPONENT);
-    REMOVE_COMPONENT(PHYSICS_COMPONENT);
-    REMOVE_COMPONENT(MESH_COMPONENT);
-    REMOVE_COMPONENT(PLAYER_CONTROL_COMPONENT);
-    REMOVE_COMPONENT(PROJECTILE_COMPONENT);
-    REMOVE_COMPONENT(PLANET_COMPONENT);
-
-    // verify we removed all of this entity's components
-    assert(removed_components == entity_list.supported_components);
     entity_list.size--;
+}
+
+void *EntityManager::lookup_component(
+    EntityRef ref,
+    uint32_t cmp_type) const
+{
+    return (uint8_t*)(entity_lists[ref.list_idx].components[cmp_type]) + ref.entity_idx * component_info[cmp_type].size;
 }

@@ -1,7 +1,6 @@
 #ifndef HBPLANET_COMPONENT_H
 #define HBPLANET_COMPONENT_H
 
-#define PLANET_COMPONENT Planet, planet, PLANET
 struct Planet
 {
     float radius = 1.0f;

@@ -35,9 +35,12 @@ void send_game_packet(
     void *packet_data,
     size_t data_size)
 {
+    uint8_t *out_packet_data = new uint8_t[sizeof(GamePacketOut) + data_size];
+
     // Build header
-    GamePacketHeader header(packet_type, sender_id);
-    GamePacketOut packet(header, packet_data, data_size);
+    GamePacketOut *packet = new (out_packet_data) GamePacketOut(GamePacketHeader(packet_type, sender_id));
+
+    memcpy(packet->data, packet_data, data_size);
 
     sockaddr_in to_sockaddr = {};
     to_sockaddr.sin_family = AF_INET;
@@ -46,11 +49,13 @@ void send_game_packet(
 
     sendto(
         sock,
-        &packet,
-        sizeof(header) + data_size,
+        packet,
+        sizeof(GamePacketOut) + data_size,
         0,
         (sockaddr*)&to_sockaddr,
         sizeof(to_sockaddr));
+
+    delete[] out_packet_data;
 }
 
 bool recv_game_packet(HbSocket sock, GamePacket *packet, HbSockaddr *from)

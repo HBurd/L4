@@ -4,7 +4,6 @@
 // TODO: this doesn't belong here
 typedef size_t ClientId;
 
-#define PLAYER_CONTROL_COMPONENT PlayerControl, player_control, PLAYER_CONTROL
 struct PlayerControl
 {
     ClientId client_id;

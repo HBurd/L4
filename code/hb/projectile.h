@@ -5,7 +5,7 @@
 #include "hb/renderer.h"
 #include "hb/math.h"
 
-Entity create_projectile(Transform shooter_transform);
+EntityHandle create_projectile(Transform shooter_transform, EntityManager *entity_manager);
 
 // returns whether projectile still exists
 bool projectile_update(Projectile* projectile);

@@ -56,9 +56,48 @@ int main(int argc, char* argv[])
 
     vector<GamePacketIn> game_packets;
 
-    EntityManager *entity_manager = new EntityManager();
+    size_t component_data_size = 10 * 1024 * 1024;
+    uint8_t *component_data = new uint8_t[component_data_size];
 
-    entity_manager->create_entity(create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f));
+    ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
+    for (uint32_t i = 0; i < ARRAY_LENGTH(components); i++)
+    {
+        switch(i)
+        {
+            case ComponentType::WORLD_SECTOR:
+                components[i] = {sizeof(WorldSector)};
+                break;
+            case ComponentType::TRANSFORM:
+                components[i] = {sizeof(Transform)};
+                break;
+            case ComponentType::PLAYER_CONTROL:
+                components[i] = {sizeof(PlayerControl)};
+                break;
+            case ComponentType::PLANET:
+                components[i] = {sizeof(Planet)};
+                break;
+            case ComponentType::PHYSICS:
+                components[i] = {sizeof(Physics)};
+                break;
+            case ComponentType::PROJECTILE:
+                components[i] = {sizeof(Projectile)};
+                break;
+            case ComponentType::MESH:
+                components[i] = {sizeof(MeshId)};
+                break;
+            default:
+                assert(false);
+        }
+    }
+
+    EntityManager *entity_manager =
+        new EntityManager(
+            components,
+            ARRAY_LENGTH(components),
+            component_data,
+            component_data_size);
+
+    create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f, entity_manager);
  
     TimeKeeper time_keeper;
 
@@ -82,41 +121,47 @@ int main(int argc, char* argv[])
                     // now update the client with all existing entities
                     for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
                     {
-                        EntityList& entity_list = entity_manager->entity_lists[list_idx];
+                        EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
                         for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
                         {
-                            Entity entity = entity_list.serialize(entity_idx);
-                            EntityCreatePacket create_packet(
-                                entity,
-                                entity_list.handles[entity_idx]);
+                            EntityRef ref;
+                            ref.list_idx = list_idx;
+                            ref.entity_idx = entity_idx;
+
+                            // TODO define this size
+                            uint8_t *create_packet_data = new uint8_t[2048];
+                            size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
+
                             send_game_packet(
                                 server.sock,
                                 packet.sender,
                                 client_id,
                                 GamePacketType::ENTITY_CREATE,
-                                &create_packet,
-                                sizeof(create_packet));
+                                create_packet_data,
+                                create_packet_size);
+
+                            delete[] create_packet_data;
                         }
                     }
                     break;
                 }
                 case GamePacketType::PLAYER_SPAWN:
                 {
-                    Entity ship_entity = create_ship(packet.packet.packet_data.player_spawn.coords);
-                    ship_entity.supported_components |= ComponentType::PLAYER_CONTROL;
-                    ship_entity.player_control = {packet.packet.header.sender};
-                    EntityHandle ship_entity_handle = 
-                        entity_manager->create_entity(ship_entity);
+                    EntityHandle ship_entity_handle = create_player_ship(packet.packet.packet_data.player_spawn.coords, packet.packet.header.sender, entity_manager);
+                    EntityRef ref;
+                    entity_manager->entity_table.lookup_entity(ship_entity_handle, &ref);
 
                     server.clients[packet.packet.header.sender].player_entity = ship_entity_handle;
 
-                    EntityCreatePacket entity_create_packet(ship_entity, ship_entity_handle);
+                    uint8_t *create_packet_data = new uint8_t[2048];
+                    size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
                     
                     server.broadcast(
                         GamePacketType::ENTITY_CREATE,
-                        &entity_create_packet,
-                        sizeof(entity_create_packet));
+                        create_packet_data,
+                        create_packet_size);
 
+                    delete[] create_packet_data;
                     break;
                 }
                 case GamePacketType::CONTROL_UPDATE:
@@ -140,63 +185,57 @@ int main(int argc, char* argv[])
         {
             if (!client.received_input) continue;
 
-            LOOKUP_COMPONENT(
-                TRANSFORM_COMPONENT,
-                client.player_entity,
-                *entity_manager,
-                Transform &player_transform)
+            EntityRef player_ref;
+            entity_manager->entity_table.lookup_entity(client.player_entity, &player_ref);
+
+            Transform &player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+            Physics player_physics = *(Physics*)entity_manager->lookup_component(player_ref, ComponentType::PHYSICS);
+
+            Vec3 ship_thrust;
+            Vec3 ship_torque;
+            get_ship_thrust(
+                client.player_control,
+                player_transform.orientation,
+                &ship_thrust,
+                &ship_torque);
+
+            apply_impulse(
+                ship_thrust * TIMESTEP,
+                &player_transform.velocity,
+                player_physics.mass);
+            apply_angular_impulse(
+                ship_torque * TIMESTEP,
+                &player_transform.angular_velocity,
+                player_physics.angular_mass);
+
+            // Create an entity if the player shot
+            if (client.player_control.shoot)
             {
-                LOOKUP_COMPONENT(
-                    PHYSICS_COMPONENT,
-                    client.player_entity,
-                    *entity_manager,
-                    Physics player_physics)
-                {
-                    Vec3 ship_thrust;
-                    Vec3 ship_torque;
-                    get_ship_thrust(
-                        client.player_control,
-                        player_transform.orientation,
-                        &ship_thrust,
-                        &ship_torque);
+                EntityHandle projectile_handle = create_projectile(player_transform, entity_manager);
 
-                    apply_impulse(
-                        ship_thrust * TIMESTEP,
-                        &player_transform.velocity,
-                        player_physics.mass);
-                    apply_angular_impulse(
-                        ship_torque * TIMESTEP,
-                        &player_transform.angular_velocity,
-                        player_physics.angular_mass);
+                EntityRef ref;
+                entity_manager->entity_table.lookup_entity(projectile_handle, &ref);
 
-                    // Create an entity if the player shot
-                    if (client.player_control.shoot)
-                    {
-                        Entity projectile_entity =
-                            create_projectile(player_transform);
-                        EntityHandle projectile_handle =
-                            entity_manager->create_entity(projectile_entity);
-                        EntityCreatePacket entity_create_packet(
-                            projectile_entity,
-                            projectile_handle);
-                        
-                        server.broadcast(
-                            GamePacketType::ENTITY_CREATE,
-                            &entity_create_packet,
-                            sizeof(entity_create_packet));
-                    }
+                uint8_t *create_packet_data = new uint8_t[2048];
+                size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
+                
+                server.broadcast(
+                    GamePacketType::ENTITY_CREATE,
+                    create_packet_data,
+                    create_packet_size);
 
-                    // Send the sync packet
-                    TransformSyncPacket transform_sync(
-                        client.player_entity,
-                        player_transform,
-                        client.sequence);
-                    server.broadcast(
-                       GamePacketType::PHYSICS_SYNC,
-                       &transform_sync,
-                       sizeof(transform_sync));
-                }
+                delete[] create_packet_data;
             }
+
+            // Send the sync packet
+            TransformSyncPacket transform_sync(
+                client.player_entity,
+                player_transform,
+                client.sequence);
+            server.broadcast(
+               GamePacketType::PHYSICS_SYNC,
+               &transform_sync,
+               sizeof(transform_sync));
 
             client.received_input = false;
         }

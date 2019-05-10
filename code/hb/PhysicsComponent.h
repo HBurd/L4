@@ -1,7 +1,6 @@
 #ifndef HBPHYSICS_COMPONENT_H
 #define HBPHYSICS_COMPONENT_H
 
-#define PHYSICS_COMPONENT Physics, physics, PHYSICS
 struct Physics
 {
     float mass = 1.0f;

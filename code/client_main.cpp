@@ -106,7 +106,46 @@ int main(int argc, char *argv[])
 
     PlayerInputBuffer past_inputs;
 
-    EntityManager *entity_manager = new EntityManager();
+    size_t component_data_size = 10 * 1024 * 1024;
+    uint8_t *component_data = new uint8_t[component_data_size];
+
+    ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
+    for (uint32_t i = 0; i < ARRAY_LENGTH(components); i++)
+    {
+        switch(i)
+        {
+            case ComponentType::WORLD_SECTOR:
+                components[i] = {sizeof(WorldSector)};
+                break;
+            case ComponentType::TRANSFORM:
+                components[i] = {sizeof(Transform)};
+                break;
+            case ComponentType::PLAYER_CONTROL:
+                components[i] = {sizeof(PlayerControl)};
+                break;
+            case ComponentType::PLANET:
+                components[i] = {sizeof(Planet)};
+                break;
+            case ComponentType::PHYSICS:
+                components[i] = {sizeof(Physics)};
+                break;
+            case ComponentType::PROJECTILE:
+                components[i] = {sizeof(Projectile)};
+                break;
+            case ComponentType::MESH:
+                components[i] = {sizeof(MeshId)};
+                break;
+            default:
+                assert(false);
+        }
+    }
+
+    EntityManager *entity_manager =
+        new EntityManager(
+            components,
+            ARRAY_LENGTH(components),
+            component_data,
+            component_data_size);
  
     TimeKeeper time_keeper;
 
@@ -207,78 +246,60 @@ int main(int argc, char *argv[])
         // PlayerControl updates
         if (client_state.status == ClientState::SPAWNED)
         {
-            LOOKUP_COMPONENT(
-                TRANSFORM_COMPONENT,
-                client_state.player_handle,
-                *entity_manager,
-                Transform &player_transform)
+            EntityRef player_ref;
+            entity_manager->entity_table.lookup_entity(client_state.player_handle, &player_ref);
+
+            Transform &player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+            Physics player_physics = *(Physics*)entity_manager->lookup_component(player_ref, ComponentType::PHYSICS);
+            PlayerControlState control_state;
+            
+            if (client_state.track)
             {
-                LOOKUP_COMPONENT(
-                    PHYSICS_COMPONENT,
-                    client_state.player_handle,
-                    *entity_manager,
-                    Physics player_physics)
-                {
-                    PlayerControlState control_state;
-                    
-                    if (client_state.track)
-                    {
-                        LOOKUP_COMPONENT(
-                            TRANSFORM_COMPONENT,
-                            client_state.guidance_target,
-                            *entity_manager,
-                            Transform target_transform)
-                        {
-                            control_state.torque += compute_target_tracking_torque(
-                                player_transform,
-                                player_physics,
-                                target_transform);
-                        }
-                    }
-                    else if (client_state.stabilize)
-                    {
-                        control_state.torque += compute_stabilization_torque(
-                            player_transform,
-                            player_physics);
-                    }
+                EntityRef target_ref;
+                entity_manager->entity_table.lookup_entity(client_state.guidance_target, &target_ref);
+                Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
 
-                    // The player always has some control even when some controller is acting
-                    control_state.torque += compute_player_input_torque(kb);
-                    control_state.thrust += compute_player_input_thrust(kb);
-
-                    control_state.clamp();
-
-                    control_state.shoot = kb.down.enter;
-
-                    ControlUpdatePacket control_update(control_state, past_inputs.next_seq_num);
-                    client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
-
-                    past_inputs.save_input(control_state, (float)TIMESTEP);
-
-                    Vec3 ship_thrust;
-                    Vec3 ship_torque;
-                    get_ship_thrust(
-                        control_state,
-                        player_transform.orientation,
-                        &ship_thrust,
-                        &ship_torque);
-
-                    apply_impulse(
-                        ship_thrust * TIMESTEP,
-                        &player_transform.velocity,
-                        player_physics.mass);
-                    apply_angular_impulse(
-                        ship_torque * TIMESTEP,
-                        &player_transform.angular_velocity,
-                        player_physics.angular_mass);
-                }
+                control_state.torque += compute_target_tracking_torque(
+                    player_transform,
+                    player_physics,
+                    target_transform);
+            }
+            else if (client_state.stabilize)
+            {
+                control_state.torque += compute_stabilization_torque(
+                    player_transform,
+                    player_physics);
             }
 
-            //Transform &player_transform =
-            //    entity_manager->entity_lists[list_idx].transform_list[entity_idx];
-            //Physics &player_physics =
-            //    entity_manager->entity_lists[list_idx].physics_list[entity_idx];
+            // The player always has some control even when some controller is acting
+            control_state.torque += compute_player_input_torque(kb);
+            control_state.thrust += compute_player_input_thrust(kb);
 
+            control_state.clamp();
+
+            control_state.shoot = kb.down.enter;
+
+            ControlUpdatePacket control_update(control_state, past_inputs.next_seq_num);
+            client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
+
+            past_inputs.save_input(control_state, (float)TIMESTEP);
+
+            Vec3 ship_thrust;
+            Vec3 ship_torque;
+            get_ship_thrust(
+                control_state,
+                player_transform.orientation,
+                &ship_thrust,
+                &ship_torque);
+
+            apply_impulse(
+                ship_thrust * TIMESTEP,
+                &player_transform.velocity,
+                player_physics.mass);
+            apply_angular_impulse(
+                ship_torque * TIMESTEP,
+                &player_transform.angular_velocity,
+                player_physics.angular_mass);
         }
 
         perform_entity_update_step(entity_manager, (float)TIMESTEP);
@@ -290,13 +311,18 @@ int main(int argc, char *argv[])
             switch (packet.packet.header.type)
             {
                 case GamePacketType::ENTITY_CREATE:
-                    entity_manager->create_entity_with_handle(
-                        packet.packet.packet_data.entity_create.entity,
+                {
+                    entity_manager->create_entity_from_serialized(
+                        packet.packet.packet_data.entity_create.entity_data,
+                        packet.packet.packet_data.entity_create.data_size,
                         packet.packet.packet_data.entity_create.handle);
                     // check if created entity is the player entity
-                    if ((packet.packet.packet_data.entity_create.entity.supported_components
-                         & ComponentType::PLAYER_CONTROL)
-                        && packet.packet.packet_data.entity_create.entity.player_control.client_id == client.id)
+                    EntityRef ref;
+                    entity_manager->entity_table.lookup_entity(
+                        packet.packet.packet_data.entity_create.handle,
+                        &ref);
+                    if (entity_manager->entity_lists[ref.list_idx].supports_component(ComponentType::PLAYER_CONTROL)
+                        && ((PlayerControl*)entity_manager->lookup_component(ref, ComponentType::PLAYER_CONTROL))->client_id == client.id)
                     {
                         assert(client_state.status == ClientState::NOT_SPAWNED);
                         client_state.status = ClientState::SPAWNED;
@@ -311,68 +337,60 @@ int main(int argc, char *argv[])
                             "...\n");
                     }
                     break;
+                }
                 case GamePacketType::PHYSICS_SYNC:
                 {
                     EntityHandle sync_entity = packet.packet.packet_data.transform_sync.entity;
-                    LOOKUP_COMPONENT(
-                        TRANSFORM_COMPONENT,
-                        sync_entity,
-                        *entity_manager,
-                        Transform &transform)
+                    EntityRef sync_ref;
+                    entity_manager->entity_table.lookup_entity(sync_entity, &sync_ref);
+
+                    Transform &transform = *(Transform*)entity_manager->lookup_component(sync_ref, ComponentType::TRANSFORM);
+                    // if the update is for the player, then selectively apply it
+                    if (sync_entity == client_state.player_handle)
                     {
-                        // if the update is for the player, then selectively apply it
-                        if (sync_entity == client_state.player_handle)
+                        // if we have received no later transform syncs from the server
+                        if (packet.packet.packet_data.transform_sync.sequence
+                            > past_inputs.last_received_seq_num)
                         {
-                            // if we have received no later transform syncs from the server
-                            if (packet.packet.packet_data.transform_sync.sequence
-                                > past_inputs.last_received_seq_num)
+                            // Apply the transform update
+                            transform = 
+                                packet.packet.packet_data.transform_sync.transform_state;
+                            past_inputs.last_received_seq_num =
+                                packet.packet.packet_data.transform_sync.sequence;
+
+                            // apply later inputs (reconciliation)
+                            for (uint32_t sequence = packet.packet.packet_data.transform_sync.sequence;
+                                 sequence < past_inputs.next_seq_num;
+                                 sequence++)
                             {
-                                // Apply the transform update
-                                transform = 
-                                    packet.packet.packet_data.transform_sync.transform_state;
-                                past_inputs.last_received_seq_num =
-                                    packet.packet.packet_data.transform_sync.sequence;
-
-                                // apply later inputs (reconciliation)
-                                for (uint32_t sequence = packet.packet.packet_data.transform_sync.sequence;
-                                     sequence < past_inputs.next_seq_num;
-                                     sequence++)
+                                uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs.inputs);
+                                if (past_inputs.inputs[input_idx].sequence_number == sequence)
                                 {
-                                    uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs.inputs);
-                                    if (past_inputs.inputs[input_idx].sequence_number == sequence)
-                                    {
-                                        Vec3 ship_thrust;
-                                        Vec3 ship_torque;
-                                        get_ship_thrust(
-                                            past_inputs.inputs[input_idx].input,
-                                            transform.orientation,
-                                            &ship_thrust,
-                                            &ship_torque);
-                                        
-                                        LOOKUP_COMPONENT(
-                                            PHYSICS_COMPONENT,
-                                            sync_entity,
-                                            *entity_manager,
-                                            Physics physics)
-                                        {
-                                            apply_impulse(
-                                                ship_thrust * past_inputs.inputs[input_idx].dt,
-                                                &transform.velocity,
-                                                physics.mass);
-                                            apply_angular_impulse(
-                                                ship_torque * past_inputs.inputs[input_idx].dt,
-                                                &transform.angular_velocity,
-                                                physics.angular_mass);
-                                        }
+                                    Vec3 ship_thrust;
+                                    Vec3 ship_torque;
+                                    get_ship_thrust(
+                                        past_inputs.inputs[input_idx].input,
+                                        transform.orientation,
+                                        &ship_thrust,
+                                        &ship_torque);
 
-                                    }
+                                    Physics physics = *(Physics*)entity_manager->lookup_component(sync_ref, ComponentType::PHYSICS);
+                                    
+                                    apply_impulse(
+                                        ship_thrust * past_inputs.inputs[input_idx].dt,
+                                        &transform.velocity,
+                                        physics.mass);
+                                    apply_angular_impulse(
+                                        ship_torque * past_inputs.inputs[input_idx].dt,
+                                        &transform.angular_velocity,
+                                        physics.angular_mass);
                                 }
                             }
                         }
-                        else    // if the update isn't for the player then always apply it
-                        {
-                            transform = packet.packet.packet_data.transform_sync.transform_state;
-                        }
+                    }
+                    else    // if the update isn't for the player then always apply it
+                    {
+                        transform = packet.packet.packet_data.transform_sync.transform_state;
                     }
                     break;
                 }
@@ -399,22 +417,13 @@ int main(int argc, char *argv[])
         // Update camera
         if (client_state.status == ClientState::SPAWNED)
         {
-            LOOKUP_COMPONENT(
-                WORLD_SECTOR_COMPONENT,
-                client_state.player_handle,
-                *entity_manager,
-                WorldSector world_sector)
-            {
-                LOOKUP_COMPONENT(
-                    TRANSFORM_COMPONENT,
-                    client_state.player_handle,
-                    *entity_manager,
-                    Transform transform)
-                {
-                    renderer.camera_pos = to_world_position(world_sector, transform.position);
-                    renderer.camera_orientation = transform.orientation;
-                }
-            }
+            EntityRef player_ref;
+            entity_manager->entity_table.lookup_entity(client_state.player_handle, &player_ref);
+            WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
+            Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+
+            renderer.camera_pos = to_world_position(world_sector, transform.position);
+            renderer.camera_orientation = transform.orientation;
         }
         
         // =========
@@ -427,15 +436,23 @@ int main(int argc, char *argv[])
 
         for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
-            EntityList& entity_list = entity_manager->entity_lists[list_idx];
+            EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
-            if (!entity_list.supports_components(ComponentType::WORLD_SECTOR | ComponentType::TRANSFORM | ComponentType::MESH))
+            if (!entity_list.supports_component(ComponentType::WORLD_SECTOR))
+                continue;
+            if (!entity_list.supports_component(ComponentType::TRANSFORM))
+                continue;
+            if (!entity_list.supports_component(ComponentType::MESH))
                 continue;
             for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                MeshId mesh = entity_list.mesh_list[entity_idx];
-                WorldSector world_sector = entity_list.world_sector_list[entity_idx];
-                Transform transform = entity_list.transform_list[entity_idx];
+                EntityRef ref;
+                ref.list_idx = list_idx;
+                ref.entity_idx = entity_idx;
+
+                MeshId mesh = *(MeshId*)entity_manager->lookup_component(ref, ComponentType::MESH);
+                WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(ref, ComponentType::WORLD_SECTOR);
+                Transform transform = *(Transform*)entity_manager->lookup_component(ref, ComponentType::TRANSFORM);
                 renderer.draw_mesh(
                     mesh,
                     to_world_position(world_sector, transform.position),

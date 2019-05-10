@@ -29,10 +29,11 @@ struct ConnectionAckPacket
 
 struct EntityCreatePacket
 {
-    Entity entity;
     EntityHandle handle;
+    size_t data_size;
+    uint8_t entity_data[];
 
-    EntityCreatePacket(Entity _entity, EntityHandle entity_handle);
+    EntityCreatePacket(EntityHandle entity_handle);
 };
 
 struct PlayerSpawnPacket
@@ -91,16 +92,19 @@ struct GamePacket
         // ===============================
         // ^^ ADD NEW PACKET TYPES HERE ^^
         // ===============================
+
+        // TODO: Temporary hack for safely handling variable length packets
+        uint8_t buffer[1500];
     } packet_data;
 };
 
 struct GamePacketOut
 {
     GamePacketHeader header;
-    uint8_t data[sizeof(GamePacket::GamePacketData)];
+    uint8_t data[];
 
     // data can be null if size is 0
-    GamePacketOut(GamePacketHeader header_, void *data_, size_t data_size);
+    GamePacketOut(GamePacketHeader header_);
 };
 
 struct GamePacketIn

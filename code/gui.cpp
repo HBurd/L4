@@ -67,36 +67,35 @@ bool SpawnMenu::draw()
 }
 
 static void generate_entity_name(
-    const EntityManager* entity_manager,
-    size_t list_idx,
-    size_t entity_idx,
+    const EntityManager *entity_manager,
+    EntityRef ref,
     char* name,
     size_t name_len)
 {
-    const EntityList& entity_list = entity_manager->entity_lists[list_idx];
-    if (entity_list.supports_components(ComponentType::PLAYER_CONTROL))
+    const EntityListInfo &entity_list = entity_manager->entity_lists[ref.list_idx];
+    if (entity_list.supports_component(ComponentType::PLAYER_CONTROL))
     {
         snprintf(
             name,
             name_len,
-            "ship (id %zu)",
-            entity_list.handles[entity_idx].idx);
+            "ship (id %u)",
+            entity_list.handles[ref.entity_idx].idx);
     }
-    else if (entity_list.supports_components(ComponentType::PROJECTILE))
+    else if (entity_list.supports_component(ComponentType::PROJECTILE))
     {
         snprintf(
             name,
             name_len,
-            "projectile (id %zu)",
-            entity_list.handles[entity_idx].idx);
+            "projectile (id %u)",
+            entity_list.handles[ref.entity_idx].idx);
     }
     else
     {
         snprintf(
             name,
             name_len,
-            "celestial body (id %zu)",
-            entity_list.handles[entity_idx].idx);
+            "celestial body (id %u)",
+            entity_list.handles[ref.entity_idx].idx);
     }
 }
 
@@ -165,26 +164,20 @@ static void draw_guidance_stats(
     EntityHandle player_handle,
     EntityHandle other_handle)
 {
-    LOOKUP_COMPONENT(
-        TRANSFORM_COMPONENT,
-        player_handle,
-        *entity_manager,
-        Transform player_transform)
-    {
-        LOOKUP_COMPONENT(
-            TRANSFORM_COMPONENT,
-            other_handle,
-            *entity_manager,
-            Transform other_transform)
-        {
-            float distance = (player_transform.position - other_transform.position).norm();
-            ImGui::Text("Distance: %f", distance);
+    EntityRef player_ref;
+    entity_manager->entity_table.lookup_entity(player_handle, &player_ref);
+    Transform player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 
-            float relative_velocity =
-                (player_transform.velocity - other_transform.velocity).norm();
-            ImGui::Text("Relative velocity: %f", relative_velocity);
-        }
-    }
+    EntityRef other_ref;
+    entity_manager->entity_table.lookup_entity(other_handle, &other_ref);
+    Transform other_transform = *(Transform*)entity_manager->lookup_component(other_ref, ComponentType::TRANSFORM);
+
+    float distance = (player_transform.position - other_transform.position).norm();
+    ImGui::Text("Distance: %f", distance);
+
+    float relative_velocity =
+        (player_transform.velocity - other_transform.velocity).norm();
+    ImGui::Text("Relative velocity: %f", relative_velocity);
 }
 
 bool draw_guidance_menu(
@@ -208,8 +201,8 @@ bool draw_guidance_menu(
 
     for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
     {
-        const EntityList& entity_list = entity_manager->entity_lists[list_idx];
-        if (!entity_list.supports_components(ComponentType::PHYSICS))
+        const EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
+        if (!entity_list.supports_component(ComponentType::PHYSICS))
             continue;
         for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
         {
@@ -217,11 +210,14 @@ bool draw_guidance_menu(
             if (entity_list.handles[entity_idx] == player_handle)
                 continue;
 
+            EntityRef ref;
+            ref.list_idx = list_idx;
+            ref.entity_idx = entity_idx;
+
             char entity_id_name[32];
             generate_entity_name(
                 entity_manager,
-                list_idx,
-                entity_idx,
+                ref,
                 entity_id_name,
                 sizeof(entity_id_name));
 
@@ -249,18 +245,14 @@ bool draw_guidance_menu(
     {
         char entity_id_name[32];
 
-        EntityListIdx list_idx;
-        EntityIdx entity_idx;
+        EntityRef ref;
         assert(entity_manager->entity_table.lookup_entity(
             hovered_entity,
-            entity_manager->entity_lists,
-            &list_idx,
-            &entity_idx));
+            &ref));
         
         generate_entity_name(
             entity_manager,
-            list_idx,
-            entity_idx,
+            ref,
             entity_id_name,
             sizeof(entity_id_name));
 
@@ -269,13 +261,10 @@ bool draw_guidance_menu(
     }
     else if (target_handle->is_initialized())
     {
-        EntityListIdx list_idx;
-        EntityIdx entity_idx;
+        EntityRef ref;
         if(entity_manager->entity_table.lookup_entity(
             *target_handle,
-            entity_manager->entity_lists,
-            &list_idx,
-            &entity_idx))
+            &ref))
         {
             ImGui::Text("Target info:");
             draw_guidance_stats(entity_manager, player_handle, *target_handle);

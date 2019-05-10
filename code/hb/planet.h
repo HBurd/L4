@@ -3,7 +3,7 @@
 
 #include "hb/entities.h"
 
-Entity create_planet(Vec3 position, float radius, float mass);
+void create_planet(Vec3 position, float radius, float mass, EntityManager *entity_manager);
 
 #ifdef FAST_BUILD
 #include "planet.cpp"

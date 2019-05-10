@@ -8,14 +8,15 @@ Transform::Transform(Vec3 transform_position)
 :position(transform_position) {}
 
 void update_transform_components(
-    vector<WorldSector> *world_sector_components,
-    vector<Transform> *transform_components,
+    WorldSector *world_sector_components,
+    Transform *transform_components,
+    size_t num_components,
     float dt)
 {
-    for (size_t i = 0; i < transform_components->size(); i++)
+    for (size_t i = 0; i < num_components; i++)
     {
-        WorldSector &sector = (*world_sector_components)[i];
-        Transform &transform = (*transform_components)[i];
+        WorldSector &sector = world_sector_components[i];
+        Transform &transform = transform_components[i];
 
         transform.position += transform.velocity * dt;
 

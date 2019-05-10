@@ -9,122 +9,49 @@
 #include "hb/PlanetComponent.h"
 #include "hb/MeshComponent.h"
 
-using std::vector;
-
-const size_t MAX_ENTITIES = 65536;
-
-typedef uint32_t EntityListIdx;
-typedef uint32_t EntityIdx;
-
-// This is a workaround for the microsoft compiler,
-// which disregards the standards and treats macros that
-// expand to a list of arguments as a single argument
-#define EXPAND_MACRO(x) x
-
-#define COMPONENT_ID(C) EXPAND_MACRO(COMPONENT_ID2(C))
-#define COMPONENT_ID2(type, name, id) id
-
-#define COMPONENT_DECLARATION(C) EXPAND_MACRO(COMPONENT_DECLARATION2(C))
-#define COMPONENT_DECLARATION2(type, name, id) type name
-
-#define COMPONENT_LIST_DECLARATION(C) EXPAND_MACRO(COMPONENT_LIST_DECLARATION2(C))
-#define COMPONENT_LIST_DECLARATION2(type, name, id) std::vector<type> name##_list
-
-#define LOOKUP_COMPONENT(C, handle, entity_manager, varname) \
-    EXPAND_MACRO(LOOKUP_COMPONENT2(C, handle, entity_manager, varname))
-#define LOOKUP_COMPONENT2(type, compname, id, handle, entity_manager, declaration) \
-    EntityListIdx list_idx; \
-    EntityIdx entity_idx; \
-    int TMP_##__LINE__ = 1;\
-    if ((entity_manager).entity_table.lookup_entity( \
-            handle, \
-            (entity_manager).entity_lists, \
-            &list_idx, \
-            &entity_idx)) \
-        if ((entity_manager).entity_lists[list_idx].supports_components(ComponentType::id)) \
-            for (declaration = \
-                    (entity_manager).entity_lists[list_idx].compname##_list[entity_idx]; \
-                 TMP_##__LINE__ > 0; \
-                 TMP_##__LINE__--)
+const uint32_t MAX_ENTITIES = 65536;
+const uint32_t COMPONENT_LIST_SIZE_INCREMENT = 256;
 
 namespace ComponentType
 {
     enum ComponentType
     {
-        // TODO: can we include component dependencies in here?
-        COMPONENT_ID(PHYSICS_COMPONENT) = 1,
-        COMPONENT_ID(MESH_COMPONENT) = 2,
-        COMPONENT_ID(PLAYER_CONTROL_COMPONENT) = 4,
-        COMPONENT_ID(PROJECTILE_COMPONENT) = 8,
-        COMPONENT_ID(TRANSFORM_COMPONENT) = 16,
-        COMPONENT_ID(PLANET_COMPONENT) = 32,
-        COMPONENT_ID(WORLD_SECTOR_COMPONENT) = 64,
+        PHYSICS,
+        MESH,
+        PLAYER_CONTROL,
+        PROJECTILE,
+        TRANSFORM,
+        PLANET,
+        WORLD_SECTOR,
 
         // =======================================
         // Add components here as they are created
         // =======================================
+        
+        NUM_COMPONENT_TYPES
     };
 }
 
-// Used for initializing the components of new entities
-// Values are copied into new components
-struct Entity
+struct EntityRef
 {
-    uint32_t supported_components = 0;   // bitfield containing implemented components
-
-    COMPONENT_DECLARATION(WORLD_SECTOR_COMPONENT);
-    COMPONENT_DECLARATION(TRANSFORM_COMPONENT);
-    COMPONENT_DECLARATION(PHYSICS_COMPONENT);
-    COMPONENT_DECLARATION(MESH_COMPONENT);
-    COMPONENT_DECLARATION(PLAYER_CONTROL_COMPONENT);
-    COMPONENT_DECLARATION(PROJECTILE_COMPONENT);
-    COMPONENT_DECLARATION(PLANET_COMPONENT);
-
-    // =======================================
-    // Add components here as they are created
-    // =======================================
+    uint32_t list_idx;
+    uint32_t entity_idx;
 };
 
 struct EntityHandle
 {
     int32_t version = 0;  // 0 for uninitialized
-    size_t idx;
+    uint32_t idx;
 
     bool is_initialized() const;
 };
 
 bool operator==(const EntityHandle& lhs, const EntityHandle& rhs);
 
-struct EntityList
-{
-    EntityList(uint32_t _supported_components);
-    void add_entity(Entity entity, EntityHandle handle);
-    bool supports_components(uint32_t components) const;
-    Entity serialize(size_t entity_idx);
-
-    size_t size = 0;
-    uint32_t supported_components;   // bitfield containing implemented components
-
-    COMPONENT_LIST_DECLARATION(WORLD_SECTOR_COMPONENT);
-    COMPONENT_LIST_DECLARATION(TRANSFORM_COMPONENT);
-    COMPONENT_LIST_DECLARATION(PHYSICS_COMPONENT);
-    COMPONENT_LIST_DECLARATION(MESH_COMPONENT);
-    COMPONENT_LIST_DECLARATION(PLAYER_CONTROL_COMPONENT);
-    COMPONENT_LIST_DECLARATION(PROJECTILE_COMPONENT);
-    COMPONENT_LIST_DECLARATION(PLANET_COMPONENT);
-
-    // =======================================
-    // Add components here as they are created
-    // =======================================
-    
-    vector<EntityHandle> handles;
-};
-
 struct EntityTableEntry
 {
     int32_t version;
-    size_t list_idx;
-    size_t entity_idx;
+    EntityRef entity_ref;
 };
 
 struct EntityTable
@@ -132,27 +59,80 @@ struct EntityTable
     uint8_t used_entries[(MAX_ENTITIES + 7) / 8] = {}; // rounding up to nearest 8
     EntityTableEntry entries[MAX_ENTITIES] = {};
 
-    EntityHandle add_entry(size_t list_idx, size_t entity_idx);
-    void add_entry_with_handle(size_t list_idx, size_t entity_idx, EntityHandle handle);
+    EntityHandle pick_handle();
+
+    EntityHandle add_entry(EntityRef entity_ref);
+    void add_entry_with_handle(EntityRef entity_ref, EntityHandle handle);
     bool lookup_entity(
         EntityHandle handle,
-        const vector<EntityList>& entity_lists,
-        EntityListIdx* list_idx,
-        EntityIdx* entity_idx) const;
+        EntityRef *entity_ref) const;
 
     void free_handle(EntityHandle handle);
-    void update_handle(EntityHandle handle, size_t new_list_idx, size_t new_entity_idx);
+    void update_handle(EntityHandle handle, EntityRef new_entity_ref);
+};
+
+struct EntityListInfo
+{
+    uint32_t size = 0;
+    uint32_t max_size;
+    EntityHandle *handles = nullptr;
+    void *components[ComponentType::NUM_COMPONENT_TYPES] = {};
+
+    bool supports_component(uint32_t component_type) const;
+};
+
+struct ComponentWrapper
+{
+    uint32_t type;
+    uint32_t size;      // of data
+    uint8_t data[];
+};
+
+struct ComponentInfo
+{
+    uint32_t size;
 };
 
 struct EntityManager
 {
-    vector<EntityList> entity_lists;
-    EntityTable entity_table;
+    EntityManager(
+        ComponentInfo *components,
+        uint32_t num_components_,
+        uint8_t *component_data_,
+        size_t size);
 
-    EntityHandle create_entity(Entity entity);
-    void create_entity_with_handle(Entity entity, EntityHandle entity_handle);
-    
+    ComponentInfo *component_info;
+    uint32_t num_components;
+
+    std::vector<EntityListInfo> entity_lists;
+    EntityTable entity_table;
+    uint8_t *component_data;
+    size_t component_data_size;
+    size_t component_data_used = 0;
+
+    EntityHandle create_entity(
+        uint32_t *required_components,
+        uint32_t num_required_components);
+
+    void create_entity_with_handle(
+        uint32_t *required_components,
+        uint32_t num_required_components,
+        EntityHandle handle);
+    void create_entity_from_serialized(
+        uint8_t *entity_data,
+        size_t data_size,
+        EntityHandle handle);
+
+    void serialize_entity(
+        EntityRef entity_ref,
+        uint8_t *data,
+        size_t *size);
+    size_t serialize_entity_size(EntityRef entity_ref);
+
     void kill_entity(EntityHandle handle);
+    void *lookup_component(
+        EntityRef entity_ref,
+        uint32_t cmp_type) const;
 };
 
 #ifdef FAST_BUILD
