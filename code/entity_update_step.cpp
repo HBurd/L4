@@ -19,18 +19,19 @@ void perform_entity_update_step(EntityManager *entity_manager, float dt)
     }
 
     // Projectile updates
-    for (size_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+    EntityRef ref;
+    for (ref.list_idx = 0; ref.list_idx < entity_manager->entity_lists.size(); ref.list_idx++)
     {
-        EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
+        EntityListInfo &entity_list = entity_manager->entity_lists[ref.list_idx];
         if (!entity_list.supports_component(ComponentType::PROJECTILE)) continue;
 
-        for (size_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+        for (ref.entity_idx = 0; ref.entity_idx < entity_list.size; ref.entity_idx++)
         {
-            if (!projectile_update((Projectile*)(entity_list.components[ComponentType::PROJECTILE]) + entity_idx))
+            if (!projectile_update((Projectile*)(entity_list.components[ComponentType::PROJECTILE]) + ref.entity_idx))
             {
                 // TODO: synchronize between clients and server?
                 // also will this break the loops?
-                entity_manager->kill_entity(entity_list.handles[entity_idx]);
+                entity_manager->kill_entity(ref);
             }
         }
     }

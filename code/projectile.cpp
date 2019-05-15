@@ -1,7 +1,7 @@
 #include "hb/projectile.h"
 #include "hb/mesh_type.h"
 
-EntityHandle create_projectile(Transform shooter_transform, EntityManager *entity_manager)
+EntityRef create_projectile(Transform shooter_transform, EntityManager *entity_manager)
 {
     uint32_t required_components[] = {
         ComponentType::WORLD_SECTOR,
@@ -10,9 +10,7 @@ EntityHandle create_projectile(Transform shooter_transform, EntityManager *entit
         ComponentType::MESH,
         ComponentType::PROJECTILE
     };
-    EntityHandle handle = entity_manager->create_entity(required_components, ARRAY_LENGTH(required_components));
-    EntityRef ref;
-    entity_manager->entity_table.lookup_entity(handle, &ref);
+    EntityRef ref = entity_manager->create_entity(required_components, ARRAY_LENGTH(required_components));
 
     new (entity_manager->lookup_component(ref, ComponentType::WORLD_SECTOR)) WorldSector;
 
@@ -27,7 +25,7 @@ EntityHandle create_projectile(Transform shooter_transform, EntityManager *entit
     new (entity_manager->lookup_component(ref, ComponentType::MESH)) MeshId(MeshType::PROJECTILE);
     new (entity_manager->lookup_component(ref, ComponentType::PROJECTILE)) Projectile;
 
-    return handle;
+    return ref;
 }
 
 bool projectile_update(Projectile* projectile)
