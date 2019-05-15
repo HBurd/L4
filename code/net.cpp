@@ -1,6 +1,5 @@
 #include "hb/net.h"
 #include "hb/packets.h"
-#include "hb/ship.h"
 
 bool HbSockaddr::operator==(const HbSockaddr &rhs) const
 {

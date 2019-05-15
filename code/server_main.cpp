@@ -14,14 +14,13 @@
 #include "hb/math.h"
 #include "hb/renderer.h"
 #include "hb/time.h"
-#include "hb/ship.h"
-#include "hb/planet.h"
 #include "hb/util.h"
 #include "hb/player_control.h"
 #include "hb/server.h"
 #include "hb/packets.h"
 #include "hb/projectile.h"
 #include "hb/entity_update_step.h"
+#include "hb/entity_initializers.h"
 
 const double TIMESTEP = 1.0 / 60.0;
 

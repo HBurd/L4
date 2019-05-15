@@ -10,7 +10,6 @@
 #include "hb/math.h"
 #include "hb/renderer.h"
 #include "hb/time.h"
-#include "hb/ship.h"
 #include "hb/util.h"
 #include "hb/keyboard.h"
 #include "hb/player_control.h"
@@ -20,6 +19,7 @@
 #include "hb/entity_update_step.h"
 #include "hb/packets.h"
 #include "hb/client.h"
+#include "hb/entity_initializers.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
