@@ -1,7 +1,5 @@
 #include "hb/TransformComponent.h"
 
-using std::vector;
-
 const float WORLD_SECTOR_DIM = 100.0f;
 
 Transform::Transform(Vec3 transform_position)

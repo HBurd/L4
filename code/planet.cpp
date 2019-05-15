@@ -10,13 +10,10 @@ void create_planet(Vec3 position, float radius, float mass, EntityManager *entit
         ComponentType::PLANET
     };
 
-    EntityHandle handle = entity_manager->create_entity(
+    EntityRef ref = entity_manager->create_entity(
         required_components,
         ARRAY_LENGTH(required_components));
     
-    EntityRef ref;
-    entity_manager->entity_table.lookup_entity(handle, &ref);
-
     new (entity_manager->lookup_component(ref, ComponentType::WORLD_SECTOR)) WorldSector;
 
     Transform *transform_cmp = new (entity_manager->lookup_component(ref, ComponentType::TRANSFORM)) Transform(position);

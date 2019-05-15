@@ -6,10 +6,14 @@
 #include <signal.h>
 #endif
 
+#include "hb/components.h"
+
+#define HEC_IMPLEMENTATION
+#include "hec.h"
+
 #include "hb/math.h"
 #include "hb/renderer.h"
 #include "hb/time.h"
-#include "hb/entities.h"
 #include "hb/ship.h"
 #include "hb/planet.h"
 #include "hb/util.h"
@@ -56,9 +60,6 @@ int main(int argc, char* argv[])
 
     vector<GamePacketIn> game_packets;
 
-    size_t component_data_size = 10 * 1024 * 1024;
-    uint8_t *component_data = new uint8_t[component_data_size];
-
     ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
     for (uint32_t i = 0; i < ARRAY_LENGTH(components); i++)
     {
@@ -93,9 +94,7 @@ int main(int argc, char* argv[])
     EntityManager *entity_manager =
         new EntityManager(
             components,
-            ARRAY_LENGTH(components),
-            component_data,
-            component_data_size);
+            ARRAY_LENGTH(components));
 
     create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f, entity_manager);
  
@@ -147,11 +146,10 @@ int main(int argc, char* argv[])
                 }
                 case GamePacketType::PLAYER_SPAWN:
                 {
-                    EntityHandle ship_entity_handle = create_player_ship(packet.packet.packet_data.player_spawn.coords, packet.packet.header.sender, entity_manager);
-                    EntityRef ref;
-                    entity_manager->entity_table.lookup_entity(ship_entity_handle, &ref);
+                    EntityRef ref = create_player_ship(packet.packet.packet_data.player_spawn.coords, packet.packet.header.sender, entity_manager);
+                    EntityHandle handle = entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx];
 
-                    server.clients[packet.packet.header.sender].player_entity = ship_entity_handle;
+                    server.clients[packet.packet.header.sender].player_entity = handle;
 
                     uint8_t *create_packet_data = new uint8_t[2048];
                     size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
@@ -211,10 +209,7 @@ int main(int argc, char* argv[])
             // Create an entity if the player shot
             if (client.player_control.shoot)
             {
-                EntityHandle projectile_handle = create_projectile(player_transform, entity_manager);
-
-                EntityRef ref;
-                entity_manager->entity_table.lookup_entity(projectile_handle, &ref);
+                EntityRef ref = create_projectile(player_transform, entity_manager);
 
                 uint8_t *create_packet_data = new uint8_t[2048];
                 size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);

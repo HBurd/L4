@@ -2,7 +2,7 @@
 #define HBGUI_H
 
 #include "hb/math.h"
-#include "hb/entities.h"
+#include "hec.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;

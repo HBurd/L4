@@ -1,7 +1,7 @@
 #ifndef HBENTITY_UPDATE_STEP_H
 #define HBENTITY_UPDATE_STEP_H
 
-#include "hb/entities.h"
+#include "hec.h"
 
 void perform_entity_update_step(EntityManager *entity_manager, float dt);
 

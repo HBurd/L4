@@ -259,7 +259,7 @@ bool draw_guidance_menu(
         ImGui::Text("Info about %s:", entity_id_name);
         draw_guidance_stats(entity_manager, player_handle, hovered_entity);
     }
-    else if (target_handle->is_initialized())
+    else if (target_handle->is_valid())
     {
         EntityRef ref;
         if(entity_manager->entity_table.lookup_entity(

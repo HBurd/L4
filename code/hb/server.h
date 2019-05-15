@@ -4,7 +4,7 @@
 #include "hb/net.h"
 
 #include "hb/player_control.h"
-#include "hb/entities.h"
+#include "hec.h"
 
 struct ClientConnection
 {

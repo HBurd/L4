@@ -2,7 +2,7 @@
 #define HBPACKETS_H
 
 #include "hb/net.h"
-#include "hb/entities.h"
+#include "hec.h"
 #include "hb/math.h"
 #include "hb/player_control.h"
 #include "hb/renderer.h"

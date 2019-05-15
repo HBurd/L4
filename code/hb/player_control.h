@@ -1,7 +1,8 @@
 #ifndef HBPLAYER_CONTROL_H
 #define HBPLAYER_CONTROL_H
 
-#include "hb/entities.h"
+#include "hb/components.h"
+#include "hec.h"
 #include "hb/keyboard.h"
 
 const size_t MAX_PAST_INPUTS = 128;

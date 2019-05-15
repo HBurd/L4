@@ -3,10 +3,13 @@
 
 #include <iostream>
 
+#include "hb/components.h"
+#define HEC_IMPLEMENTATION
+#include "hec.h"
+
 #include "hb/math.h"
 #include "hb/renderer.h"
 #include "hb/time.h"
-#include "hb/entities.h"
 #include "hb/ship.h"
 #include "hb/util.h"
 #include "hb/keyboard.h"
@@ -106,9 +109,6 @@ int main(int argc, char *argv[])
 
     PlayerInputBuffer past_inputs;
 
-    size_t component_data_size = 10 * 1024 * 1024;
-    uint8_t *component_data = new uint8_t[component_data_size];
-
     ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
     for (uint32_t i = 0; i < ARRAY_LENGTH(components); i++)
     {
@@ -143,9 +143,7 @@ int main(int argc, char *argv[])
     EntityManager *entity_manager =
         new EntityManager(
             components,
-            ARRAY_LENGTH(components),
-            component_data,
-            component_data_size);
+            ARRAY_LENGTH(components));
  
     TimeKeeper time_keeper;
 
