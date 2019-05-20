@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include <string.h>
 
 using std::cout;
 using std::endl;

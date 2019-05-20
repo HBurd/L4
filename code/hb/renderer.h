@@ -10,8 +10,6 @@
 #include "hb/mesh_type.h"
 #include "hb/math.h"
 
-using std::vector;
-
 #pragma pack(push, 1)
 struct Vertex
 {
@@ -43,7 +41,7 @@ struct Mesh
 
     GLuint vbo;
     GLuint vao;
-    vector<Vertex> vertices;
+    std::vector<Vertex> vertices;
 };
 
 typedef size_t MeshId;
@@ -71,8 +69,8 @@ struct Renderer
     MeshId skybox_mesh;
     GLuint skybox_texture;
 
-    vector<Mesh> meshes;
-    vector<ShaderProgram> shader_programs;
+    std::vector<Mesh> meshes;
+    std::vector<ShaderProgram> shader_programs;
 };
 
 #ifdef FAST_BUILD

@@ -1,6 +1,8 @@
 #ifndef HBPACKETS_H
 #define HBPACKETS_H
 
+#include <vector>
+
 #include "hb/net.h"
 #include "hec.h"
 #include "hb/math.h"
@@ -35,6 +37,8 @@ struct EntityCreatePacket
 
     EntityCreatePacket(EntityHandle entity_handle);
 };
+
+size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, uint8_t *data, size_t size);
 
 struct PlayerSpawnPacket
 {
@@ -113,7 +117,7 @@ struct GamePacketIn
     GamePacket packet;
 };
 
-void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list);
+void get_packets(HbSocket sock, std::vector<GamePacketIn>* packet_list);
 
 #ifdef FAST_BUILD
 #include "packets.cpp"

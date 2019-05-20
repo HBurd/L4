@@ -4,7 +4,6 @@
 #include "hb/TransformComponent.h"
 #include "hb/PhysicsComponent.h"
 #include "hb/PlayerControlComponent.h"
-#include "hb/MeshComponent.h"
 #include "hb/PlanetComponent.h"
 #include "hb/ProjectileComponent.h"
 

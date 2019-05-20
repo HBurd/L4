@@ -1,6 +1,8 @@
 #ifndef HBUTIL_H
 #define HBUTIL_H
 
+#include <stdint.h>
+
 #define ARRAY_LENGTH(x) sizeof(x) / sizeof (*x)
 
 // TODO: probably doesn't belong here

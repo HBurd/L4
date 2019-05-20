@@ -3,15 +3,18 @@
 #include "GL/glew.h"
 #include <string>
 #include <cassert>
+#include <cstring>
 
-#include "tiny_obj_loader.h"
+#include "fast_obj.h"
 
+#define STBI_ONLY_PNG
 #include "stb_image.h"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
+using std::vector;
 
 static GLint compile_shader(const char* filename, GLuint shader_type)
 {
@@ -124,83 +127,51 @@ Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
 {
     shader_program = mesh_shader_program;
 
-    // load model
-    tinyobj::attrib_t attrib;
-    vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    string obj_warn;
-    string obj_err;
-    char mtl_path[256] = {};
-    char mtl_path_length = strrchr(filename, '/') - filename;
-    memcpy(
-        mtl_path,
-        filename,
-        mtl_path_length <= (sizeof(mtl_path) - 1)
-            ? mtl_path_length
-            : (sizeof(mtl_path) - 1));
+    // load mesh
+    fastObjMesh *mesh = fast_obj_read(filename);
 
-    tinyobj::LoadObj(
-        &attrib,
-        &shapes,
-        &materials,
-        &obj_warn,
-        &obj_err,
-        filename,
-        mtl_path);
-
-    if (!obj_warn.empty())
-    {
-        cerr << "Warning loading model: "
-             << obj_warn
-             << endl;
-    }
-
-    if (!obj_err.empty())
-    {
-        cerr << "Error loading model: "
-             << obj_err
-             << endl;
-    }
-
-    for (unsigned int s = 0; s < shapes.size(); s++)
+    // for each group
+    for (unsigned int g = 0; g < mesh->group_count; g++)
     {
         unsigned int idx_offset = 0;
-        for (unsigned int f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+        fastObjGroup group = mesh->groups[g];
+        // for each face
+        for (unsigned int f = 0; f < group.face_count; f++)
         {
-            unsigned int num_vertices = shapes[s].mesh.num_face_vertices[f];
+            unsigned int num_vertices = group.vertices[f];
             if (num_vertices != 3)
             {
-                cerr << "Only faces with 3 vertices are supported"
+                cerr << "Only faces with 3 vertices are supported. This one has " << num_vertices
                      << endl;
             }
             for (unsigned int v = 0; v < num_vertices; v++)
             {
-                tinyobj::index_t idx = shapes[s].mesh.indices[idx_offset + v];
+                fastObjIndex idx = group.indices[idx_offset + v];
 
                 Vec3 position;
                 Vec3 normal;
                 Vec2 uv;
 
-                assert(attrib.vertices.size() > 0);
+                assert(mesh->position_count > 0);
 
                 position = Vec3(
-                    attrib.vertices[3 * idx.vertex_index],
-                    attrib.vertices[3 * idx.vertex_index + 1],
-                    attrib.vertices[3 * idx.vertex_index + 2]);
+                    mesh->positions[3 * idx.p],
+                    mesh->positions[3 * idx.p + 1],
+                    mesh->positions[3 * idx.p + 2]);
 
-                if (attrib.normals.size() > 0)
+                if (mesh->normal_count > 0)
                 {
                     normal = Vec3(
-                        attrib.normals[3 * idx.normal_index],
-                        attrib.normals[3 * idx.normal_index + 1],
-                        attrib.normals[3 * idx.normal_index + 2]);
+                        mesh->normals[3 * idx.n],
+                        mesh->normals[3 * idx.n + 1],
+                        mesh->normals[3 * idx.n + 2]);
                 }
 
-                if (attrib.texcoords.size() > 0)
+                if (mesh->texcoord_count > 0)
                 {
                     uv = Vec2(
-                        attrib.texcoords[2 * idx.texcoord_index],
-                        attrib.texcoords[2 * idx.texcoord_index + 1]);
+                        mesh->texcoords[2 * idx.t],
+                        mesh->texcoords[2 * idx.t + 1]);
                 }
 
                 vertices.push_back(Vertex(position, normal, uv));
@@ -208,6 +179,8 @@ Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
             idx_offset += num_vertices;
         }
     }
+
+    fast_obj_destroy(mesh);
 
     // create and fill vbo
     vbo = 0;
@@ -248,7 +221,7 @@ Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
             stride,
             offset);
 
-        location = 2; // normal
+        location = 2; // texcoords
         offset = (GLvoid*)offsetof(Vertex, uv);
         glEnableVertexAttribArray(location);
         glVertexAttribPointer(

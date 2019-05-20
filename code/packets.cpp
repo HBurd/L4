@@ -1,4 +1,7 @@
 #include "hb/packets.h"
+#include <cassert>
+
+using std::vector;
 
 GamePacketHeader::GamePacketHeader(GamePacketType packet_type, ClientId _sender)
 : type(packet_type),

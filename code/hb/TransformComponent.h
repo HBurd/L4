@@ -2,6 +2,8 @@
 #define HBTRANSFORM_H
 
 #include "hb/math.h"
+#include <stdlib.h>
+#include <stdint.h>
 
 struct WorldSector
 {
@@ -28,7 +30,7 @@ void update_transform_components(
     size_t num_components,
     float dt);
 
-Vec3 to_world_position(WorldSector sector, Transform transform);
+Vec3 to_world_position(WorldSector sector, Vec3 pos);
 
 #ifdef FAST_BUILD
 #include "TransformComponent.cpp"

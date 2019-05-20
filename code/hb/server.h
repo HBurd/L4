@@ -6,6 +6,8 @@
 #include "hb/player_control.h"
 #include "hec.h"
 
+#include <vector>
+
 struct ClientConnection
 {
     ClientConnection(HbSockaddr client_addr);

@@ -1,4 +1,6 @@
 #include "hb/entity_initializers.h"
+#include "hb/util.h"
+#include "hb/renderer.h"
 
 void create_planet(Vec3 position, float radius, float mass, EntityManager *entity_manager)
 {

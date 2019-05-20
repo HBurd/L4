@@ -1,0 +1,49 @@
+#!/bin/bash
+
+BASE_DIR=..
+
+SERVER_SRC=$BASE_DIR/code/server/*.cpp
+CLIENT_SRC=$BASE_DIR/code/client/*.cpp
+COMMON_SRC=$BASE_DIR/code/*.cpp
+LIBS_SRC=$BASE_DIR/code/libs/*.cpp
+
+CLIENT_UNITY=client_build.cpp
+SERVER_UNITY=server_build.cpp
+
+DEBUG=-g
+
+if [ "$1" == "lib" ]; then
+    echo Libs:
+    time clang++ $LIBS_SRC -c $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux
+    echo ====================
+fi
+
+# This is useful for examining compile times
+#time clang++ $BASE_DIR/code/unity_build.cpp -c -oL4client $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux
+
+# Generate files for unity build
+rm -f $CLIENT_UNITY
+for filename in $CLIENT_SRC; do
+    echo \#include \"$filename\" >> $CLIENT_UNITY
+done
+
+rm -f $SERVER_UNITY
+for filename in $SERVER_SRC; do
+    echo \#include \"$filename\" >> $SERVER_UNITY
+done
+
+for filename in $COMMON_SRC; do
+    echo \#include \"$filename\" >> $CLIENT_UNITY
+    echo \#include \"$filename\" >> $SERVER_UNITY
+done
+
+echo Client:
+time clang++ $CLIENT_UNITY libs_build.o -oL4client $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
+echo ====================
+
+echo Server:
+time clang++ $SERVER_UNITY libs_build.o -oL4server $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
+
+rm -rf resources
+cp -r ../resources resources
+

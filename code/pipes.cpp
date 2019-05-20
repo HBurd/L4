@@ -1,6 +1,9 @@
 #include "hb/pipes.h"
 #include <cassert>
+#include <iostream>
 
+// TODO: Apparently I never finished the implementation
+#if 0
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -132,4 +135,7 @@ HbPipe create_subproc_with_redirected_stdout(const char *path)
 }
 
 bool read_pipe(HbPipe pipe, char *buf, unsigned *len)
+
+#endif
+
 #endif
