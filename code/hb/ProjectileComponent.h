@@ -6,8 +6,4 @@ struct Projectile
     unsigned int timeout = 60; // 1 second
 };
 
-//#ifdef FAST_BUILD
-//#include "ProjectileComponent.h"
-//#endif
-
 #endif

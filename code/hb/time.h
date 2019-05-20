@@ -16,8 +16,4 @@ struct TimeKeeper
 
 void hb_sleep(uint32_t time_ms);
 
-#ifdef FAST_BUILD
-#include "time.cpp"
-#endif
-
 #endif // include_guard

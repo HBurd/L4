@@ -22,8 +22,4 @@ HbPipe create_subproc_with_redirected_stdout(const char *path);
 // len is inout
 bool read_pipe(HbPipe pipe, char *buf, unsigned *len);
 
-#ifdef FAST_BUILD
-#include "pipes.cpp"
-#endif
-
 #endif // include guard

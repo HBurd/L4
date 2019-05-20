@@ -30,8 +30,4 @@ struct Keyboard
     void clear_keydowns();
 };
 
-#ifdef FAST_BUILD
-#include "keyboard.cpp"
-#endif
-
 #endif // include guard

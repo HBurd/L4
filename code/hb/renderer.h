@@ -73,8 +73,4 @@ struct Renderer
     std::vector<ShaderProgram> shader_programs;
 };
 
-#ifdef FAST_BUILD
-#include "renderer.cpp"
-#endif
-
 #endif // include guard

@@ -9,8 +9,4 @@ struct PlayerControl
     ClientId client_id;
 };
 
-//#ifdef FAST_BUILD
-//#include "PlayerControlComponent.cpp"
-//#endif
-
 #endif

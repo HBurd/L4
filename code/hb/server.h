@@ -31,8 +31,4 @@ struct ServerData
     ClientId accept_client(HbSockaddr client_addr);
 };
 
-#ifdef FAST_BUILD
-#include "server.cpp"
-#endif
-
 #endif // include guard

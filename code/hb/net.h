@@ -62,8 +62,4 @@ bool recv_game_packet(
     GamePacket* packet,
     HbSockaddr* from);
 
-#ifdef FAST_BUILD
-#include "net.cpp"
-#endif
-
 #endif // include guard

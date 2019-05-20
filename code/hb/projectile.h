@@ -10,8 +10,4 @@ EntityRef create_projectile(Transform shooter_transform, EntityManager *entity_m
 // returns whether projectile still exists
 bool projectile_update(Projectile* projectile);
 
-#ifdef FAST_BUILD
-#include "projectile.cpp"
-#endif
-
 #endif // include guard

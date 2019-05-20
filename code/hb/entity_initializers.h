@@ -11,8 +11,4 @@ EntityRef create_player_ship(Vec3 position, ClientId client_id, EntityManager *e
 
 EntityRef create_projectile(Transform shooter_transform, EntityManager *entity_manager);
 
-#ifdef FAST_BUILD
-#include "entity_initializers.cpp"
-#endif
-
 #endif

@@ -7,8 +7,4 @@ struct Physics
     float angular_mass = 1.0f; // moment of ineria
 };
 
-//#ifdef FAST_BUILD
-//#include "PhysicsComponent.cpp"
-//#endif
-
 #endif

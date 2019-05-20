@@ -119,8 +119,4 @@ struct GamePacketIn
 
 void get_packets(HbSocket sock, std::vector<GamePacketIn>* packet_list);
 
-#ifdef FAST_BUILD
-#include "packets.cpp"
-#endif
-
 #endif

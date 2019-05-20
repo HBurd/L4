@@ -32,8 +32,4 @@ void update_transform_components(
 
 Vec3 to_world_position(WorldSector sector, Vec3 pos);
 
-#ifdef FAST_BUILD
-#include "TransformComponent.cpp"
-#endif
-
 #endif // include guard

@@ -48,8 +48,4 @@ float compute_player_input_thrust(Keyboard kb);
 
 void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 
-#ifdef FAST_BUILD
-#include "player_control.cpp"
-#endif
-
 #endif // include guard
