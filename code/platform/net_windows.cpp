@@ -1,4 +1,5 @@
 #include <Winsock2.h>
+#include <cassert>
 
 #include "hb/net.h"
 

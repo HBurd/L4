@@ -291,11 +291,11 @@ int main(int argc, char *argv[])
                 &ship_torque);
 
             apply_impulse(
-                ship_thrust * TIMESTEP,
+                ship_thrust * (float)TIMESTEP,
                 &player_transform.velocity,
                 player_physics.mass);
             apply_angular_impulse(
-                ship_torque * TIMESTEP,
+                ship_torque * (float)TIMESTEP,
                 &player_transform.angular_velocity,
                 player_physics.angular_mass);
         }
@@ -472,7 +472,7 @@ int main(int argc, char *argv[])
         {
             if (time_remaining > 0.001)
             {
-                SDL_Delay((uint32_t)(1000 * floorf(time_remaining)));
+                SDL_Delay((uint32_t)(1000 * floor(time_remaining)));
             }
             // busy wait for the rest of the time
             delta_time = time_keeper.get_delta_time_s_no_reset();

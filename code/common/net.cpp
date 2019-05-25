@@ -7,9 +7,9 @@ bool HbSockaddr::operator==(const HbSockaddr &rhs) const
 }
 
 #ifdef __unix__
-#include "net_unix.cpp"
+#include "platform/net_unix.cpp"
 #endif
 
 #ifdef _WIN32
-#include "net_windows.cpp"
+#include "platform/net_windows.cpp"
 #endif

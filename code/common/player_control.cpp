@@ -41,7 +41,7 @@ Vec3 compute_target_tracking_torque(
     float derivative = dot(player_omega, axis);
 
     // these values were picked using pidTuner in matlab
-    float torque = -0.96 * angle - 2.605 * derivative;
+    float torque = -0.96f * angle - 2.605f * derivative;
 
 
     Vec3 stabilize_axis = cross(axis, player_dir_rel);

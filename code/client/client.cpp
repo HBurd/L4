@@ -57,7 +57,7 @@ void ClientData::create_server(uint16_t port)
 
     bool success = CreateProcess(
         nullptr,
-        "Debug\\L4server 4444",
+        (LPSTR)"Debug\\L4server 4444",
         nullptr,
         nullptr,
         true,

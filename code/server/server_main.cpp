@@ -20,6 +20,7 @@
 #include "hb/entity_initializers.h"
 #include "hb/physics.h"
 #include "hb/components.h"
+#undef main
 
 const double TIMESTEP = 1.0 / 60.0;
 
