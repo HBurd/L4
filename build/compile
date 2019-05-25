@@ -4,7 +4,7 @@ BASE_DIR=..
 
 SERVER_SRC=$BASE_DIR/code/server/*.cpp
 CLIENT_SRC=$BASE_DIR/code/client/*.cpp
-COMMON_SRC=$BASE_DIR/code/*.cpp
+COMMON_SRC=$BASE_DIR/code/common/*.cpp
 LIBS_SRC=$BASE_DIR/code/libs/*.cpp
 
 CLIENT_UNITY=client_build.cpp
