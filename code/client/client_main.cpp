@@ -244,8 +244,8 @@ int main(int argc, char *argv[])
         // PlayerControl updates
         if (client_state.status == ClientState::SPAWNED)
         {
-            EntityRef player_ref;
-            entity_manager->entity_table.lookup_entity(client_state.player_handle, &player_ref);
+            EntityRef player_ref = entity_manager->entity_table.lookup_entity(client_state.player_handle);
+            assert(player_ref.is_valid());
 
             Transform &player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
             Physics player_physics = *(Physics*)entity_manager->lookup_component(player_ref, ComponentType::PHYSICS);
@@ -253,14 +253,16 @@ int main(int argc, char *argv[])
             
             if (client_state.track)
             {
-                EntityRef target_ref;
-                entity_manager->entity_table.lookup_entity(client_state.guidance_target, &target_ref);
-                Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
+                EntityRef target_ref = entity_manager->entity_table.lookup_entity(client_state.guidance_target);
+                if (target_ref.is_valid())
+                {
+                    Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
 
-                control_state.torque += compute_target_tracking_torque(
-                    player_transform,
-                    player_physics,
-                    target_transform);
+                    control_state.torque += compute_target_tracking_torque(
+                        player_transform,
+                        player_physics,
+                        target_transform);
+                }
             }
             else if (client_state.stabilize)
             {
@@ -315,11 +317,9 @@ int main(int argc, char *argv[])
                         packet.packet.packet_data.entity_create.data_size,
                         packet.packet.packet_data.entity_create.handle);
                     // check if created entity is the player entity
-                    EntityRef ref;
-                    entity_manager->entity_table.lookup_entity(
-                        packet.packet.packet_data.entity_create.handle,
-                        &ref);
-                    if (entity_manager->entity_lists[ref.list_idx].supports_component(ComponentType::PLAYER_CONTROL)
+                    EntityRef ref = entity_manager->entity_table.lookup_entity(
+                        packet.packet.packet_data.entity_create.handle);
+                    if (ref.is_valid() && entity_manager->entity_lists[ref.list_idx].supports_component(ComponentType::PLAYER_CONTROL)
                         && ((PlayerControl*)entity_manager->lookup_component(ref, ComponentType::PLAYER_CONTROL))->client_id == client.id)
                     {
                         assert(client_state.status == ClientState::NOT_SPAWNED);
@@ -339,8 +339,11 @@ int main(int argc, char *argv[])
                 case GamePacketType::PHYSICS_SYNC:
                 {
                     EntityHandle sync_entity = packet.packet.packet_data.transform_sync.entity;
-                    EntityRef sync_ref;
-                    entity_manager->entity_table.lookup_entity(sync_entity, &sync_ref);
+                    EntityRef sync_ref = entity_manager->entity_table.lookup_entity(sync_entity);
+                    if (!sync_ref.is_valid())
+                    {
+                        break;
+                    }
 
                     Transform &transform = *(Transform*)entity_manager->lookup_component(sync_ref, ComponentType::TRANSFORM);
                     // if the update is for the player, then selectively apply it
@@ -415,8 +418,8 @@ int main(int argc, char *argv[])
         // Update camera
         if (client_state.status == ClientState::SPAWNED)
         {
-            EntityRef player_ref;
-            entity_manager->entity_table.lookup_entity(client_state.player_handle, &player_ref);
+            EntityRef player_ref = entity_manager->entity_table.lookup_entity(client_state.player_handle);
+            assert(player_ref.is_valid());
             WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
             Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 

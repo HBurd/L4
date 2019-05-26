@@ -182,8 +182,8 @@ int main(int argc, char* argv[])
         {
             if (!client.received_input) continue;
 
-            EntityRef player_ref;
-            entity_manager->entity_table.lookup_entity(client.player_entity, &player_ref);
+            EntityRef player_ref = entity_manager->entity_table.lookup_entity(client.player_entity);
+            assert(player_ref.is_valid());
 
             Transform &player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
             Physics player_physics = *(Physics*)entity_manager->lookup_component(player_ref, ComponentType::PHYSICS);

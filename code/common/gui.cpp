@@ -164,19 +164,28 @@ static void draw_guidance_stats(
     EntityHandle player_handle,
     EntityHandle other_handle)
 {
-    EntityRef player_ref;
-    entity_manager->entity_table.lookup_entity(player_handle, &player_ref);
-    Transform player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+    float distance;
+    float relative_velocity;
 
-    EntityRef other_ref;
-    entity_manager->entity_table.lookup_entity(other_handle, &other_ref);
-    Transform other_transform = *(Transform*)entity_manager->lookup_component(other_ref, ComponentType::TRANSFORM);
+    EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+    EntityRef other_ref = entity_manager->entity_table.lookup_entity(other_handle);
 
-    float distance = (player_transform.position - other_transform.position).norm();
+    if (player_ref.is_valid() && other_ref.is_valid())
+    {
+        Transform player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+        Transform other_transform = *(Transform*)entity_manager->lookup_component(other_ref, ComponentType::TRANSFORM);
+
+        distance = (player_transform.position - other_transform.position).norm();
+        relative_velocity = (player_transform.velocity - other_transform.velocity).norm();
+    }
+    else
+    {
+        // TODO: debug message?
+        distance = 0.0f;
+        relative_velocity = 0.0f;
+    }
+
     ImGui::Text("Distance: %f", distance);
-
-    float relative_velocity =
-        (player_transform.velocity - other_transform.velocity).norm();
     ImGui::Text("Relative velocity: %f", relative_velocity);
 }
 
@@ -245,10 +254,8 @@ bool draw_guidance_menu(
     {
         char entity_id_name[32];
 
-        EntityRef ref;
-        assert(entity_manager->entity_table.lookup_entity(
-            hovered_entity,
-            &ref));
+        EntityRef ref = entity_manager->entity_table.lookup_entity(hovered_entity);
+        assert(ref.is_valid());
         
         generate_entity_name(
             entity_manager,
@@ -261,10 +268,9 @@ bool draw_guidance_menu(
     }
     else if (target_handle->is_valid())
     {
-        EntityRef ref;
-        if(entity_manager->entity_table.lookup_entity(
-            *target_handle,
-            &ref))
+        EntityRef ref = entity_manager->entity_table.lookup_entity(*target_handle);
+
+        if (ref.is_valid())
         {
             ImGui::Text("Target info:");
             draw_guidance_stats(entity_manager, player_handle, *target_handle);

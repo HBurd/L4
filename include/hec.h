@@ -1,4 +1,4 @@
-// Hugo's entity-component helper, v0.2
+// Hugo's entity-component helper, v0.3
 //
 // - Absolutely anything (everything) can (will) change.
 // - Absolutely nothing is guaranteed to work.
@@ -14,7 +14,6 @@
 #ifndef HEC_HEADER_INCLUDED
 #define HEC_HEADER_INCLUDED
 
-// TODO: Temp hack
 #include "hb/components.h"
 
 // TODO: Get rid of this dependency
@@ -29,9 +28,14 @@ const uint32_t COMPONENT_LIST_SIZE_INCREMENT = 256;
 
 struct EntityRef
 {
-    uint32_t list_idx;
-    uint32_t entity_idx;
+    uint32_t list_idx = 0xFFFFFFFF;
+    uint32_t entity_idx = 0xFFFFFFFF;
+
+    bool is_valid() const;
 };
+
+bool operator==(const EntityRef &lhs, const EntityRef &rhs);
+bool operator!=(const EntityRef &lhs, const EntityRef &rhs);
 
 struct EntityHandle
 {
@@ -41,7 +45,7 @@ struct EntityHandle
     bool is_valid() const;
 };
 
-bool operator==(const EntityHandle& lhs, const EntityHandle& rhs);
+bool operator==(const EntityHandle &lhs, const EntityHandle &rhs);
 
 struct EntityTableEntry
 {
@@ -58,9 +62,7 @@ struct EntityTable
 
     EntityHandle add_entry(EntityRef entity_ref);
     void add_entry_with_handle(EntityRef entity_ref, EntityHandle handle);
-    bool lookup_entity(
-        EntityHandle handle,
-        EntityRef *entity_ref) const;
+    EntityRef lookup_entity(EntityHandle handle) const;
 
     void free_handle(EntityHandle handle);
     void update_handle(EntityHandle handle, EntityRef new_entity_ref);
@@ -145,6 +147,21 @@ using std::endl;
 
 #define HEC_ARRAY_LENGTH(x) (sizeof((x)) / sizeof(*(x)))
 
+bool EntityRef::is_valid() const
+{
+    return *this != EntityRef();
+}
+
+bool operator==(const EntityRef &lhs, const EntityRef &rhs)
+{
+    return lhs.list_idx == rhs.list_idx && lhs.entity_idx == rhs.entity_idx;
+}
+
+bool operator!=(const EntityRef &lhs, const EntityRef &rhs)
+{
+    return !(lhs == rhs);
+}
+
 bool EntityListInfo::supports_component(uint32_t component_type) const
 {
     return components[component_type] != nullptr;
@@ -162,6 +179,11 @@ bool EntityHandle::is_valid() const
 bool operator==(const EntityHandle &lhs, const EntityHandle &rhs)
 {
     return lhs.version == rhs.version && lhs.idx == rhs.idx;
+}
+
+bool operator!=(const EntityHandle &lhs, const EntityHandle &rhs)
+{
+    return !(lhs == rhs);
 }
 
 EntityHandle EntityTable::pick_handle() const
@@ -208,18 +230,14 @@ void EntityTable::add_entry_with_handle(EntityRef ref, EntityHandle handle)
     entries[handle.idx].entity_ref = ref;
 }
 
-bool EntityTable::lookup_entity(
-    EntityHandle handle,
-    EntityRef *ref) const
+EntityRef EntityTable::lookup_entity(EntityHandle handle) const
 {
-    if (handle.version == 0 || handle.version != entries[handle.idx].version)
+    if (!handle.is_valid() || handle.version != entries[handle.idx].version)
     {
-        return false;
+        return EntityRef();
     }
 
-    *ref = entries[handle.idx].entity_ref;
-
-    return true;
+    return entries[handle.idx].entity_ref;
 }
 
 void EntityTable::free_handle(EntityHandle handle)
@@ -451,8 +469,8 @@ void EntityManager::create_entity_from_serialized(
 
     create_entity_with_handle(required_components, num_required_components, handle);
 
-    EntityRef ref;
-    entity_table.lookup_entity(handle, &ref);
+    EntityRef ref = entity_table.lookup_entity(handle);
+    assert(ref.is_valid());
 
     // copy in the component data
     read_size = 0;
