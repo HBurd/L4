@@ -14,6 +14,7 @@
 #ifndef HEC_HEADER_INCLUDED
 #define HEC_HEADER_INCLUDED
 
+// TODO: this dependency absolutely needs to go
 #include "hb/components.h"
 
 // TODO: Get rid of this dependency
@@ -85,10 +86,13 @@ struct ComponentWrapper
     uint8_t data[];
 };
 
+// TODO: Bring this back from components.h
+/*
 struct ComponentInfo
 {
     uint32_t size;
 };
+*/
 
 struct EntityManager
 {

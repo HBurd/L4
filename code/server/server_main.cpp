@@ -60,35 +60,7 @@ int main(int argc, char* argv[])
     vector<GamePacketIn> game_packets;
 
     ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
-    for (uint32_t i = 0; i < ARRAY_LENGTH(components); i++)
-    {
-        switch(i)
-        {
-            case ComponentType::WORLD_SECTOR:
-                components[i] = {sizeof(WorldSector)};
-                break;
-            case ComponentType::TRANSFORM:
-                components[i] = {sizeof(Transform)};
-                break;
-            case ComponentType::PLAYER_CONTROL:
-                components[i] = {sizeof(PlayerControl)};
-                break;
-            case ComponentType::PLANET:
-                components[i] = {sizeof(Planet)};
-                break;
-            case ComponentType::PHYSICS:
-                components[i] = {sizeof(Physics)};
-                break;
-            case ComponentType::PROJECTILE:
-                components[i] = {sizeof(Projectile)};
-                break;
-            case ComponentType::MESH:
-                components[i] = {sizeof(MeshId)};
-                break;
-            default:
-                assert(false);
-        }
-    }
+    init_component_info(components, ARRAY_LENGTH(components));
 
     EntityManager *entity_manager =
         new EntityManager(

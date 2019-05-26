@@ -18,6 +18,7 @@ namespace ComponentType
         TRANSFORM,
         PLANET,
         WORLD_SECTOR,
+        VIEW_ORIENTATION,
 
         // =======================================
         // Add components here as they are created
@@ -26,5 +27,12 @@ namespace ComponentType
         NUM_COMPONENT_TYPES
     };
 }
+
+struct ComponentInfo
+{
+    uint32_t size;
+};
+
+void init_component_info(ComponentInfo *components, size_t num_components);
 
 #endif
