@@ -4,21 +4,18 @@
 Not much to do yet.
 
 ## How to build
-You need CMake to build this project.
 
 Windows:
 
-    mkdir build
-    cd build
-    cmake -G "Visual Studio 15 2017 Win64" ..
-    
-This will generate the Visual Studio solution. In theory this should also work with other versions of Visual Studio
+Open vs/L4.sln, build the x64 configuration from Visual Studio.
+After the first build, manually copy `lib/SDL2.dll`, `lib/glew32.dll` and `resources` into `vs/x64`.
   
 Linux:
 
-    mkdir build
+This project uses a custom build script. Game code and libraries are compiled as independent unity builds. 
+
     cd build
-    cmake ..
-    make
+    ./compile lib     # compiles everything, including some libraries
+    ./compile         # only compiles core game files, a bit faster
 
 This will build the client and server application, `L4client` and `L4server`.
