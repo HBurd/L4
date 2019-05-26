@@ -7,7 +7,7 @@ Not much to do yet.
 
 Windows:
 
-Open vs/L4.sln, build the x64 configuration from Visual Studio.
+Open `vs/L4.sln`, build the x64 configuration from Visual Studio.
 After the first build, manually copy `lib/SDL2.dll`, `lib/glew32.dll` and `resources` into `vs/x64`.
   
 Linux:
