@@ -38,11 +38,11 @@ for filename in $COMMON_SRC; do
 done
 
 echo Client:
-time clang++ $CLIENT_UNITY libs_build.o -oL4client $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
+time clang++ $CLIENT_UNITY impl_libs.o -oL4client $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
 echo ====================
 
 echo Server:
-time clang++ $SERVER_UNITY libs_build.o -oL4server $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
+time clang++ $SERVER_UNITY impl_libs.o -oL4server $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux -L../lib -lSDL2 -lGL -lGLEW -lsndio -lpthread -ldl
 
 rm -rf resources
 cp -r ../resources resources
