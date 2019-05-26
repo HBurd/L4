@@ -18,7 +18,6 @@ namespace ComponentType
         TRANSFORM,
         PLANET,
         WORLD_SECTOR,
-        VIEW_ORIENTATION,
 
         // =======================================
         // Add components here as they are created
