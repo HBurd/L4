@@ -7,17 +7,20 @@
 #include "hb/PlanetComponent.h"
 #include "hb/ProjectileComponent.h"
 
+#include "hec.h"
+
 namespace ComponentType
 {
     enum ComponentType
     {
-        PHYSICS,
+        PHYSICS = 0,
         MESH,
         PLAYER_CONTROL,
         PROJECTILE,
         TRANSFORM,
         PLANET,
         WORLD_SECTOR,
+        TRANSFORM_FOLLOWER,
 
         // =======================================
         // Add components here as they are created
@@ -26,11 +29,6 @@ namespace ComponentType
         NUM_COMPONENT_TYPES
     };
 }
-
-struct ComponentInfo
-{
-    uint32_t size;
-};
 
 void init_component_info(ComponentInfo *components, size_t num_components);
 

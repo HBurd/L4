@@ -28,6 +28,9 @@ void init_component_info(ComponentInfo *components, size_t num_components)
             case ComponentType::MESH:
                 components[i] = {sizeof(MeshId)};
                 break;
+            case ComponentType::TRANSFORM_FOLLOWER:
+                components[i] = {sizeof(EntityHandle)};
+                break;
             default:
                 assert(false);
         }

@@ -144,3 +144,4 @@ void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)
     inputs[next_seq_num % ARRAY_LENGTH(inputs)] = {control_state, dt, next_seq_num};
     next_seq_num++;
 }
+

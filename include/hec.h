@@ -14,9 +14,6 @@
 #ifndef HEC_HEADER_INCLUDED
 #define HEC_HEADER_INCLUDED
 
-// TODO: this dependency absolutely needs to go
-#include "hb/components.h"
-
 // TODO: Get rid of this dependency
 #include <vector>
 #include <stdint.h>
@@ -74,7 +71,8 @@ struct EntityListInfo
     uint32_t size = 0;
     uint32_t max_size;
     EntityHandle *handles = nullptr;
-    void *components[ComponentType::NUM_COMPONENT_TYPES] = {};
+    //void *components[ComponentType::NUM_COMPONENT_TYPES] = {};
+    std::vector<void*> components;
 
     bool supports_component(uint32_t component_type) const;
 };
@@ -86,13 +84,10 @@ struct ComponentWrapper
     uint8_t data[];
 };
 
-// TODO: Bring this back from components.h
-/*
 struct ComponentInfo
 {
     uint32_t size;
 };
-*/
 
 struct EntityManager
 {
@@ -290,6 +285,10 @@ size_t hec__component_data_used = 0;
 uint32_t EntityManager::hec__default_new_list_action(uint32_t *required_components, uint32_t num_required_components)
 {
     EntityListInfo list_info;
+    for (uint32_t i = 0; i < num_components; i++)
+    {
+        list_info.components.push_back(nullptr);
+    }
     list_info.max_size = COMPONENT_LIST_SIZE_INCREMENT;
 
     size_t align_offset = (size_t)(hec__component_data + hec__component_data_used) % HEC_ALIGN;
@@ -458,8 +457,13 @@ void EntityManager::create_entity_from_serialized(
     size_t data_size,
     EntityHandle handle)
 {
+    // TODO: Leaving this here since this will probably be rewritten soon
+    // but this vector used to be an array, but size is no longer known
+    // statically. It's still treated as an array so there's lots of
+    // pointless stuff going on.
+
     // find what components are required
-    uint32_t required_components[ComponentType::NUM_COMPONENT_TYPES];
+    std::vector<uint32_t> required_components(num_components);
     uint32_t num_required_components = 0;
 
     size_t read_size = 0;
@@ -471,7 +475,7 @@ void EntityManager::create_entity_from_serialized(
         read_size += wrapper->size + sizeof(ComponentWrapper);
     }
 
-    create_entity_with_handle(required_components, num_required_components, handle);
+    create_entity_with_handle(required_components.data(), num_required_components, handle);
 
     EntityRef ref = entity_table.lookup_entity(handle);
     assert(ref.is_valid());

@@ -20,6 +20,7 @@
 #include "hb/entity_initializers.h"
 #include "hb/physics.h"
 #include "hb/components.h"
+#include "hb/TransformFollowerComponent.h"
 #undef main
 
 const double TIMESTEP = 1.0 / 60.0;
@@ -28,6 +29,51 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::vector;
+
+void handle_player_spawn_req(EntityManager *entity_manager, ServerData *server, GamePacket *packet)
+{
+    EntityRef ship_ref = create_ship(packet->packet_data.player_spawn.coords, entity_manager);
+    EntityHandle ship_handle = entity_manager->entity_lists[ship_ref.list_idx].handles[ship_ref.entity_idx];
+
+    // create player entity
+    uint32_t player_components[] = {
+        ComponentType::WORLD_SECTOR,
+        ComponentType::TRANSFORM,
+        ComponentType::PLAYER_CONTROL,
+        ComponentType::TRANSFORM_FOLLOWER
+    };
+    
+    EntityRef player_ref = entity_manager->create_entity(player_components, ARRAY_LENGTH(player_components));
+    Transform *player_transform = (Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
+    *player_transform = Transform();
+    WorldSector *player_sector = (WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
+    *player_sector = WorldSector();
+    PlayerControl *player_control = (PlayerControl*)entity_manager->lookup_component(player_ref, ComponentType::PLAYER_CONTROL);
+    player_control->client_id = packet->header.sender;
+    EntityHandle *transform_follower = (EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
+    *transform_follower = ship_handle;
+
+    EntityHandle player_handle = entity_manager->entity_lists[player_ref.list_idx].handles[player_ref.entity_idx];
+
+    server->clients[packet->header.sender].player_entity = player_handle;
+
+    uint8_t *create_packet_data = new uint8_t[2048];
+    size_t create_packet_size = make_entity_create_packet(ship_ref, entity_manager, create_packet_data, 2048);
+    
+    server->broadcast(
+        GamePacketType::ENTITY_CREATE,
+        create_packet_data,
+        create_packet_size);
+
+    create_packet_size = make_entity_create_packet(player_ref, entity_manager, create_packet_data, 2048);
+
+    server->broadcast(
+        GamePacketType::ENTITY_CREATE,
+        create_packet_data,
+        create_packet_size);
+
+    delete[] create_packet_data;
+}
 
 int main(int argc, char* argv[])
 {
@@ -117,20 +163,7 @@ int main(int argc, char* argv[])
                 }
                 case GamePacketType::PLAYER_SPAWN:
                 {
-                    EntityRef ref = create_player_ship(packet.packet.packet_data.player_spawn.coords, packet.packet.header.sender, entity_manager);
-                    EntityHandle handle = entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx];
-
-                    server.clients[packet.packet.header.sender].player_entity = handle;
-
-                    uint8_t *create_packet_data = new uint8_t[2048];
-                    size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
-                    
-                    server.broadcast(
-                        GamePacketType::ENTITY_CREATE,
-                        create_packet_data,
-                        create_packet_size);
-
-                    delete[] create_packet_data;
+                    handle_player_spawn_req(entity_manager, &server, &packet.packet);
                     break;
                 }
                 case GamePacketType::CONTROL_UPDATE:
@@ -157,30 +190,38 @@ int main(int argc, char* argv[])
             EntityRef player_ref = entity_manager->entity_table.lookup_entity(client.player_entity);
             assert(player_ref.is_valid());
 
-            Transform &player_transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
-            Physics player_physics = *(Physics*)entity_manager->lookup_component(player_ref, ComponentType::PHYSICS);
+            // Get the ship the player is controlling
+            // For now this is determined by the transform it is following
+            
+            EntityHandle player_ship_handle = *(EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
+            EntityRef player_ship = entity_manager->entity_table.lookup_entity(player_ship_handle);
+
+            assert(player_ship.is_valid());
+
+            Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
+            Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
 
             Vec3 ship_thrust;
             Vec3 ship_torque;
             get_ship_thrust(
                 client.player_control,
-                player_transform.orientation,
+                ship_transform.orientation,
                 &ship_thrust,
                 &ship_torque);
 
             apply_impulse(
                 ship_thrust * TIMESTEP,
-                &player_transform.velocity,
-                player_physics.mass);
+                &ship_transform.velocity,
+                ship_physics.mass);
             apply_angular_impulse(
                 ship_torque * TIMESTEP,
-                &player_transform.angular_velocity,
-                player_physics.angular_mass);
+                &ship_transform.angular_velocity,
+                ship_physics.angular_mass);
 
             // Create an entity if the player shot
             if (client.player_control.shoot)
             {
-                EntityRef ref = create_projectile(player_transform, entity_manager);
+                EntityRef ref = create_projectile(ship_transform, entity_manager);
 
                 uint8_t *create_packet_data = new uint8_t[2048];
                 size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
@@ -193,20 +234,60 @@ int main(int argc, char* argv[])
                 delete[] create_packet_data;
             }
 
-            // Send the sync packet
-            TransformSyncPacket transform_sync(
-                client.player_entity,
-                player_transform,
-                client.sequence);
-            server.broadcast(
-               GamePacketType::PHYSICS_SYNC,
-               &transform_sync,
-               sizeof(transform_sync));
-
             client.received_input = false;
         }
 
         perform_entity_update_step(entity_manager, TIMESTEP);
+
+        // Update transform followers
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &list = entity_manager->entity_lists[list_idx];
+            if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+            if (!list.supports_component(ComponentType::TRANSFORM_FOLLOWER)) continue;
+            update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], list.size); 
+        }
+
+        // Sync all transforms
+        {
+            EntityRef ref;
+            for (ref.list_idx = 0; ref.list_idx < entity_manager->entity_lists.size(); ref.list_idx++)
+            {
+                EntityListInfo &list = entity_manager->entity_lists[ref.list_idx];
+                if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+
+                // TODO: we don't need this yet but we will, when sector is actually synced
+                if (!list.supports_component(ComponentType::WORLD_SECTOR)) continue;
+
+                Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
+
+                PlayerControl *player_controls = nullptr;
+                if (list.supports_component(ComponentType::PLAYER_CONTROL))
+                {
+                    player_controls = (PlayerControl*)list.components[ComponentType::PLAYER_CONTROL];
+                }
+                
+                for (ref.entity_idx = 0; ref.entity_idx < list.size; ref.entity_idx++)
+                {
+                    // Some transforms do not have seq nums, so send zero for those
+                    uint32_t seq_num = 0;
+                    if (player_controls)
+                    {
+                        seq_num = server.clients[player_controls[ref.entity_idx].client_id].sequence;
+                    }
+
+                    // Send the sync packet
+                    TransformSyncPacket transform_sync(
+                        list.handles[ref.entity_idx],
+                        transforms[ref.entity_idx],
+                        seq_num);
+                    server.broadcast(
+                       GamePacketType::PHYSICS_SYNC,
+                       &transform_sync,
+                       sizeof(transform_sync));
+                }
+            }
+        }
 
         double delta_time = time_keeper.get_delta_time_s_no_reset();
 
