@@ -1,12 +1,6 @@
 #ifndef HBCOMPONENTS_H
 #define HBCOMPONENTS_H
 
-#include "hb/TransformComponent.h"
-#include "hb/PhysicsComponent.h"
-#include "hb/PlayerControlComponent.h"
-#include "hb/PlanetComponent.h"
-#include "hb/ProjectileComponent.h"
-
 #include "hec.h"
 
 namespace ComponentType

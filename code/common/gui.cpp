@@ -1,5 +1,8 @@
 #include "hb/gui.h"
 #include "hb/util.h"
+#include "hb/components.h"
+#include "hb/TransformComponent.h"
+
 #include "imgui/imgui.h"
 #include <cstdio>
 

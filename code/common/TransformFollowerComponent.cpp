@@ -1,4 +1,5 @@
 #include "hb/TransformFollowerComponent.h"
+#include "hb/components.h"
 
 void update_transform_followers(
     EntityManager *entity_manager,

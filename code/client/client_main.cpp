@@ -21,6 +21,7 @@
 #include "hb/physics.h"
 #include "hb/components.h"
 #include "hb/TransformFollowerComponent.h"
+#include "hb/PlayerControlComponent.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"

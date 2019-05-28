@@ -1,5 +1,12 @@
 #include "hb/components.h"
+#include "hb/TransformComponent.h"
+#include "hb/PlanetComponent.h"
+#include "hb/PhysicsComponent.h"
+#include "hb/PlayerControlComponent.h"
+#include "hb/ProjectileComponent.h"
+#include "hb/renderer.h"
 
+#include <cassert>
 
 void init_component_info(ComponentInfo *components, size_t num_components)
 {

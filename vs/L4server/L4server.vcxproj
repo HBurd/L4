@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\common\components.cpp" />
     <ClCompile Include="..\..\code\common\entity_initializers.cpp" />
     <ClCompile Include="..\..\code\common\entity_update_step.cpp" />
     <ClCompile Include="..\..\code\common\gui.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="..\..\code\common\renderer.cpp" />
     <ClCompile Include="..\..\code\common\time.cpp" />
     <ClCompile Include="..\..\code\common\TransformComponent.cpp" />
+    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp" />
     <ClCompile Include="..\..\code\common\util.cpp" />
     <ClCompile Include="..\..\code\libs\impl_libs.cpp" />
     <ClCompile Include="..\..\code\server\server.cpp" />

@@ -8,6 +8,7 @@
 #include "hb/math.h"
 #include "hb/player_control.h"
 #include "hb/renderer.h"
+#include "hb/TransformComponent.h"
 
 struct GamePacketHeader
 {
