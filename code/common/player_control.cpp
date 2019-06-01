@@ -145,3 +145,23 @@ void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)
     next_seq_num++;
 }
 
+
+void apply_ship_inputs(PlayerControlState inputs, Transform *transform, Physics physics)
+{
+    Vec3 thrust;
+    Vec3 torque;
+    get_ship_thrust(
+        inputs,
+        transform->orientation,
+        &thrust,
+        &torque);
+
+    apply_impulse(
+        thrust * (float)TIMESTEP,
+        &transform->velocity,
+        physics.mass);
+    apply_angular_impulse(
+        torque * (float)TIMESTEP,
+        &transform->angular_velocity,
+        physics.angular_mass);
+}

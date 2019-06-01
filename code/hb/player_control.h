@@ -49,4 +49,6 @@ float compute_player_input_thrust(Keyboard kb);
 
 void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 
+void apply_ship_inputs(PlayerControlState inputs, Transform *transform, Physics physics);
+
 #endif // include guard

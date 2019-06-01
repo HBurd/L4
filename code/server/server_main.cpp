@@ -202,22 +202,7 @@ int main(int argc, char* argv[])
             Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
             Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
 
-            Vec3 ship_thrust;
-            Vec3 ship_torque;
-            get_ship_thrust(
-                client.player_control,
-                ship_transform.orientation,
-                &ship_thrust,
-                &ship_torque);
-
-            apply_impulse(
-                ship_thrust * TIMESTEP,
-                &ship_transform.velocity,
-                ship_physics.mass);
-            apply_angular_impulse(
-                ship_torque * TIMESTEP,
-                &ship_transform.angular_velocity,
-                ship_physics.angular_mass);
+            apply_ship_inputs(client.player_control, &ship_transform, ship_physics);
 
             // Create an entity if the player shot
             if (client.player_control.shoot)
@@ -275,7 +260,13 @@ int main(int argc, char* argv[])
                     if (player_controls)
                     {
                         seq_num = server.clients[player_controls[ref.entity_idx].client_id].sequence;
+                        // Hack
+                        if (!server.clients[player_controls[ref.entity_idx].client_id].received_input)
+                        {
+                            continue;
+                        }
                     }
+
 
                     // Send the sync packet
                     TransformSyncPacket transform_sync(
