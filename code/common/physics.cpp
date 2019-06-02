@@ -1,4 +1,4 @@
-#include "hb/physics.h"
+#include "common/physics.h"
 
 void apply_impulse(Vec3 impulse, Vec3 *velocity, float mass)
 {

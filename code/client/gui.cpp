@@ -1,7 +1,7 @@
-#include "hb/gui.h"
-#include "hb/util.h"
-#include "hb/components.h"
-#include "hb/TransformComponent.h"
+#include "client/gui.h"
+#include "common/util.h"
+#include "common/components.h"
+#include "common/TransformComponent.h"
 
 #include "imgui/imgui.h"
 #include <cstdio>

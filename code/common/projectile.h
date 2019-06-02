@@ -2,10 +2,10 @@
 #define HBPROJECTILE_H
 
 #include "hec.h"
-#include "hb/renderer.h"
-#include "hb/math.h"
-#include "hb/TransformComponent.h"
-#include "hb/ProjectileComponent.h"
+#include "common/renderer.h"
+#include "common/math.h"
+#include "common/TransformComponent.h"
+#include "common/ProjectileComponent.h"
 
 EntityRef create_projectile(Transform shooter_transform, EntityManager *entity_manager);
 

@@ -1,10 +1,10 @@
 #ifndef HBCLIENT_H
 #define HBCLIENT_H
 
-#include "hb/net.h"
+#include "common/net.h"
 
 //TODO: shouldn't have this dependency!!
-#include "hb/gui.h"
+#include "client/gui.h"
 
 #ifdef _WIN32
 #include <Windows.h>

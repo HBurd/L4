@@ -1,8 +1,8 @@
 #pragma once
 
 #include "hec.h"
-#include "hb/player_control.h"
-#include "hb/math.h"
+#include "common/player_control.h"
+#include "common/math.h"
 
 struct LocalGameData
 {

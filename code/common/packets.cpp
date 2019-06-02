@@ -1,4 +1,4 @@
-#include "hb/packets.h"
+#include "common/packets.h"
 #include <cassert>
 
 using std::vector;

@@ -1,10 +1,10 @@
-#include "hb/player_control.h"
-#include "hb/net.h"
-#include "hb/packets.h"
-#include "hb/util.h"
-#include "hb/physics.h"
+#include "common/player_control.h"
+#include "common/net.h"
+#include "common/packets.h"
+#include "common/util.h"
+#include "common/physics.h"
 #include "imgui/imgui.h"
-#include "hb/keyboard.h"
+#include "client/keyboard.h"
 #include <cmath>
 
 const float MAX_THRUST = 1.0f;

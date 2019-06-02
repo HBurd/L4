@@ -1,9 +1,9 @@
-#include "hb/client_logic.h"
-#include "hb/PlayerControlComponent.h"
-#include "hb/components.h"
-#include "hb/util.h"
-#include "hb/physics.h"
-#include "hb/packets.h"
+#include "client/client_logic.h"
+#include "common/PlayerControlComponent.h"
+#include "common/components.h"
+#include "common/util.h"
+#include "common/physics.h"
+#include "common/packets.h"
 
 LocalGameData::LocalGameData(EntityManager *entity_manager_)
     : entity_manager(entity_manager_) {}

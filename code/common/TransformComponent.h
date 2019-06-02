@@ -1,7 +1,7 @@
 #ifndef HBTRANSFORM_H
 #define HBTRANSFORM_H
 
-#include "hb/math.h"
+#include "common/math.h"
 #include <stdlib.h>
 #include <stdint.h>
 

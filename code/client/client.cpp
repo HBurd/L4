@@ -1,6 +1,6 @@
-#include "hb/client.h"
-#include "hb/packets.h"
-#include "hb/time.h"
+#include "client/client.h"
+#include "common/packets.h"
+#include "common/time.h"
 
 #include <cassert>
 #include <iostream>

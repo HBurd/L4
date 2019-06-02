@@ -9,19 +9,21 @@
 
 #include "hec.h"
 
-#include "hb/math.h"
-#include "hb/renderer.h"
-#include "hb/time.h"
-#include "hb/util.h"
-#include "hb/player_control.h"
-#include "hb/server.h"
-#include "hb/packets.h"
-#include "hb/entity_update_step.h"
-#include "hb/entity_initializers.h"
-#include "hb/physics.h"
-#include "hb/components.h"
-#include "hb/TransformFollowerComponent.h"
-#include "hb/PlayerControlComponent.h"
+#include "common/math.h"
+#include "common/renderer.h"
+#include "common/time.h"
+#include "common/util.h"
+#include "common/player_control.h"
+#include "common/packets.h"
+#include "common/entity_update_step.h"
+#include "common/entity_initializers.h"
+#include "common/physics.h"
+#include "common/components.h"
+#include "common/TransformFollowerComponent.h"
+#include "common/PlayerControlComponent.h"
+
+#include "server/server.h"
+
 #undef main
 
 const double TIMESTEP = 1.0 / 60.0;

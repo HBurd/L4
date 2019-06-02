@@ -1,9 +1,9 @@
 #pragma once
 
 #include "hec.h"
-#include "hb/keyboard.h"
-#include "hb/TransformComponent.h"
-#include "hb/PhysicsComponent.h"
+#include "client/keyboard.h"
+#include "common/TransformComponent.h"
+#include "common/PhysicsComponent.h"
 
 const size_t MAX_PAST_INPUTS = 128;
 

@@ -1,5 +1,5 @@
-#include "hb/renderer.h"
-#include "hb/util.h"
+#include "common/renderer.h"
+#include "common/util.h"
 #include "GL/glew.h"
 #include <string>
 #include <cassert>

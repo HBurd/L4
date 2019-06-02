@@ -1,10 +1,10 @@
-#include "hb/components.h"
-#include "hb/TransformComponent.h"
-#include "hb/PlanetComponent.h"
-#include "hb/PhysicsComponent.h"
-#include "hb/PlayerControlComponent.h"
-#include "hb/ProjectileComponent.h"
-#include "hb/renderer.h"
+#include "common/components.h"
+#include "common/TransformComponent.h"
+#include "common/PlanetComponent.h"
+#include "common/PhysicsComponent.h"
+#include "common/PlayerControlComponent.h"
+#include "common/ProjectileComponent.h"
+#include "common/renderer.h"
 
 #include <cassert>
 

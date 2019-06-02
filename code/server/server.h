@@ -1,9 +1,9 @@
 #pragma once
 
-#include "hb/net.h"
+#include "common/net.h"
 
 #include "hec.h"
-#include "hb/player_control.h"
+#include "common/player_control.h"
 
 #include <vector>
 

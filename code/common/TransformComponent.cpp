@@ -1,4 +1,4 @@
-#include "hb/TransformComponent.h"
+#include "common/TransformComponent.h"
 #include <cmath>
 
 const float WORLD_SECTOR_DIM = 100.0f;

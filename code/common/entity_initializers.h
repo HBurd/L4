@@ -1,9 +1,9 @@
 #ifndef HBENTITY_INITIALIZERS
 #define HBENTITY_INITIALIZERS
 #include "hec.h"
-#include "hb/math.h"
-#include "hb/net.h"
-#include "hb/TransformComponent.h"
+#include "common/math.h"
+#include "common/net.h"
+#include "common/TransformComponent.h"
 
 void create_planet(Vec3 position, float radius, float mass, EntityManager *entity_manager);
 

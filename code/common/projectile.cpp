@@ -1,4 +1,4 @@
-#include "hb/projectile.h"
+#include "common/projectile.h"
 
 bool projectile_update(Projectile* projectile)
 {

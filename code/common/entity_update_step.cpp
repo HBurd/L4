@@ -1,7 +1,7 @@
-#include "hb/entity_update_step.h"
-#include "hb/projectile.h"
-#include "hb/TransformComponent.h"
-#include "hb/components.h"
+#include "common/entity_update_step.h"
+#include "common/projectile.h"
+#include "common/TransformComponent.h"
+#include "common/components.h"
 
 void perform_entity_update_step(EntityManager *entity_manager, float dt)
 {

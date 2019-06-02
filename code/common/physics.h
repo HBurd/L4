@@ -1,7 +1,7 @@
 #ifndef HBPHYSICS_H
 #define HBPHYSICS_H
 
-#include "hb/math.h"
+#include "common/math.h"
 
 void apply_impulse(Vec3 impulse, Vec3 *velocity, float mass);
 

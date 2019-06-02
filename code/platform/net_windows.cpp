@@ -1,7 +1,7 @@
 #include <Winsock2.h>
 #include <cassert>
 
-#include "hb/net.h"
+#include "common/net.h"
 
 HbSocket create_game_socket()
 {

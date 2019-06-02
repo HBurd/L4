@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "hb/net.h"
+#include "common/net.h"
 #include "hec.h"
-#include "hb/math.h"
-#include "hb/player_control.h"
-#include "hb/renderer.h"
-#include "hb/TransformComponent.h"
+#include "common/math.h"
+#include "common/player_control.h"
+#include "common/renderer.h"
+#include "common/TransformComponent.h"
 
 struct GamePacketHeader
 {

@@ -1,11 +1,11 @@
-#include "hb/entity_initializers.h"
-#include "hb/util.h"
-#include "hb/renderer.h"
-#include "hb/components.h"
-#include "hb/PlanetComponent.h"
-#include "hb/PlayerControlComponent.h"
-#include "hb/PhysicsComponent.h"
-#include "hb/ProjectileComponent.h"
+#include "common/entity_initializers.h"
+#include "common/util.h"
+#include "common/renderer.h"
+#include "common/components.h"
+#include "common/PlanetComponent.h"
+#include "common/PlayerControlComponent.h"
+#include "common/PhysicsComponent.h"
+#include "common/ProjectileComponent.h"
 
 void create_planet(Vec3 position, float radius, float mass, EntityManager *entity_manager)
 {

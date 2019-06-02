@@ -7,8 +7,8 @@
 
 #include "GL/glew.h"
 
-#include "hb/mesh_type.h"
-#include "hb/math.h"
+#include "common/mesh_type.h"
+#include "common/math.h"
 
 #pragma pack(push, 1)
 struct Vertex

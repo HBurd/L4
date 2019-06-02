@@ -1,5 +1,5 @@
-#include "hb/server.h"
-#include "hb/packets.h"
+#include "server/server.h"
+#include "common/packets.h"
 
 ClientConnection::ClientConnection(HbSockaddr client_addr)
 :addr(client_addr) {}

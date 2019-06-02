@@ -4,8 +4,8 @@
 
 #include <cassert>
 
-#include "hb/net.h"
-#include "hb/packets.h"
+#include "common/net.h"
+#include "common/packets.h"
 
 HbSocket create_game_socket()
 {
