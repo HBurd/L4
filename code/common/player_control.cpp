@@ -4,6 +4,7 @@
 #include "hb/util.h"
 #include "hb/physics.h"
 #include "imgui/imgui.h"
+#include "hb/keyboard.h"
 #include <cmath>
 
 const float MAX_THRUST = 1.0f;
@@ -82,7 +83,7 @@ Vec3 compute_player_input_torque(
     return Vec3(roll, pitch, yaw);
 }
 
-void PlayerControlState::clamp()
+void ShipControls::clamp()
 {
     // clamp torque on each axis individually (assumed physical limitation on each axis)
     float factor = 1.0f;
@@ -132,21 +133,21 @@ float compute_player_input_thrust(Keyboard kb)
     return thrust;
 }
 
-void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque)
+void get_ship_thrust(ShipControls controls, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque)
 {
     *thrust = ship_orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0f);
-    *thrust = *thrust * input.thrust;
-    *torque = input.torque;
+    *thrust = *thrust * controls.thrust;
+    *torque = controls.torque;
 }
 
-void PlayerInputBuffer::save_input(PlayerControlState control_state, float dt)
+void PlayerInputBuffer::save_input(ShipControls control_state, float dt)
 {
     inputs[next_seq_num % ARRAY_LENGTH(inputs)] = {control_state, dt, next_seq_num};
     next_seq_num++;
 }
 
 
-void apply_ship_inputs(PlayerControlState inputs, Transform *transform, Physics physics)
+void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics)
 {
     Vec3 thrust;
     Vec3 torque;
@@ -164,4 +165,75 @@ void apply_ship_inputs(PlayerControlState inputs, Transform *transform, Physics 
         torque * (float)TIMESTEP,
         &transform->angular_velocity,
         physics.angular_mass);
+}
+
+ShipControls ship_control(EntityManager *entity_manager, Keyboard kb, TrackingState tracking, EntityHandle ship_handle)
+{
+    EntityRef player_ship = entity_manager->entity_table.lookup_entity(ship_handle);
+
+    assert(player_ship.is_valid());
+
+    Transform ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
+    Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
+
+    ShipControls control_state;
+    
+    if (tracking.track)
+    {
+        EntityRef target_ref = entity_manager->entity_table.lookup_entity(tracking.guidance_target);
+        if (target_ref.is_valid())
+        {
+            Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
+
+            control_state.torque += compute_target_tracking_torque(
+                ship_transform,
+                ship_physics,
+                target_transform);
+        }
+    }
+    else if (tracking.stabilize)
+    {
+        control_state.torque += compute_stabilization_torque(
+            ship_transform,
+            ship_physics);
+    }
+
+    // The player always has some control even when some controller is acting
+    control_state.torque += compute_player_input_torque(kb);
+    control_state.thrust += compute_player_input_thrust(kb);
+
+    control_state.clamp();
+
+    control_state.shoot = kb.down.enter;
+
+    return control_state;
+}
+
+void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs)
+{
+    EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+    assert(player_ref.is_valid());
+
+    // Get the ship the player is controlling
+    // For now this is determined by the transform it is following
+    
+    EntityHandle *player_ship_handle = (EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
+    if (player_ship_handle)
+    {
+        EntityRef player_ship = entity_manager->entity_table.lookup_entity(*player_ship_handle);
+        assert(player_ship.is_valid());
+
+        Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
+        Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
+
+        apply_ship_inputs(player_inputs.ship, &ship_transform, ship_physics);
+    }
+
+    if (player_inputs.leave_command_chair)
+    {
+
+        EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+        assert(player_ref.is_valid());
+        entity_manager->remove_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
+    }
 }

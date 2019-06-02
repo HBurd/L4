@@ -1,10 +1,9 @@
-#ifndef HBSERVER_H
-#define HBSERVER_H
+#pragma once
 
 #include "hb/net.h"
 
-#include "hb/player_control.h"
 #include "hec.h"
+#include "hb/player_control.h"
 
 #include <vector>
 
@@ -15,7 +14,7 @@ struct ClientConnection
     EntityHandle player_entity;
     bool received_input = false;
     uint32_t sequence;
-    PlayerControlState player_control;
+    PlayerInputs inputs;
 };
 
 struct ServerData
@@ -30,5 +29,3 @@ struct ServerData
         size_t packet_size);
     ClientId accept_client(HbSockaddr client_addr);
 };
-
-#endif // include guard

@@ -169,8 +169,8 @@ int main(int argc, char* argv[])
                 }
                 case GamePacketType::CONTROL_UPDATE:
                 {
-                    server.clients[packet.packet.header.sender].player_control =
-                        packet.packet.packet_data.control_update.state;
+                    server.clients[packet.packet.header.sender].inputs =
+                        packet.packet.packet_data.control_update.inputs;
                     server.clients[packet.packet.header.sender].sequence =
                         packet.packet.packet_data.control_update.sequence;
                     server.clients[packet.packet.header.sender].received_input = true;
@@ -188,9 +188,9 @@ int main(int argc, char* argv[])
         {
             if (!client.received_input) continue;
 
-            EntityRef player_ref = entity_manager->entity_table.lookup_entity(client.player_entity);
-            assert(player_ref.is_valid());
+            handle_player_input(entity_manager, client.player_entity, client.inputs);
 
+            /*
             // Get the ship the player is controlling
             // For now this is determined by the transform it is following
             
@@ -202,22 +202,30 @@ int main(int argc, char* argv[])
             Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
             Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
 
-            apply_ship_inputs(client.player_control, &ship_transform, ship_physics);
+            apply_ship_inputs(client.inputs.ship, &ship_transform, ship_physics);
+            */
 
             // Create an entity if the player shot
-            if (client.player_control.shoot)
+            if (client.inputs.ship.shoot)
             {
-                EntityRef ref = create_projectile(ship_transform, entity_manager);
+                EntityRef player_ref = entity_manager->entity_table.lookup_entity(client.player_entity);
+                EntityHandle player_ship_handle = *(EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
+                EntityRef player_ship = entity_manager->entity_table.lookup_entity(player_ship_handle);
+                Transform *ship_transform = (Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
+                if (ship_transform)
+                {
+                    EntityRef ref = create_projectile(*ship_transform, entity_manager);
 
-                uint8_t *create_packet_data = new uint8_t[2048];
-                size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
-                
-                server.broadcast(
-                    GamePacketType::ENTITY_CREATE,
-                    create_packet_data,
-                    create_packet_size);
+                    uint8_t *create_packet_data = new uint8_t[2048];
+                    size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
+                    
+                    server.broadcast(
+                        GamePacketType::ENTITY_CREATE,
+                        create_packet_data,
+                        create_packet_size);
 
-                delete[] create_packet_data;
+                    delete[] create_packet_data;
+                }
             }
 
             client.received_input = false;

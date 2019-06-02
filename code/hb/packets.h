@@ -1,5 +1,4 @@
-#ifndef HBPACKETS_H
-#define HBPACKETS_H
+#pragma once
 
 #include <vector>
 
@@ -50,10 +49,10 @@ struct PlayerSpawnPacket
 
 struct ControlUpdatePacket
 {
-    PlayerControlState state;
+    PlayerInputs inputs;
     uint32_t sequence;
     
-    ControlUpdatePacket(PlayerControlState _state, uint32_t _sequence);
+    ControlUpdatePacket(PlayerInputs player_inputs, uint32_t input_sequence);
 };
 
 struct TransformSyncPacket
@@ -66,14 +65,6 @@ struct TransformSyncPacket
         EntityHandle transform_entity,
         Transform transform,
         uint32_t packet_sequence);
-};
-
-struct PlayerDamagePacket
-{
-    ClientId player;
-    // implicitly player entity for now
-    
-    PlayerDamagePacket(ClientId _player);
 };
 
 // ===============================
@@ -93,7 +84,6 @@ struct GamePacket
         EntityCreatePacket entity_create;
         ControlUpdatePacket control_update;
         TransformSyncPacket transform_sync;
-        PlayerDamagePacket player_damage;
         // ===============================
         // ^^ ADD NEW PACKET TYPES HERE ^^
         // ===============================
@@ -119,5 +109,3 @@ struct GamePacketIn
 };
 
 void get_packets(HbSocket sock, std::vector<GamePacketIn>* packet_list);
-
-#endif

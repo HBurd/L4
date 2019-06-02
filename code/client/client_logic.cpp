@@ -3,6 +3,7 @@
 #include "hb/components.h"
 #include "hb/util.h"
 #include "hb/physics.h"
+#include "hb/packets.h"
 
 LocalGameData::LocalGameData(EntityManager *entity_manager_)
     : entity_manager(entity_manager_) {}

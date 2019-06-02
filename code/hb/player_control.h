@@ -1,5 +1,4 @@
-#ifndef HBPLAYER_CONTROL_H
-#define HBPLAYER_CONTROL_H
+#pragma once
 
 #include "hec.h"
 #include "hb/keyboard.h"
@@ -8,7 +7,14 @@
 
 const size_t MAX_PAST_INPUTS = 128;
 
-struct PlayerControlState
+struct TrackingState
+{
+    EntityHandle guidance_target;
+    bool track = false;
+    bool stabilize = false;
+};
+
+struct ShipControls
 {
     float thrust = 0.0f;
     Vec3 torque;
@@ -18,9 +24,15 @@ struct PlayerControlState
     void clamp();
 };
 
+struct PlayerInputs
+{
+    bool leave_command_chair = false;
+    ShipControls ship;
+};
+
 struct PastInput
 {
-    PlayerControlState input;   // input at frame start
+    ShipControls input;   // input at frame start
     float dt = 0.0f;            // frame duration
     uint32_t sequence_number = 0;
 };
@@ -31,7 +43,7 @@ struct PlayerInputBuffer
     uint32_t next_seq_num = 0;
     uint32_t last_received_seq_num = 0;
 
-    void save_input(PlayerControlState control_state, float dt);
+    void save_input(ShipControls control_state, float dt);
 };
 
 Vec3 compute_target_tracking_torque(
@@ -47,8 +59,10 @@ Vec3 compute_player_input_torque(Keyboard kb);
 
 float compute_player_input_thrust(Keyboard kb);
 
-void get_ship_thrust(PlayerControlState input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
+void get_ship_thrust(ShipControls input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 
-void apply_ship_inputs(PlayerControlState inputs, Transform *transform, Physics physics);
+void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics);
 
-#endif // include guard
+ShipControls ship_control(EntityManager *entity_manager, Keyboard kb, TrackingState tracking, EntityHandle ship_handle);
+
+void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs);

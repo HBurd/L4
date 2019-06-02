@@ -484,6 +484,7 @@ void *EntityManager::lookup_component(
     EntityRef ref,
     uint32_t cmp_type) const
 {
+    if (!entity_lists[ref.list_idx].supports_component(cmp_type)) return nullptr;
     return (uint8_t*)(entity_lists[ref.list_idx].components[cmp_type]) + ref.entity_idx * component_info[cmp_type].size;
 }
 

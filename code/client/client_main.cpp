@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         ImGui::StyleColorsDark();
     }
 
-    Keyboard kb;
+    Input input;
     
     ClientData client;
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     bool running = true;
     while (running)
     {
-        kb.clear_keydowns();
+        input.keyboard.clear_keydowns();
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -130,10 +130,10 @@ int main(int argc, char *argv[])
             ImGui_ImplSDL2_ProcessEvent(&event);
             switch (event.type)
             {
-            case SDL_QUIT:
-                running = false;
-                break;
-            case SDL_WINDOWEVENT:
+                case SDL_QUIT:
+                    running = false;
+                    break;
+                case SDL_WINDOWEVENT:
                 {
                     unsigned int new_width, new_height;
                     SDL_GetWindowSize(
@@ -143,16 +143,48 @@ int main(int argc, char *argv[])
                     renderer.set_screen_size(new_width, new_height);
                     break;
                 }
-            case SDL_KEYUP:
-                kb.handle_keyup(event.key.keysym.sym);
-                break;
-            case SDL_KEYDOWN:
-                kb.handle_keydown(event.key.keysym.sym);
-                break;
+                case SDL_KEYUP:
+                    input.keyboard.handle_keyup(event.key.keysym.sym);
+                    break;
+                case SDL_KEYDOWN:
+                    input.keyboard.handle_keydown(event.key.keysym.sym);
+                    break;
             }
-            if (event.type == SDL_QUIT)
+        }
+
+        // Mouse wrapping
+        if (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)
+        {
+            int new_x, new_y;
+            SDL_GetGlobalMouseState(&new_x, &new_y);
+            int window_x, window_y;
+            SDL_GetWindowPosition(window, &window_x, &window_y);
+            new_x -= window_x;
+            new_y -= window_y;
+            input.mouse.dx = new_x - input.mouse.x;
+            input.mouse.dy = new_y - input.mouse.y;
+            input.mouse.x = new_x;
+            input.mouse.y = new_y;
+
+            if (input.mouse.x >= renderer.width - 1) // 1 pixel extra for when screen is max
             {
-                running = false;
+                input.mouse.x -= renderer.width - 2;
+                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+            }
+            else if (input.mouse.x <= 0)
+            {
+                input.mouse.x += renderer.width - 2;
+                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+            }
+            if (input.mouse.y >= renderer.height - 1)
+            {
+                input.mouse.y -= renderer.height - 2;
+                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+            }
+            else if (input.mouse.y <= 0)
+            {
+                input.mouse.y += renderer.height - 2;
+                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
             }
         }
 
@@ -171,9 +203,10 @@ int main(int argc, char *argv[])
                     break;
                 case GamePacketType::PHYSICS_SYNC:
                     handle_physics_sync(&game, &past_inputs, packet);
+                    break;
                 default:
-                // do nothing
-                break;
+                    // do nothing
+                    break;
             }
         }
         
@@ -233,9 +266,7 @@ int main(int argc, char *argv[])
                 draw_guidance_menu(
                     entity_manager,
                     game.player_handle,
-                    &game.guidance_target,
-                    &game.track,
-                    &game.stabilize);
+                    &game.tracking);
                 ship_console.draw();
             }
             
@@ -244,73 +275,30 @@ int main(int argc, char *argv[])
                 client.write_server_stdout(&server_console);
                 server_console.draw();
             }
-
-            ImGui::Begin("Test");
-            if (ImGui::Button("Detach"))
-            {
-                EntityRef player_ref = entity_manager->entity_table.lookup_entity(game.player_handle);
-                assert(player_ref.is_valid());
-                entity_manager->remove_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
-            }
-            ImGui::End();
         }
 
         // PlayerControl updates
         if (client_state.status == ClientState::SPAWNED)
         {
-            EntityRef player_ref = entity_manager->entity_table.lookup_entity(game.player_handle);
-            assert(player_ref.is_valid());
+            PlayerInputs player_inputs;
+            player_inputs.ship = ship_control(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
 
-            // Get the ship the player is controlling
-            // For now this is determined by the transform it is following
-            
-            if (entity_manager->entity_lists[player_ref.list_idx].supports_component(ComponentType::TRANSFORM_FOLLOWER))
+            // Debug button to see if the player left command chair
+            ImGui::Begin("Test");
+            if (ImGui::Button("Detach"))
             {
-                EntityHandle player_ship_handle = *(EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
-                EntityRef player_ship = entity_manager->entity_table.lookup_entity(player_ship_handle);
-
-                assert(player_ship.is_valid());
-
-                Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
-                Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
-
-                PlayerControlState control_state;
-                
-                if (game.track)
-                {
-                    EntityRef target_ref = entity_manager->entity_table.lookup_entity(game.guidance_target);
-                    if (target_ref.is_valid())
-                    {
-                        Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
-
-                        control_state.torque += compute_target_tracking_torque(
-                            ship_transform,
-                            ship_physics,
-                            target_transform);
-                    }
-                }
-                else if (game.stabilize)
-                {
-                    control_state.torque += compute_stabilization_torque(
-                        ship_transform,
-                        ship_physics);
-                }
-
-                // The player always has some control even when some controller is acting
-                control_state.torque += compute_player_input_torque(kb);
-                control_state.thrust += compute_player_input_thrust(kb);
-
-                control_state.clamp();
-
-                control_state.shoot = kb.down.enter;
-
-                ControlUpdatePacket control_update(control_state, past_inputs.next_seq_num);
-                client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
-
-                past_inputs.save_input(control_state, (float)TIMESTEP);
-
-                apply_ship_inputs(control_state, &ship_transform, ship_physics);
+                player_inputs.leave_command_chair = true;
             }
+            ImGui::End();
+
+            handle_player_input(entity_manager, game.player_handle, player_inputs);
+
+            // Send the control packet
+            ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);
+            client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
+
+            // Save input for client-side prediction
+            past_inputs.save_input(player_inputs.ship, (float)TIMESTEP);
         }
 
         perform_entity_update_step(entity_manager, (float)TIMESTEP);

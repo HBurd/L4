@@ -31,10 +31,6 @@ TransformSyncPacket::TransformSyncPacket(
     sequence(packet_sequence)
 {}
 
-PlayerDamagePacket::PlayerDamagePacket(ClientId _player)
-: player(_player)
-{}
-
 // CLIENT PACKETS
 // ==============
 
@@ -45,9 +41,9 @@ PlayerSpawnPacket::PlayerSpawnPacket(Vec3 _coords)
 : coords(_coords)
 {}
 
-ControlUpdatePacket::ControlUpdatePacket(PlayerControlState _state, uint32_t _sequence)
-: state(_state),
-    sequence(_sequence)
+ControlUpdatePacket::ControlUpdatePacket(PlayerInputs player_inputs, uint32_t input_sequence)
+    : inputs(player_inputs),
+      sequence(input_sequence)
 {}
 
 GamePacketOut::GamePacketOut(GamePacketHeader header_)

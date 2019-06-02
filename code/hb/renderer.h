@@ -60,8 +60,8 @@ struct Renderer
     void draw_crosshair(Vec3 position, float scale) const;
     void clear() const;
 
-    unsigned int width;
-    unsigned int height;
+    int width;
+    int height;
 
     Vec3 camera_pos;
     Rotor camera_orientation;

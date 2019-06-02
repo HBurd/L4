@@ -195,9 +195,7 @@ static void draw_guidance_stats(
 bool draw_guidance_menu(
      const EntityManager* entity_manager,
      EntityHandle player_handle,
-     EntityHandle* target_handle,
-     bool* track,
-     bool* stabilize)
+     TrackingState *tracking)
 {
     bool entity_selected = false;
     bool entity_hovered = false;
@@ -205,8 +203,8 @@ bool draw_guidance_menu(
 
     ImGui::Begin("Guidance System", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::Checkbox("Target tracking", track);
-    ImGui::Checkbox("Stabilization", stabilize);
+    ImGui::Checkbox("Target tracking", &tracking->track);
+    ImGui::Checkbox("Stabilization", &tracking->stabilize);
 
     ImGui::Text("Local objects:");
     bool something_detected = false;
@@ -237,7 +235,7 @@ bool draw_guidance_menu(
             if (ImGui::Button(entity_id_name))
             {
                 entity_selected = true;
-                *target_handle = entity_list.handles[entity_idx];
+                tracking->guidance_target = entity_list.handles[entity_idx];
             }
 
             if (ImGui::IsItemHovered())
@@ -269,14 +267,14 @@ bool draw_guidance_menu(
         ImGui::Text("Info about %s:", entity_id_name);
         draw_guidance_stats(entity_manager, player_handle, hovered_entity);
     }
-    else if (target_handle->is_valid())
+    else if (tracking->guidance_target.is_valid())
     {
-        EntityRef ref = entity_manager->entity_table.lookup_entity(*target_handle);
+        EntityRef ref = entity_manager->entity_table.lookup_entity(tracking->guidance_target);
 
         if (ref.is_valid())
         {
             ImGui::Text("Target info:");
-            draw_guidance_stats(entity_manager, player_handle, *target_handle);
+            draw_guidance_stats(entity_manager, player_handle, tracking->guidance_target);
         }
     }
     else

@@ -3,6 +3,7 @@
 
 #include "hb/math.h"
 #include "hec.h"
+#include "hb/player_control.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;
@@ -50,8 +51,6 @@ struct Console
 bool draw_guidance_menu(
     const EntityManager *entity_manager,
     EntityHandle player_handle,
-    EntityHandle *selected_entity,
-    bool *track,
-    bool *stabilize);
+    TrackingState *tracking);
 
 #endif // include guard

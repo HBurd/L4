@@ -30,4 +30,18 @@ struct Keyboard
     void clear_keydowns();
 };
 
+struct Mouse
+{
+    int x  = 0;
+    int y  = 0;
+    int dx = 0;
+    int dy = 0;
+};
+
+struct Input
+{
+    Keyboard keyboard;
+    Mouse mouse;
+};
+
 #endif // include guard
