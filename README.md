@@ -3,6 +3,8 @@
 
 Not much to do yet.
 
+https://en.wikipedia.org/wiki/Lagrangian_point#L4_and_L5_points
+
 ## How to build
 
 Windows:
