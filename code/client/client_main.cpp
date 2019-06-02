@@ -283,11 +283,14 @@ int main(int argc, char *argv[])
             PlayerInputs player_inputs;
             player_inputs.ship = ship_control(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
 
-            // Debug button to see if the player left command chair
-            ImGui::Begin("Test");
+            ImGui::Begin("Debug");
             if (ImGui::Button("Detach"))
             {
                 player_inputs.leave_command_chair = true;
+            }
+            if (ImGui::Button("Reset View"))
+            {
+                game.player_view_orientation = Rotor();
             }
             ImGui::End();
 
@@ -296,6 +299,10 @@ int main(int argc, char *argv[])
             // Send the control packet
             ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);
             client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
+
+            // Let the player look with the mouse
+            game.player_view_orientation = game.player_view_orientation * Rotor::yaw(0.005f * input.mouse.dx);
+            game.player_view_orientation = game.player_view_orientation * Rotor::pitch(0.005f * input.mouse.dy);
 
             // Save input for client-side prediction
             past_inputs.save_input(player_inputs.ship, (float)TIMESTEP);
@@ -321,7 +328,7 @@ int main(int argc, char *argv[])
             Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 
             renderer.camera_pos = to_world_position(world_sector, transform.position);
-            renderer.camera_orientation = transform.orientation;
+            renderer.camera_orientation = transform.orientation * game.player_view_orientation;
         }
         
         // =========
