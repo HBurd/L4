@@ -190,21 +190,6 @@ int main(int argc, char* argv[])
 
             handle_player_input(entity_manager, client.player_entity, client.inputs);
 
-            /*
-            // Get the ship the player is controlling
-            // For now this is determined by the transform it is following
-            
-            EntityHandle player_ship_handle = *(EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
-            EntityRef player_ship = entity_manager->entity_table.lookup_entity(player_ship_handle);
-
-            assert(player_ship.is_valid());
-
-            Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
-            Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
-
-            apply_ship_inputs(client.inputs.ship, &ship_transform, ship_physics);
-            */
-
             // Create an entity if the player shot
             if (client.inputs.ship.shoot)
             {
