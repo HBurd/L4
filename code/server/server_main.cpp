@@ -9,15 +9,11 @@
 
 #include "hec.h"
 
-#include "common/math.h"
-#include "common/renderer.h"
 #include "common/time.h"
 #include "common/util.h"
-#include "common/player_control.h"
 #include "common/packets.h"
 #include "common/entity_update_step.h"
 #include "common/entity_initializers.h"
-#include "common/physics.h"
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
 #include "common/PlayerControlComponent.h"
