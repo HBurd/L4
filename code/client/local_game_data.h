@@ -6,6 +6,8 @@
 
 struct LocalGameData
 {
+    float dt = 0.0f;
+
     Rotor player_view_orientation;
     EntityHandle player_handle;
     EntityHandle player_ship_handle;

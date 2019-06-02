@@ -3,8 +3,12 @@
 #include "common/packets.h"
 #include "common/util.h"
 #include "common/physics.h"
-#include "imgui/imgui.h"
+#include "common/components.h"
+
 #include "client/keyboard.h"
+
+#include "imgui/imgui.h"
+
 #include <cmath>
 
 const float MAX_THRUST = 1.0f;
@@ -147,7 +151,7 @@ void PlayerInputBuffer::save_input(ShipControls control_state, float dt)
 }
 
 
-void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics)
+void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics, float dt)
 {
     Vec3 thrust;
     Vec3 torque;
@@ -158,11 +162,11 @@ void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physic
         &torque);
 
     apply_impulse(
-        thrust * (float)TIMESTEP,
+        thrust * dt,
         &transform->velocity,
         physics.mass);
     apply_angular_impulse(
-        torque * (float)TIMESTEP,
+        torque * dt,
         &transform->angular_velocity,
         physics.angular_mass);
 }
@@ -209,7 +213,7 @@ ShipControls ship_control(EntityManager *entity_manager, Keyboard kb, TrackingSt
     return control_state;
 }
 
-void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs)
+void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs, float dt)
 {
     EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
     assert(player_ref.is_valid());
@@ -226,7 +230,7 @@ void handle_player_input(EntityManager *entity_manager, EntityHandle player_hand
         Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
         Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
 
-        apply_ship_inputs(player_inputs.ship, &ship_transform, ship_physics);
+        apply_ship_inputs(player_inputs.ship, &ship_transform, ship_physics, dt);
     }
 
     if (player_inputs.leave_command_chair)

@@ -189,6 +189,8 @@ int main(int argc, char *argv[])
             }
         }
 
+        game.dt = (float)TIMESTEP;
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
@@ -295,7 +297,7 @@ int main(int argc, char *argv[])
             }
             ImGui::End();
 
-            handle_player_input(entity_manager, game.player_handle, player_inputs);
+            handle_player_input(entity_manager, game.player_handle, player_inputs, game.dt);
 
             // Send the control packet
             ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);

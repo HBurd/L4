@@ -19,43 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\hb\client.h" />
-    <ClInclude Include="..\..\code\hb\components.h" />
-    <ClInclude Include="..\..\code\hb\entity_initializers.h" />
-    <ClInclude Include="..\..\code\hb\entity_update_step.h" />
-    <ClInclude Include="..\..\code\hb\gui.h" />
-    <ClInclude Include="..\..\code\hb\keyboard.h" />
-    <ClInclude Include="..\..\code\hb\math.h" />
-    <ClInclude Include="..\..\code\hb\mesh_type.h" />
-    <ClInclude Include="..\..\code\hb\net.h" />
-    <ClInclude Include="..\..\code\hb\packets.h" />
-    <ClInclude Include="..\..\code\hb\physics.h" />
-    <ClInclude Include="..\..\code\hb\PhysicsComponent.h" />
-    <ClInclude Include="..\..\code\hb\pipes.h" />
-    <ClInclude Include="..\..\code\hb\PlanetComponent.h" />
-    <ClInclude Include="..\..\code\hb\PlayerControlComponent.h" />
-    <ClInclude Include="..\..\code\hb\player_control.h" />
-    <ClInclude Include="..\..\code\hb\projectile.h" />
-    <ClInclude Include="..\..\code\hb\ProjectileComponent.h" />
-    <ClInclude Include="..\..\code\hb\renderer.h" />
-    <ClInclude Include="..\..\code\hb\server.h" />
-    <ClInclude Include="..\..\code\hb\time.h" />
-    <ClInclude Include="..\..\code\hb\TransformComponent.h" />
-    <ClInclude Include="..\..\code\hb\util.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\code\client\client.cpp" />
+    <ClCompile Include="..\..\code\client\client_logic.cpp" />
     <ClCompile Include="..\..\code\client\client_main.cpp" />
+    <ClCompile Include="..\..\code\client\gui.cpp" />
+    <ClCompile Include="..\..\code\client\keyboard.cpp" />
+    <ClCompile Include="..\..\code\client\pipes.cpp" />
     <ClCompile Include="..\..\code\common\components.cpp" />
     <ClCompile Include="..\..\code\common\entity_initializers.cpp" />
     <ClCompile Include="..\..\code\common\entity_update_step.cpp" />
-    <ClCompile Include="..\..\code\common\gui.cpp" />
-    <ClCompile Include="..\..\code\common\keyboard.cpp" />
     <ClCompile Include="..\..\code\common\math.cpp" />
     <ClCompile Include="..\..\code\common\net.cpp" />
     <ClCompile Include="..\..\code\common\packets.cpp" />
     <ClCompile Include="..\..\code\common\physics.cpp" />
-    <ClCompile Include="..\..\code\common\pipes.cpp" />
     <ClCompile Include="..\..\code\common\PlanetComponent.cpp" />
     <ClCompile Include="..\..\code\common\player_control.cpp" />
     <ClCompile Include="..\..\code\common\projectile.cpp" />
@@ -65,6 +41,33 @@
     <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp" />
     <ClCompile Include="..\..\code\common\util.cpp" />
     <ClCompile Include="..\..\code\libs\impl_libs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\code\client\client.h" />
+    <ClInclude Include="..\..\code\client\client_logic.h" />
+    <ClInclude Include="..\..\code\client\gui.h" />
+    <ClInclude Include="..\..\code\client\keyboard.h" />
+    <ClInclude Include="..\..\code\client\local_game_data.h" />
+    <ClInclude Include="..\..\code\client\pipes.h" />
+    <ClInclude Include="..\..\code\common\components.h" />
+    <ClInclude Include="..\..\code\common\entity_initializers.h" />
+    <ClInclude Include="..\..\code\common\entity_update_step.h" />
+    <ClInclude Include="..\..\code\common\math.h" />
+    <ClInclude Include="..\..\code\common\mesh_type.h" />
+    <ClInclude Include="..\..\code\common\net.h" />
+    <ClInclude Include="..\..\code\common\packets.h" />
+    <ClInclude Include="..\..\code\common\physics.h" />
+    <ClInclude Include="..\..\code\common\PhysicsComponent.h" />
+    <ClInclude Include="..\..\code\common\PlanetComponent.h" />
+    <ClInclude Include="..\..\code\common\PlayerControlComponent.h" />
+    <ClInclude Include="..\..\code\common\player_control.h" />
+    <ClInclude Include="..\..\code\common\projectile.h" />
+    <ClInclude Include="..\..\code\common\ProjectileComponent.h" />
+    <ClInclude Include="..\..\code\common\renderer.h" />
+    <ClInclude Include="..\..\code\common\time.h" />
+    <ClInclude Include="..\..\code\common\TransformComponent.h" />
+    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h" />
+    <ClInclude Include="..\..\code\common\util.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

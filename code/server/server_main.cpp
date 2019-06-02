@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
         {
             if (!client.received_input) continue;
 
-            handle_player_input(entity_manager, client.player_entity, client.inputs);
+            handle_player_input(entity_manager, client.player_entity, client.inputs, (float)TIMESTEP);
 
             // Create an entity if the player shot
             if (client.inputs.ship.shoot)
@@ -296,6 +296,4 @@ int main(int argc, char* argv[])
 
         delta_time = time_keeper.get_delta_time_s();
     }
-
-    SDL_Quit();
 }

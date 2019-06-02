@@ -13,141 +13,135 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{01ef3415-2303-489c-9447-8acc3c16f9ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server">
+      <UniqueIdentifier>{6bf4d812-24e2-4b3a-8ee6-2bba6d1f019b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\common">
+      <UniqueIdentifier>{fdb34bfc-7804-4f25-ab35-2ebf2a2a9b3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\server">
+      <UniqueIdentifier>{031eab36-ee36-442d-a94f-ce9a4ae61dc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\common\packets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\physics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\pipes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\PlanetComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\player_control.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\projectile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\util.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\code\common\components.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\entity_initializers.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\entity_update_step.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\gui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\keyboard.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\math.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\net.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\packets.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\physics.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\PlanetComponent.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\player_control.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\projectile.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\renderer.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\time.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\TransformComponent.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\util.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\server\server_main.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\server\server.cpp">
+      <Filter>Source Files\server</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\libs\impl_libs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\server\server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\server\server_main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\components.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\hb\packets.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\components.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\physics.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\entity_initializers.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\PhysicsComponent.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\entity_update_step.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\pipes.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\math.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\PlanetComponent.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\mesh_type.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\player_control.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\net.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\PlayerControlComponent.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\packets.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\projectile.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\physics.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\ProjectileComponent.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\PhysicsComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\renderer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\PlanetComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\server.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\player_control.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\time.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\PlayerControlComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\TransformComponent.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\projectile.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\util.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\ProjectileComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\client.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\renderer.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\components.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\time.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\entity_initializers.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\TransformComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\entity_update_step.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\gui.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\common\util.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\hb\keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\hb\math.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\hb\mesh_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\hb\net.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\code\server\server.h">
+      <Filter>Header Files\server</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

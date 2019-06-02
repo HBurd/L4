@@ -4,6 +4,7 @@
 #include "common/util.h"
 #include "common/physics.h"
 #include "common/packets.h"
+#include <cassert>
 
 LocalGameData::LocalGameData(EntityManager *entity_manager_)
     : entity_manager(entity_manager_) {}
@@ -70,7 +71,7 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
                 {
                     Physics physics = *(Physics*)entity_manager->lookup_component(sync_ref, ComponentType::PHYSICS);
 
-                    apply_ship_inputs(past_inputs->inputs[input_idx].input, &transform, physics);
+                    apply_ship_inputs(past_inputs->inputs[input_idx].input, &transform, physics, game->dt);
                 }
             }
         }

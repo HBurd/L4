@@ -61,8 +61,8 @@ float compute_player_input_thrust(Keyboard kb);
 
 void get_ship_thrust(ShipControls input, Rotor ship_orientation, Vec3 *thrust, Vec3 *torque);
 
-void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics);
+void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physics, float dt);
 
 ShipControls ship_control(EntityManager *entity_manager, Keyboard kb, TrackingState tracking, EntityHandle ship_handle);
 
-void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs);
+void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs, float dt);
