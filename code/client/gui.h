@@ -3,7 +3,7 @@
 
 #include "common/math.h"
 #include "hec.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;

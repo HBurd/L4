@@ -3,7 +3,7 @@
 #include "common/net.h"
 
 #include "hec.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
 
 #include <vector>
 

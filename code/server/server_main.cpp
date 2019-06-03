@@ -13,7 +13,7 @@
 #include "common/renderer.h"
 #include "common/time.h"
 #include "common/util.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
 #include "common/packets.h"
 #include "common/entity_update_step.h"
 #include "common/entity_initializers.h"

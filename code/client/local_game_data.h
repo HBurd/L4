@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hec.h"
-#include "common/player_control.h"
+#include "client/ship_controller.h"
 #include "common/math.h"
 
 struct LocalGameData

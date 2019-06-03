@@ -9,7 +9,7 @@
 #include "common/renderer.h"
 #include "common/time.h"
 #include "common/util.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
 #include "common/net.h"
 #include "common/projectile.h"
 #include "common/entity_update_step.h"
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
         if (client_state.status == ClientState::SPAWNED)
         {
             PlayerInputs player_inputs;
-            player_inputs.ship = ship_control(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
+            player_inputs.ship = process_player_inputs(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
 
             ImGui::Begin("Debug");
             if (ImGui::Button("Detach"))
