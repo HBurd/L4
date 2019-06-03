@@ -69,8 +69,6 @@ int main(int argc, char *argv[])
         ImGui::StyleColorsDark();
     }
 
-    Input input;
-    
     ClientData client;
 
     MainMenu main_menu;
@@ -123,7 +121,7 @@ int main(int argc, char *argv[])
     bool running = true;
     while (running)
     {
-        input.keyboard.clear_keydowns();
+        game.input.keyboard.clear_keydowns();
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -145,10 +143,10 @@ int main(int argc, char *argv[])
                     break;
                 }
                 case SDL_KEYUP:
-                    input.keyboard.handle_keyup(event.key.keysym.sym);
+                    game.input.keyboard.handle_keyup(event.key.keysym.sym);
                     break;
                 case SDL_KEYDOWN:
-                    input.keyboard.handle_keydown(event.key.keysym.sym);
+                    game.input.keyboard.handle_keydown(event.key.keysym.sym);
                     break;
             }
         }
@@ -162,30 +160,30 @@ int main(int argc, char *argv[])
             SDL_GetWindowPosition(window, &window_x, &window_y);
             new_x -= window_x;
             new_y -= window_y;
-            input.mouse.dx = new_x - input.mouse.x;
-            input.mouse.dy = new_y - input.mouse.y;
-            input.mouse.x = new_x;
-            input.mouse.y = new_y;
+            game.input.mouse.dx = new_x - game.input.mouse.x;
+            game.input.mouse.dy = new_y - game.input.mouse.y;
+            game.input.mouse.x = new_x;
+            game.input.mouse.y = new_y;
 
-            if (input.mouse.x >= renderer.width - 1) // 1 pixel extra for when screen is max
+            if (game.input.mouse.x >= renderer.width - 1) // 1 pixel extra for when screen is max
             {
-                input.mouse.x -= renderer.width - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.x -= renderer.width - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            else if (input.mouse.x <= 0)
+            else if (game.input.mouse.x <= 0)
             {
-                input.mouse.x += renderer.width - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.x += renderer.width - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            if (input.mouse.y >= renderer.height - 1)
+            if (game.input.mouse.y >= renderer.height - 1)
             {
-                input.mouse.y -= renderer.height - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.y -= renderer.height - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            else if (input.mouse.y <= 0)
+            else if (game.input.mouse.y <= 0)
             {
-                input.mouse.y += renderer.height - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.y += renderer.height - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
         }
 
@@ -284,7 +282,7 @@ int main(int argc, char *argv[])
         if (client_state.status == ClientState::SPAWNED)
         {
             PlayerInputs player_inputs;
-            player_inputs.ship = process_player_inputs(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
+            player_inputs = process_player_inputs(&game);
 
             ImGui::Begin("Debug");
             if (ImGui::Button("Detach"))
@@ -304,8 +302,8 @@ int main(int argc, char *argv[])
             client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
 
             // Let the player look with the mouse
-            game.player_view_orientation = game.player_view_orientation * Rotor::yaw(0.005f * input.mouse.dx);
-            game.player_view_orientation = game.player_view_orientation * Rotor::pitch(0.005f * input.mouse.dy);
+            game.player_view_orientation = game.player_view_orientation * Rotor::yaw(0.005f * game.input.mouse.dx);
+            game.player_view_orientation = game.player_view_orientation * Rotor::pitch(0.005f * game.input.mouse.dy);
 
             // Save input for client-side prediction
             past_inputs.save_input(player_inputs.ship, (float)TIMESTEP);

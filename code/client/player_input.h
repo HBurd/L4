@@ -2,7 +2,6 @@
 
 #include "client/local_game_data.h"
 #include "client/keyboard.h"
-#include "client/player_input.h"
 
 #include "common/player_control.h"
 
@@ -24,4 +23,4 @@ struct PlayerInputBuffer
     void save_input(ShipControls control_state, float dt);
 };
 
-ShipControls process_player_inputs(EntityManager *entity_manager, Keyboard kb, TrackingState tracking, EntityHandle ship_handle);
+PlayerInputs process_player_inputs(LocalGameData *game);
