@@ -9,8 +9,8 @@ const size_t MAX_PAST_INPUTS = 128;
 
 struct PastInput
 {
-    ShipControls input;   // input at frame start
-    float dt = 0.0f;            // frame duration
+    PlayerInputs input;   // input at frame start
+    float dt = 0.0f;      // frame duration
     uint32_t sequence_number = 0;
 };
 
@@ -20,7 +20,7 @@ struct PlayerInputBuffer
     uint32_t next_seq_num = 0;
     uint32_t last_received_seq_num = 0;
 
-    void save_input(ShipControls control_state, float dt);
+    void save_input(PlayerInputs control_state, float dt);
 };
 
-PlayerInputs process_player_inputs(LocalGameData *game);
+PlayerInputs process_player_inputs(const LocalGameData &game);

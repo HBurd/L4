@@ -76,29 +76,60 @@ void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physic
 
 void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs, float dt)
 {
-    EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
-    assert(player_ref.is_valid());
-
-    // Get the ship the player is controlling
-    // For now this is determined by the transform it is following
-    
-    EntityHandle *player_ship_handle = (EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
-    if (player_ship_handle)
+    if (player_inputs.leave_command_chair)
     {
-        // Player is piloting a ship
-        EntityRef player_ship = entity_manager->entity_table.lookup_entity(*player_ship_handle);
-        assert(player_ship.is_valid());
-
-        Transform &ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
-        Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
-
-        if (player_inputs.leave_command_chair)
-        {
-            EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
-            assert(player_ref.is_valid());
-            entity_manager->remove_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
-        }
-
-        apply_ship_inputs(player_inputs.ship, &ship_transform, ship_physics, dt);
+        EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+        assert(player_ref.is_valid());
+        entity_manager->remove_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
     }
+
+    apply_input(player_inputs, player_handle, dt, entity_manager);
+}
+
+void apply_input(PlayerInputs input, EntityHandle handle, float dt, EntityManager *entity_manager)
+{
+    EntityRef entity = entity_manager->entity_table.lookup_entity(handle);
+    switch (input.type)
+    {
+        case PlayerInputs::InputType::PLAYER:
+        {
+            Transform *transform = (Transform*)entity_manager->lookup_component(entity, ComponentType::TRANSFORM);
+            transform->velocity = transform->orientation.to_matrix() * input.player.movement;
+            transform->orientation = input.player.orientation;
+        } break;
+        case PlayerInputs::InputType::SHIP:
+        {
+            // TODO: ship input should probably be associated with the ship, not player
+            EntityHandle *ship_handle = (EntityHandle*)entity_manager->lookup_component(entity, ComponentType::TRANSFORM_FOLLOWER);
+            if (ship_handle)
+            {
+                EntityRef ship = entity_manager->entity_table.lookup_entity(*ship_handle);
+                assert(ship.is_valid());
+
+                Transform *transform = (Transform*)entity_manager->lookup_component(ship, ComponentType::TRANSFORM);
+                Physics *physics = (Physics*)entity_manager->lookup_component(ship, ComponentType::PHYSICS);
+                
+                apply_ship_inputs(input.ship, transform, *physics, dt);
+            }
+        } break;
+    }
+}
+
+EntityRef lookup_player_ship(EntityHandle player_handle, EntityManager *entity_manager)
+{
+    EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+    if (!player_ref.is_valid())
+    {
+        return EntityRef();
+    }
+ 
+    EntityHandle *player_ship_handle = (EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
+
+    // Verify the player is following a transform (hopefully the ship)
+    if (!player_ship_handle)
+    {
+        return EntityRef();
+    }
+
+    return entity_manager->entity_table.lookup_entity(*player_ship_handle);
 }
