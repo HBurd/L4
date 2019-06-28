@@ -57,6 +57,8 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
         if (game.input.keyboard.held.d) player_movement += Vec3( 1.0f, 0.0f, 0.0f);
         if (game.input.keyboard.held.w) player_movement += Vec3( 0.0f, 0.0f,-1.0f);
         if (game.input.keyboard.held.s) player_movement += Vec3( 0.0f, 0.0f, 1.0f);
+        if (game.input.keyboard.held.q) player_movement += Vec3( 0.0f,-1.0f, 0.0f); 
+        if (game.input.keyboard.held.e) player_movement += Vec3( 0.0f, 1.0f, 0.0f); 
 
         // Set orientation in player input
         EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);

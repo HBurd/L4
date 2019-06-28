@@ -276,6 +276,8 @@ int main(int argc, char *argv[])
                 client.write_server_stdout(&server_console);
                 server_console.draw();
             }
+
+            draw_entity_select_menu(nullptr, *entity_manager);
         }
 
         // PlayerControl updates

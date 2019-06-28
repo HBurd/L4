@@ -53,4 +53,6 @@ bool draw_guidance_menu(
     EntityHandle player_handle,
     TrackingState *tracking);
 
+void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager);
+
 #endif // include guard

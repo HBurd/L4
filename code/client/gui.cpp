@@ -286,3 +286,31 @@ bool draw_guidance_menu(
 
     return entity_selected;
 }
+
+void entity_handle_string(EntityHandle handle, char handle_string[17])
+{
+    // handle is 8 bytes, 16 characters and null terminator
+    snprintf(handle_string, 17, "%08x%08x", handle.version, handle.idx);
+}
+
+void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager)
+{
+    ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    EntityRef ref;
+    for (ref.list_idx = 0; ref.list_idx < entity_manager.entity_lists.size(); ref.list_idx++)
+    {
+        for (ref.entity_idx = 0; ref.entity_idx < entity_manager.entity_lists[ref.list_idx].size; ref.entity_idx++)
+        {
+            EntityHandle handle = entity_manager.entity_lists[ref.list_idx].handles[ref.entity_idx];
+            char handle_string[17];
+            entity_handle_string(handle, handle_string);
+            if (ImGui::Button(handle_string) && selected_entity)
+            {
+                *selected_entity = handle;
+            }
+        }
+    }
+
+    ImGui::End();
+}
