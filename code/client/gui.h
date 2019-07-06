@@ -1,5 +1,4 @@
-#ifndef HBGUI_H
-#define HBGUI_H
+#pragma once
 
 #include "common/math.h"
 #include "hec.h"
@@ -55,4 +54,4 @@ bool draw_guidance_menu(
 
 void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager);
 
-#endif // include guard
+void draw_entity_info(EntityHandle handle, uint32_t *selected_component, const EntityManager &entity_manager);

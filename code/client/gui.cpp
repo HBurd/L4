@@ -2,6 +2,7 @@
 #include "common/util.h"
 #include "common/components.h"
 #include "common/TransformComponent.h"
+#include "common/components.h"
 
 #include "imgui/imgui.h"
 #include <cstdio>
@@ -313,4 +314,36 @@ void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager 
     }
 
     ImGui::End();
+}
+
+void draw_entity_info(EntityHandle handle, uint32_t *selected_component, const EntityManager &entity_manager)
+{
+    EntityRef ref = entity_manager.entity_table.lookup_entity(handle);
+    if (ref.is_valid())
+    {
+        ImGui::Begin("Entity Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Components:");
+        for (uint32_t i = 0; i < entity_manager.num_components; i++)
+        {
+            if (entity_manager.entity_lists[ref.list_idx].components[i])
+            {
+                if (ImGui::Button(component_name(i)))
+                {
+                    *selected_component = i;
+                }
+            }
+        }
+
+        if (entity_manager.entity_lists[ref.list_idx].components[*selected_component])
+        {
+            char print_buffer[256] = {};
+            print_component(entity_manager.lookup_component(ref, *selected_component), *selected_component, print_buffer, ARRAY_LENGTH(print_buffer) - 1);
+            ImGui::Text("%s", print_buffer);
+        }
+        else
+        {
+            ImGui::Text("Unable to print any component info");
+        }
+        ImGui::End();
+    }
 }

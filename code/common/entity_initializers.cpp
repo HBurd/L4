@@ -1,6 +1,6 @@
 #include "common/entity_initializers.h"
 #include "common/util.h"
-#include "common/renderer.h"
+#include "common/mesh.h"
 #include "common/components.h"
 #include "common/PlanetComponent.h"
 #include "common/PlayerControlComponent.h"
@@ -37,7 +37,8 @@ EntityRef create_ship(Vec3 position, EntityManager *entity_manager)
         ComponentType::WORLD_SECTOR,
         ComponentType::TRANSFORM,
         ComponentType::PHYSICS,
-        ComponentType::MESH
+        ComponentType::MESH,
+        ComponentType::BOUNDING_BOX
     };
     EntityRef ref = entity_manager->create_entity(components, ARRAY_LENGTH(components));
     
@@ -47,6 +48,7 @@ EntityRef create_ship(Vec3 position, EntityManager *entity_manager)
     new (entity_manager->lookup_component(ref, ComponentType::PHYSICS)) Physics;
     MeshId *mesh = new (entity_manager->lookup_component(ref, ComponentType::MESH)) MeshId;
     *mesh = MeshType::SHIP;
+    new (entity_manager->lookup_component(ref, ComponentType::BOUNDING_BOX)) BoundingBox;
 
     return ref;
 }
@@ -58,7 +60,8 @@ EntityRef create_player_ship(Vec3 position, ClientId player, EntityManager *enti
         ComponentType::TRANSFORM,
         ComponentType::PHYSICS,
         ComponentType::MESH,
-        ComponentType::PLAYER_CONTROL
+        ComponentType::PLAYER_CONTROL,
+        ComponentType::BOUNDING_BOX
     };
     EntityRef ref = entity_manager->create_entity(components, ARRAY_LENGTH(components));
     

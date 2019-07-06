@@ -19,6 +19,7 @@
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
 #include "common/PlayerControlComponent.h"
+#include "common/collision.h"
 
 #include "client/keyboard.h"
 #include "client/gui.h"
@@ -113,6 +114,9 @@ int main(int argc, char *argv[])
         new EntityManager(
             components,
             ARRAY_LENGTH(components));
+
+    EntityHandle selected_entity;
+    uint32_t selected_component = 0;
 
     LocalGameData game(entity_manager);
  
@@ -277,7 +281,11 @@ int main(int argc, char *argv[])
                 server_console.draw();
             }
 
-            draw_entity_select_menu(nullptr, *entity_manager);
+            draw_entity_select_menu(&selected_entity, *entity_manager);
+            if (selected_entity.is_valid())
+            {
+                draw_entity_info(selected_entity, &selected_component, *entity_manager);
+            }
         }
 
         // PlayerControl updates
@@ -313,6 +321,21 @@ int main(int argc, char *argv[])
             update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], list.size); 
         }
 
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &list = entity_manager->entity_lists[list_idx];
+            if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+            if (!list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+            if (!list.supports_component(ComponentType::MESH)) continue;
+            Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
+            BoundingBox *bounding_boxes = (BoundingBox*)list.components[ComponentType::BOUNDING_BOX];
+            MeshId *meshes = (MeshId*)list.components[ComponentType::MESH];
+            for (uint32_t entity_idx = 0; entity_idx < list.size; entity_idx++)
+            {
+                bounding_boxes[entity_idx] = compute_bounding_box(transforms[entity_idx], renderer.meshes[meshes[entity_idx]]);
+            }
+        }
+
         // Update camera
         if (client_state.status == ClientState::SPAWNED)
         {
@@ -321,7 +344,7 @@ int main(int argc, char *argv[])
             WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
             Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 
-            renderer.camera_pos = to_world_position(world_sector, transform.position);
+            renderer.camera_pos = sector_to_world(world_sector, transform.position);
             renderer.camera_orientation = transform.orientation;
         }
         
@@ -333,7 +356,7 @@ int main(int argc, char *argv[])
 
         renderer.draw_skybox();
 
-        for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
             EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
@@ -343,7 +366,7 @@ int main(int argc, char *argv[])
                 continue;
             if (!entity_list.supports_component(ComponentType::MESH))
                 continue;
-            for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
                 EntityRef ref;
                 ref.list_idx = list_idx;
@@ -354,9 +377,20 @@ int main(int argc, char *argv[])
                 Transform transform = *(Transform*)entity_manager->lookup_component(ref, ComponentType::TRANSFORM);
                 renderer.draw_mesh(
                     mesh,
-                    to_world_position(world_sector, transform.position),
+                    sector_to_world(world_sector, transform.position),
                     transform.scale,
                     transform.orientation);
+            }
+        }
+
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
+            if (!entity_list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+            BoundingBox *boxes = (BoundingBox*)entity_list.components[ComponentType::BOUNDING_BOX];
+            for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            {
+                renderer.draw_bounding_box(boxes[entity_idx]);
             }
         }
 

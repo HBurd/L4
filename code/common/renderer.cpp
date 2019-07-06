@@ -309,9 +309,33 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
             case MeshType::CROSSHAIR:
             {
                 ShaderProgramId shader_prog =
-                    load_shader("resources/shaders/line.vert", "resources/shaders/line.frag");
+                    load_shader("resources/shaders/crosshair.vert", "resources/shaders/white.frag");
                 Vec3 crosshair_mesh[] = { Vec3(-0.5f, -0.5f, 0.0f), Vec3(0.5f, 0.5f, 0.0f), Vec3(-0.5f, 0.5f, 0.0f), Vec3(0.5f, -0.5f, 0.0f) };
                 meshes.push_back(Mesh(crosshair_mesh, ARRAY_LENGTH(crosshair_mesh), sizeof(*crosshair_mesh), shader_prog));
+            } break;
+            case MeshType::BOX:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("resources/shaders/line.vert", "resources/shaders/white.frag");
+                // This is a wireframe of a box
+                Vec3 box_mesh[] = {
+                    // one face
+                    Vec3(-0.5f,-0.5f,-0.5f), Vec3( 0.5f,-0.5f,-0.5f),
+                    Vec3( 0.5f,-0.5f,-0.5f), Vec3( 0.5f, 0.5f,-0.5f),
+                    Vec3( 0.5f, 0.5f,-0.5f), Vec3(-0.5f, 0.5f,-0.5f),
+                    Vec3(-0.5f, 0.5f,-0.5f), Vec3(-0.5f,-0.5f,-0.5f),
+                    // opposite face
+                    Vec3(-0.5f,-0.5f, 0.5f), Vec3( 0.5f,-0.5f, 0.5f),
+                    Vec3( 0.5f,-0.5f, 0.5f), Vec3( 0.5f, 0.5f, 0.5f),
+                    Vec3( 0.5f, 0.5f, 0.5f), Vec3(-0.5f, 0.5f, 0.5f),
+                    Vec3(-0.5f, 0.5f, 0.5f), Vec3(-0.5f,-0.5f, 0.5f),
+                    // connecting faces
+                    Vec3(-0.5f,-0.5f,-0.5f), Vec3(-0.5f,-0.5f, 0.5f),
+                    Vec3( 0.5f,-0.5f,-0.5f), Vec3( 0.5f,-0.5f, 0.5f),
+                    Vec3( 0.5f, 0.5f,-0.5f), Vec3( 0.5f, 0.5f, 0.5f),
+                    Vec3(-0.5f, 0.5f,-0.5f), Vec3(-0.5f, 0.5f, 0.5f),
+                };
+                meshes.push_back(Mesh(box_mesh, ARRAY_LENGTH(box_mesh), sizeof(*box_mesh), shader_prog));
             } break;
             default:
                 assert(false); // Unimplemeneted mesh type
@@ -375,7 +399,7 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
     Mat33 rotation_matrix = orientation.to_matrix();
     
     const Mesh* mesh = &meshes[mesh_id];
-    glUseProgram(shader_programs[0].program);
+    glUseProgram(shader_programs[mesh->shader_program].program);
     
     GLuint rotation_uniform_location = 
         glGetUniformLocation(
@@ -436,6 +460,69 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
     glBindVertexArray(mesh->vao);
     glDrawArrays(
         GL_TRIANGLES,
+        0,  // starting idx
+        (int)mesh->vertices.size()
+    );
+}
+
+void Renderer::draw_bounding_box(BoundingBox bounding_box) const
+{
+    const Mesh* mesh = &meshes[MeshType::BOX];
+    glUseProgram(shader_programs[mesh->shader_program].program);
+
+    Vec3 position(
+        0.5f * (bounding_box.x1 + bounding_box.x2),
+        0.5f * (bounding_box.y1 + bounding_box.y2),
+        0.5f * (bounding_box.z1 + bounding_box.z2));
+    
+    GLuint origin_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "origin");
+    glUniform3fv(origin_uniform_location, 1, (GLfloat*)&position);
+
+    GLuint camera_pos_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_pos");
+    glUniform3fv(camera_pos_uniform_location, 1, (GLfloat*)&camera_pos);
+
+    GLuint camera_orientation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_orientation");
+    Mat33 camera_orientation_inverse = camera_orientation.inverse().to_matrix();
+    glUniformMatrix3fv(
+        camera_orientation_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&camera_orientation_inverse.data);
+
+    Vec3 scale(
+        bounding_box.x2 - bounding_box.x1,
+        bounding_box.y2 - bounding_box.y1,
+        bounding_box.z2 - bounding_box.z1);
+
+    GLuint scale_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "scale");
+    glUniform3fv(scale_uniform_location, 1, (GLfloat*)&scale);
+
+    GLuint perspective_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "perspective");
+    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
+    glUniformMatrix4fv(
+        perspective_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&perspective.data);
+
+    glBindVertexArray(mesh->vao);
+    glDrawArrays(
+        GL_LINES,
         0,  // starting idx
         (int)mesh->vertices.size()
     );
