@@ -115,8 +115,7 @@ int main(int argc, char *argv[])
             components,
             ARRAY_LENGTH(components));
 
-    EntityHandle selected_entity;
-    uint32_t selected_component = 0;
+    EntityInspectWindows entity_inspect_windows;
 
     LocalGameData game(entity_manager);
  
@@ -281,11 +280,7 @@ int main(int argc, char *argv[])
                 server_console.draw();
             }
 
-            draw_entity_select_menu(&selected_entity, *entity_manager);
-            if (selected_entity.is_valid())
-            {
-                draw_entity_info(selected_entity, &selected_component, *entity_manager);
-            }
+            entity_inspect_windows.draw(*entity_manager);
         }
 
         // PlayerControl updates

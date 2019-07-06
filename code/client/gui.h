@@ -3,6 +3,8 @@
 #include "common/math.h"
 #include "hec.h"
 #include "client/player_input.h"
+#include "common/components.h"
+#include "common/util.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;
@@ -29,6 +31,14 @@ struct SpawnMenu
     Vec3 coords;
 
     bool draw();
+};
+
+struct EntityInspectWindows
+{
+    EntityHandle selected_entity;
+    uint32_t selected_components[BF_SIZE(uint32_t, ComponentType::NUM_COMPONENT_TYPES)] = {};
+
+    void draw(const EntityManager &entity_manager);
 };
 
 struct Console

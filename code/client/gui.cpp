@@ -2,7 +2,6 @@
 #include "common/util.h"
 #include "common/components.h"
 #include "common/TransformComponent.h"
-#include "common/components.h"
 
 #include "imgui/imgui.h"
 #include <cstdio>
@@ -294,8 +293,79 @@ void entity_handle_string(EntityHandle handle, char handle_string[17])
     snprintf(handle_string, 17, "%08x%08x", handle.version, handle.idx);
 }
 
-void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager)
+void component_window_content(void *component, uint32_t type)
 {
+    if (component == nullptr)
+    {
+        ImGui::Text("Null component");
+        return;
+    }
+
+    switch (type)
+    {
+        //case ComponentType::PHYSICS:
+        //{
+
+        //} break;
+        //case ComponentType::MESH:
+        //{
+
+        //} break;
+        //case ComponentType::PLAYER_CONTROL:
+        //{
+
+        //} break;
+        //case ComponentType::PROJECTILE:
+        //{
+
+        //} break;
+        case ComponentType::TRANSFORM:
+        {
+            Transform *transform = (Transform*)component;
+            ImGui::Text(
+                "Position:    (%f, %f, %f)\n"
+                "Velocity:    (%f, %f, %f)\n"
+                "Orientation: (%f, %f, %f, %f)\n"
+                "Omega:       (%f, %f, %f)\n"
+                "Scale:       (%f, %f, %f)\n",
+                transform->position.x, transform->position.y, transform->position.z,
+                transform->velocity.x, transform->velocity.y, transform->velocity.z,
+                transform->orientation.s, transform->orientation.xy, transform->orientation.yz, transform->orientation.zx,
+                transform->angular_velocity.x, transform->angular_velocity.y, transform->angular_velocity.z,
+                transform->scale.x, transform->scale.y, transform->scale.z);
+        } break;
+        case ComponentType::PLANET:
+        {
+
+        } break;
+        case ComponentType::WORLD_SECTOR:
+        {
+            WorldSector *sector = (WorldSector*)component;
+            ImGui::Text("Sector %" PRId64 ", %" PRId64 ", %" PRId64, sector->x, sector->y, sector->z);
+        } break;
+        //case ComponentType::TRANSFORM_FOLLOWER:
+        //{
+
+        //} break;
+        case ComponentType::BOUNDING_BOX:
+        {
+            BoundingBox *aabb = (BoundingBox*)component;
+            ImGui::Text(
+                "x: [%.3f, %.3f]\n"
+                "y: [%.3f, %.3f]\n"
+                "z: [%.3f, %.3f]\n",
+                aabb->x1, aabb->x2,
+                aabb->y1, aabb->y2,
+                aabb->z1, aabb->z2);
+        };
+        default:
+            ImGui::Text("This component has no defined print method.");
+    }
+}
+
+void EntityInspectWindows::draw(const EntityManager &entity_manager)
+{
+    // Draw the entity select window
     ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
     EntityRef ref;
@@ -306,44 +376,44 @@ void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager 
             EntityHandle handle = entity_manager.entity_lists[ref.list_idx].handles[ref.entity_idx];
             char handle_string[17];
             entity_handle_string(handle, handle_string);
-            if (ImGui::Button(handle_string) && selected_entity)
+            if (ImGui::Button(handle_string))
             {
-                *selected_entity = handle;
+                selected_entity = handle;
             }
         }
     }
 
     ImGui::End();
-}
 
-void draw_entity_info(EntityHandle handle, uint32_t *selected_component, const EntityManager &entity_manager)
-{
-    EntityRef ref = entity_manager.entity_table.lookup_entity(handle);
+    // Lookup selected entity
+    ref = entity_manager.entity_table.lookup_entity(selected_entity);
     if (ref.is_valid())
     {
+        // Draw the entity info window
         ImGui::Begin("Entity Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Components:");
-        for (uint32_t i = 0; i < entity_manager.num_components; i++)
+        for (uint32_t i = 0; i < ComponentType::NUM_COMPONENT_TYPES; i++)
         {
             if (entity_manager.entity_lists[ref.list_idx].components[i])
             {
-                if (ImGui::Button(component_name(i)))
-                {
-                    *selected_component = i;
-                }
+                bool print_component = BF_READ(selected_components, i);
+                ImGui::Checkbox(component_name(i), &print_component);
+                BF_WRITE(selected_components, i, print_component);
             }
         }
-
-        if (entity_manager.entity_lists[ref.list_idx].components[*selected_component])
-        {
-            char print_buffer[256] = {};
-            print_component(entity_manager.lookup_component(ref, *selected_component), *selected_component, print_buffer, ARRAY_LENGTH(print_buffer) - 1);
-            ImGui::Text("%s", print_buffer);
-        }
-        else
-        {
-            ImGui::Text("Unable to print any component info");
-        }
         ImGui::End();
+
+        // Draw the component info windows
+        for (uint32_t i = 0; i < ComponentType::NUM_COMPONENT_TYPES; i++)
+        {
+            if (BF_READ(selected_components, i) && entity_manager.entity_lists[ref.list_idx].components[i])
+            {
+                uint32_t component_size = entity_manager.component_info[i].size;
+                ImGui::Begin(component_name(i), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::Text("Size (bytes): %u", component_size);
+                component_window_content(entity_manager.lookup_component(ref, i), i);
+                ImGui::End();
+            }
+        }
     }
 }
