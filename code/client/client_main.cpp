@@ -348,6 +348,7 @@ int main(int argc, char *argv[])
         // =========
 
         renderer.clear();
+        renderer.prep();
 
         renderer.draw_skybox();
 

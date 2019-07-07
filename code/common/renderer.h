@@ -24,12 +24,15 @@ struct Renderer
     void draw_skybox() const;
     void draw_crosshair(Vec3 position, float scale) const;
     void clear() const;
+    void prep();
 
     int width;
     int height;
 
     Vec3 camera_pos;
     Rotor camera_orientation;
+
+    Mat44 perspective;
 
     MeshId skybox_mesh;
     GLuint skybox_texture;

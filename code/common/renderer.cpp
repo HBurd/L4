@@ -394,6 +394,11 @@ void Renderer::set_screen_size(unsigned int w, unsigned int h)
     glViewport(0, 0, width, height);
 }
 
+void Renderer::prep()
+{
+    perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
+}
+
 void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const
 {
     Mat33 rotation_matrix = orientation.to_matrix();
@@ -450,7 +455,6 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "perspective");
-    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
     glUniformMatrix4fv(
         perspective_uniform_location,
         1,
@@ -513,7 +517,6 @@ void Renderer::draw_bounding_box(BoundingBox bounding_box) const
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "perspective");
-    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
     glUniformMatrix4fv(
         perspective_uniform_location,
         1,
@@ -560,7 +563,6 @@ void Renderer::draw_skybox() const
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "perspective");
-    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
     glUniformMatrix4fv(
         perspective_uniform_location,
         1,
@@ -621,7 +623,6 @@ void Renderer::draw_crosshair(Vec3 position, float scale) const
         glGetUniformLocation(
             shader_programs[mesh->shader_program].program,
             "perspective");
-    Mat44 perspective = Mat44::perspective(0.1f, 10000.0f, (float)height / width);
     glUniformMatrix4fv(
         perspective_uniform_location,
         1,
