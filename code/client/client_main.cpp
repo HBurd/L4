@@ -305,6 +305,37 @@ int main(int argc, char *argv[])
             past_inputs.save_input(player_inputs, (float)TIMESTEP);
         }
 
+        // check if raycast with aabb works
+        {
+            EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
+            if (player.is_valid())
+            {
+                const Transform &transform = *(Transform*)entity_manager->lookup_component(player, ComponentType::TRANSFORM);
+                Vec3 player_orientation = transform.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0);
+
+                EntityRef ref;
+                for (ref.list_idx = 0; ref.list_idx < entity_manager->entity_lists.size(); ref.list_idx++) {
+                    EntityListInfo &list = entity_manager->entity_lists[ref.list_idx];
+                    if (!list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+                    for (ref.entity_idx = 0; ref.entity_idx < list.size; ref.entity_idx++)
+                    {
+                        const BoundingBox &aabb = *(BoundingBox*)entity_manager->lookup_component(ref, ComponentType::BOUNDING_BOX);
+
+                        ImGui::Begin("Debug");
+                        if (ray_intersect(aabb, transform.position, player_orientation, nullptr))
+                        {
+                            ImGui::Text("Intersect");
+                        }
+                        else
+                        {
+                            ImGui::Text("No intersect");
+                        }
+                        ImGui::End();
+                    }
+                }
+            }
+        }
+
         perform_entity_update_step(entity_manager, (float)TIMESTEP);
 
         // Update transform followers
