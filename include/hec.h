@@ -473,6 +473,51 @@ void EntityManager::remove_component(EntityRef *old_ref, uint32_t component)
     *old_ref = new_ref;
 }
 
+void *EntityManager::add_component(EntityRef *old_ref, uint32_t component)
+{
+    // make sure the component isn't already in there
+    EntityListInfo &old_list = entity_lists[old_ref->list_idx];
+    assert(!old_list.components[component]);
+
+    // Construct the new list of required components
+    std::vector<uint32_t> components;
+    for (uint32_t comp = 0; comp < old_list.components.size(); comp++)
+    {
+        if (old_list.components[comp])
+        {
+            components.push_back(comp);
+        }
+    }
+    components.push_back(component);
+
+    // Pick a slot in a new list
+    EntityRef new_ref;
+    new_ref.list_idx = find_or_create_entity_list(components.data(), components.size());
+    new_ref.entity_idx = entity_list_add(new_ref.list_idx);
+
+    // Set the handle in the new entity list and update the entity table
+    EntityHandle handle = entity_lists[old_ref->list_idx].handles[old_ref->entity_idx];
+    entity_lists[new_ref.list_idx].handles[new_ref.entity_idx] = handle;
+    entity_table.update_handle(handle, new_ref);
+
+    // Copy component data into this slot
+    for (uint32_t comp_idx = 0; comp_idx < components.size(); comp_idx++)
+    {
+        if (components[comp_idx] == component) continue;
+        memcpy(
+            lookup_component(new_ref, components[comp_idx]),
+            lookup_component(*old_ref, components[comp_idx]),
+            component_info[components[comp_idx]].size);
+    }
+
+    // Now remove the slot in the old list
+    entity_list_remove(&old_list, *old_ref);
+
+    *old_ref = new_ref;
+
+    return lookup_component(new_ref, component);
+}
+
 void EntityManager::kill_entity(EntityRef ref)
 {
     EntityHandle handle = entity_lists[ref.list_idx].handles[ref.entity_idx];

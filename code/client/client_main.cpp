@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
         // check if raycast with aabb works
         {
             EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
-            if (player.is_valid())
+            if (player.is_valid() && !entity_manager->entity_lists[player.list_idx].supports_component(ComponentType::TRANSFORM_FOLLOWER))
             {
                 const Transform &transform = *(Transform*)entity_manager->lookup_component(player, ComponentType::TRANSFORM);
                 Vec3 player_orientation = transform.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0);
@@ -316,21 +316,20 @@ int main(int argc, char *argv[])
                 EntityRef ref;
                 for (ref.list_idx = 0; ref.list_idx < entity_manager->entity_lists.size(); ref.list_idx++) {
                     EntityListInfo &list = entity_manager->entity_lists[ref.list_idx];
-                    if (!list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+                    BoundingBox *aabbs = (BoundingBox*)list.components[ComponentType::BOUNDING_BOX];
+                    if (!aabbs) continue;
                     for (ref.entity_idx = 0; ref.entity_idx < list.size; ref.entity_idx++)
                     {
-                        const BoundingBox &aabb = *(BoundingBox*)entity_manager->lookup_component(ref, ComponentType::BOUNDING_BOX);
+                        const BoundingBox &aabb = aabbs[ref.entity_idx];
 
-                        ImGui::Begin("Debug");
                         if (ray_intersect(aabb, transform.position, player_orientation, nullptr))
                         {
-                            ImGui::Text("Intersect");
+                            if (game.input.keyboard.down.space)
+                            {
+                                EntityHandle *follower = (EntityHandle*)entity_manager->add_component(&player, ComponentType::TRANSFORM_FOLLOWER);
+                                *follower = list.handles[ref.entity_idx];
+                            }
                         }
-                        else
-                        {
-                            ImGui::Text("No intersect");
-                        }
-                        ImGui::End();
                     }
                 }
             }
