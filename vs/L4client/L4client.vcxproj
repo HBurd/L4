@@ -25,6 +25,9 @@
     <ClCompile Include="..\..\code\client\gui.cpp" />
     <ClCompile Include="..\..\code\client\keyboard.cpp" />
     <ClCompile Include="..\..\code\client\pipes.cpp" />
+    <ClCompile Include="..\..\code\client\player_input.cpp" />
+    <ClCompile Include="..\..\code\client\ship_controller.cpp" />
+    <ClCompile Include="..\..\code\common\collision.cpp" />
     <ClCompile Include="..\..\code\common\components.cpp" />
     <ClCompile Include="..\..\code\common\entity_initializers.cpp" />
     <ClCompile Include="..\..\code\common\entity_update_step.cpp" />
@@ -49,11 +52,14 @@
     <ClInclude Include="..\..\code\client\keyboard.h" />
     <ClInclude Include="..\..\code\client\local_game_data.h" />
     <ClInclude Include="..\..\code\client\pipes.h" />
+    <ClInclude Include="..\..\code\client\player_input.h" />
+    <ClInclude Include="..\..\code\client\ship_controller.h" />
+    <ClInclude Include="..\..\code\common\collision.h" />
     <ClInclude Include="..\..\code\common\components.h" />
     <ClInclude Include="..\..\code\common\entity_initializers.h" />
     <ClInclude Include="..\..\code\common\entity_update_step.h" />
     <ClInclude Include="..\..\code\common\math.h" />
-    <ClInclude Include="..\..\code\common\mesh_type.h" />
+    <ClInclude Include="..\..\code\common\mesh.h" />
     <ClInclude Include="..\..\code\common\net.h" />
     <ClInclude Include="..\..\code\common\packets.h" />
     <ClInclude Include="..\..\code\common\physics.h" />

@@ -27,7 +27,43 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\libs\impl_libs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\pipes.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\player_input.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\ship_controller.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\client.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\client_logic.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\client_main.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\gui.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\keyboard.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\TransformComponent.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\code\common\util.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\collision.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\components.cpp">
@@ -66,35 +102,20 @@
     <ClCompile Include="..\..\code\common\time.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformComponent.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\client_logic.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\client_main.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\gui.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\keyboard.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\pipes.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\client.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\libs\impl_libs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\client\player_input.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\ship_controller.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\client.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\client_logic.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\code\client\gui.h">
       <Filter>Header Files\client</Filter>
     </ClInclude>
@@ -107,11 +128,23 @@
     <ClInclude Include="..\..\code\client\pipes.h">
       <Filter>Header Files\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\client\client.h">
-      <Filter>Header Files\client</Filter>
+    <ClInclude Include="..\..\code\common\components.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\client\client_logic.h">
-      <Filter>Header Files\client</Filter>
+    <ClInclude Include="..\..\code\common\entity_initializers.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\entity_update_step.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\math.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\mesh.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\net.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\common\packets.h">
       <Filter>Header Files\common</Filter>
@@ -152,22 +185,7 @@
     <ClInclude Include="..\..\code\common\util.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\common\components.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\entity_initializers.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\entity_update_step.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\math.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\mesh_type.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\net.h">
+    <ClInclude Include="..\..\code\common\collision.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
   </ItemGroup>

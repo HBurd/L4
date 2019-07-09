@@ -38,7 +38,12 @@ void update_transform_components(
     }
 }
 
-Vec3 to_world_position(WorldSector sector, Vec3 position)
+Vec3 mesh_to_sector(Transform transform, Vec3 position)
+{
+    return transform.orientation.to_matrix() * position + transform.position;
+}
+
+Vec3 sector_to_world(WorldSector sector, Vec3 position)
 {
     return position + WORLD_SECTOR_DIM * Vec3(sector.x, sector.y, sector.z);
 }

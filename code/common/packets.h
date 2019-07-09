@@ -5,7 +5,7 @@
 #include "common/net.h"
 #include "hec.h"
 #include "common/math.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
 #include "common/renderer.h"
 #include "common/TransformComponent.h"
 

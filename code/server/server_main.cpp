@@ -18,6 +18,8 @@
 #include "common/TransformFollowerComponent.h"
 #include "common/PlayerControlComponent.h"
 
+#include "client/player_input.h"
+
 #include "server/server.h"
 
 #undef main

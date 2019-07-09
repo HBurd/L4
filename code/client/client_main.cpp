@@ -8,14 +8,17 @@
 #include "common/renderer.h"
 #include "common/time.h"
 #include "common/util.h"
+//#include "common/net.h"
 #include "common/entity_update_step.h"
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
+#include "common/collision.h"
 
 #include "client/keyboard.h"
 #include "client/gui.h"
 #include "client/client.h"
 #include "client/client_logic.h"
+#include "client/player_input.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -61,8 +64,6 @@ int main(int argc, char *argv[])
         ImGui::StyleColorsDark();
     }
 
-    Input input;
-    
     ClientData client;
 
     MainMenu main_menu;
@@ -108,6 +109,8 @@ int main(int argc, char *argv[])
             components,
             ARRAY_LENGTH(components));
 
+    EntityInspectWindows entity_inspect_windows;
+
     LocalGameData game(entity_manager);
  
     TimeKeeper time_keeper;
@@ -115,7 +118,7 @@ int main(int argc, char *argv[])
     bool running = true;
     while (running)
     {
-        input.keyboard.clear_keydowns();
+        game.input.keyboard.clear_keydowns();
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -137,10 +140,10 @@ int main(int argc, char *argv[])
                     break;
                 }
                 case SDL_KEYUP:
-                    input.keyboard.handle_keyup(event.key.keysym.sym);
+                    game.input.keyboard.handle_keyup(event.key.keysym.sym);
                     break;
                 case SDL_KEYDOWN:
-                    input.keyboard.handle_keydown(event.key.keysym.sym);
+                    game.input.keyboard.handle_keydown(event.key.keysym.sym);
                     break;
             }
         }
@@ -154,30 +157,30 @@ int main(int argc, char *argv[])
             SDL_GetWindowPosition(window, &window_x, &window_y);
             new_x -= window_x;
             new_y -= window_y;
-            input.mouse.dx = new_x - input.mouse.x;
-            input.mouse.dy = new_y - input.mouse.y;
-            input.mouse.x = new_x;
-            input.mouse.y = new_y;
+            game.input.mouse.dx = new_x - game.input.mouse.x;
+            game.input.mouse.dy = new_y - game.input.mouse.y;
+            game.input.mouse.x = new_x;
+            game.input.mouse.y = new_y;
 
-            if (input.mouse.x >= renderer.width - 1) // 1 pixel extra for when screen is max
+            if (game.input.mouse.x >= renderer.width - 1) // 1 pixel extra for when screen is max
             {
-                input.mouse.x -= renderer.width - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.x -= renderer.width - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            else if (input.mouse.x <= 0)
+            else if (game.input.mouse.x <= 0)
             {
-                input.mouse.x += renderer.width - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.x += renderer.width - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            if (input.mouse.y >= renderer.height - 1)
+            if (game.input.mouse.y >= renderer.height - 1)
             {
-                input.mouse.y -= renderer.height - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.y -= renderer.height - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
-            else if (input.mouse.y <= 0)
+            else if (game.input.mouse.y <= 0)
             {
-                input.mouse.y += renderer.height - 2;
-                SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
+                game.input.mouse.y += renderer.height - 2;
+                SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
         }
 
@@ -270,24 +273,53 @@ int main(int argc, char *argv[])
                 client.write_server_stdout(&server_console);
                 server_console.draw();
             }
+
+            entity_inspect_windows.draw(*entity_manager);
+        }
+
+        // check if raycast with aabb works
+        EntityHandle enter_ship;
+        {
+            EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
+            if (player.is_valid() && !entity_manager->entity_lists[player.list_idx].supports_component(ComponentType::TRANSFORM_FOLLOWER))
+            {
+                const Transform &transform = *(Transform*)entity_manager->lookup_component(player, ComponentType::TRANSFORM);
+                Vec3 player_orientation = transform.orientation.to_matrix() * Vec3(0.0f, 0.0f, -1.0);
+
+                EntityRef ref;
+                for (ref.list_idx = 0; ref.list_idx < entity_manager->entity_lists.size(); ref.list_idx++) {
+                    EntityListInfo &list = entity_manager->entity_lists[ref.list_idx];
+                    BoundingBox *aabbs = (BoundingBox*)list.components[ComponentType::BOUNDING_BOX];
+                    if (!aabbs) continue;
+                    for (ref.entity_idx = 0; ref.entity_idx < list.size; ref.entity_idx++)
+                    {
+                        const BoundingBox &aabb = aabbs[ref.entity_idx];
+
+                        if (ray_intersect(aabb, transform.position, player_orientation, nullptr))
+                        {
+                            if (game.input.keyboard.down.space)
+                            {
+                                enter_ship = list.handles[ref.entity_idx];
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // PlayerControl updates
         if (client_state.status == ClientState::SPAWNED)
         {
-            PlayerInputs player_inputs;
-            player_inputs.ship = ship_control(entity_manager, input.keyboard, game.tracking, game.player_ship_handle);
+            PlayerInputs player_inputs = process_player_inputs(game);
 
             ImGui::Begin("Debug");
             if (ImGui::Button("Detach"))
             {
-                player_inputs.leave_command_chair = true;
-            }
-            if (ImGui::Button("Reset View"))
-            {
-                game.player_view_orientation = Rotor();
+                player_inputs.ship.leave_command_chair = true;
             }
             ImGui::End();
+
+            player_inputs.player.enter_ship = enter_ship;
 
             handle_player_input(entity_manager, game.player_handle, player_inputs, game.dt);
 
@@ -295,12 +327,8 @@ int main(int argc, char *argv[])
             ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);
             client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
 
-            // Let the player look with the mouse
-            game.player_view_orientation = game.player_view_orientation * Rotor::yaw(0.005f * input.mouse.dx);
-            game.player_view_orientation = game.player_view_orientation * Rotor::pitch(0.005f * input.mouse.dy);
-
             // Save input for client-side prediction
-            past_inputs.save_input(player_inputs.ship, (float)TIMESTEP);
+            past_inputs.save_input(player_inputs, (float)TIMESTEP);
         }
 
         perform_entity_update_step(entity_manager, (float)TIMESTEP);
@@ -314,6 +342,21 @@ int main(int argc, char *argv[])
             update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], list.size); 
         }
 
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &list = entity_manager->entity_lists[list_idx];
+            if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+            if (!list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+            if (!list.supports_component(ComponentType::MESH)) continue;
+            Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
+            BoundingBox *bounding_boxes = (BoundingBox*)list.components[ComponentType::BOUNDING_BOX];
+            MeshId *meshes = (MeshId*)list.components[ComponentType::MESH];
+            for (uint32_t entity_idx = 0; entity_idx < list.size; entity_idx++)
+            {
+                bounding_boxes[entity_idx] = compute_bounding_box(transforms[entity_idx], renderer.meshes[meshes[entity_idx]]);
+            }
+        }
+
         // Update camera
         if (client_state.status == ClientState::SPAWNED)
         {
@@ -322,8 +365,8 @@ int main(int argc, char *argv[])
             WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
             Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 
-            renderer.camera_pos = to_world_position(world_sector, transform.position);
-            renderer.camera_orientation = transform.orientation * game.player_view_orientation;
+            renderer.camera_pos = sector_to_world(world_sector, transform.position);
+            renderer.camera_orientation = transform.orientation;
         }
         
         // =========
@@ -331,10 +374,11 @@ int main(int argc, char *argv[])
         // =========
 
         renderer.clear();
+        renderer.prep();
 
         renderer.draw_skybox();
 
-        for (unsigned int list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
             EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
             // check the list has suitable components for rendering
@@ -344,7 +388,7 @@ int main(int argc, char *argv[])
                 continue;
             if (!entity_list.supports_component(ComponentType::MESH))
                 continue;
-            for (unsigned int entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
                 EntityRef ref;
                 ref.list_idx = list_idx;
@@ -355,9 +399,20 @@ int main(int argc, char *argv[])
                 Transform transform = *(Transform*)entity_manager->lookup_component(ref, ComponentType::TRANSFORM);
                 renderer.draw_mesh(
                     mesh,
-                    to_world_position(world_sector, transform.position),
+                    sector_to_world(world_sector, transform.position),
                     transform.scale,
                     transform.orientation);
+            }
+        }
+
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
+            if (!entity_list.supports_component(ComponentType::BOUNDING_BOX)) continue;
+            BoundingBox *boxes = (BoundingBox*)entity_list.components[ComponentType::BOUNDING_BOX];
+            for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            {
+                renderer.draw_bounding_box(boxes[entity_idx]);
             }
         }
 

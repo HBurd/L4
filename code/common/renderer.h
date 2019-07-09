@@ -1,5 +1,4 @@
-#ifndef HBRENDERER_H
-#define HBRENDERER_H
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -7,44 +6,9 @@
 
 #include "GL/glew.h"
 
-#include "common/mesh_type.h"
+#include "common/mesh.h"
 #include "common/math.h"
-
-#pragma pack(push, 1)
-struct Vertex
-{
-    Vec3 position;
-    Vec3 normal;
-    Vec2 uv;
-
-    Vertex(Vec3 _position, Vec3 _normal, Vec2 _uv);
-};
-#pragma pack(pop)
-
-struct ShaderProgram
-{
-    ShaderProgram(const char* vshader_filename,
-                  const char* fshader_filename);
-    GLint vshader;
-    GLint fshader;
-    GLuint program;
-};
-
-typedef size_t ShaderProgramId;
-
-struct Mesh
-{
-    Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, ShaderProgramId mesh_shader_program);
-    Mesh(const char* filename, ShaderProgramId mesh_shader_program);
-
-    ShaderProgramId shader_program;
-
-    GLuint vbo;
-    GLuint vao;
-    std::vector<Vertex> vertices;
-};
-
-typedef size_t MeshId;
+#include "common/collision.h"
 
 struct Renderer
 {
@@ -56,9 +20,11 @@ struct Renderer
     GLuint load_texture(const char* texture_filename);
     void set_screen_size(unsigned int w, unsigned int h);
     void draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orientation) const;
+    void draw_bounding_box(BoundingBox bounding_box) const;
     void draw_skybox() const;
     void draw_crosshair(Vec3 position, float scale) const;
     void clear() const;
+    void prep();
 
     int width;
     int height;
@@ -66,11 +32,11 @@ struct Renderer
     Vec3 camera_pos;
     Rotor camera_orientation;
 
+    Mat44 perspective;
+
     MeshId skybox_mesh;
     GLuint skybox_texture;
 
     std::vector<Mesh> meshes;
     std::vector<ShaderProgram> shader_programs;
 };
-
-#endif // include guard

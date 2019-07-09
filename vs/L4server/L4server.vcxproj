@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\common\collision.cpp" />
     <ClCompile Include="..\..\code\common\components.cpp" />
     <ClCompile Include="..\..\code\common\entity_initializers.cpp" />
     <ClCompile Include="..\..\code\common\entity_update_step.cpp" />
@@ -39,11 +40,12 @@
     <ClCompile Include="..\..\code\server\server_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\common\collision.h" />
     <ClInclude Include="..\..\code\common\components.h" />
     <ClInclude Include="..\..\code\common\entity_initializers.h" />
     <ClInclude Include="..\..\code\common\entity_update_step.h" />
     <ClInclude Include="..\..\code\common\math.h" />
-    <ClInclude Include="..\..\code\common\mesh_type.h" />
+    <ClInclude Include="..\..\code\common\mesh.h" />
     <ClInclude Include="..\..\code\common\net.h" />
     <ClInclude Include="..\..\code\common\packets.h" />
     <ClInclude Include="..\..\code\common\physics.h" />

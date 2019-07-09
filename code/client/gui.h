@@ -1,9 +1,10 @@
-#ifndef HBGUI_H
-#define HBGUI_H
+#pragma once
 
 #include "common/math.h"
 #include "hec.h"
-#include "common/player_control.h"
+#include "client/player_input.h"
+#include "common/components.h"
+#include "common/util.h"
 #include <stdint.h>
 
 const uint16_t DEFAULT_SERVER_PORT = 4444;
@@ -32,6 +33,14 @@ struct SpawnMenu
     bool draw();
 };
 
+struct EntityInspectWindows
+{
+    EntityHandle selected_entity;
+    uint32_t selected_components[BF_SIZE(uint32_t, ComponentType::NUM_COMPONENT_TYPES)] = {};
+
+    void draw(const EntityManager &entity_manager);
+};
+
 struct Console
 {
     Console(const char *name_);
@@ -53,4 +62,6 @@ bool draw_guidance_menu(
     EntityHandle player_handle,
     TrackingState *tracking);
 
-#endif // include guard
+void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager);
+
+void draw_entity_info(EntityHandle handle, uint32_t *selected_component, const EntityManager &entity_manager);

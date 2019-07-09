@@ -5,8 +5,10 @@
 #include "common/PlayerControlComponent.h"
 #include "common/ProjectileComponent.h"
 #include "common/renderer.h"
+#include "common/collision.h"
 
 #include <cassert>
+#include <cinttypes>
 
 void init_component_info(ComponentInfo *components, size_t num_components)
 {
@@ -15,31 +17,49 @@ void init_component_info(ComponentInfo *components, size_t num_components)
         switch(i)
         {
             case ComponentType::WORLD_SECTOR:
-                components[i] = {sizeof(WorldSector)};
+                components[i].size = sizeof(WorldSector);
                 break;
             case ComponentType::TRANSFORM:
-                components[i] = {sizeof(Transform)};
+                components[i].size = sizeof(Transform);
                 break;
             case ComponentType::PLAYER_CONTROL:
-                components[i] = {sizeof(PlayerControl)};
+                components[i].size = sizeof(PlayerControl);
                 break;
             case ComponentType::PLANET:
-                components[i] = {sizeof(Planet)};
+                components[i].size = sizeof(Planet);
                 break;
             case ComponentType::PHYSICS:
-                components[i] = {sizeof(Physics)};
+                components[i].size = sizeof(Physics);
                 break;
             case ComponentType::PROJECTILE:
-                components[i] = {sizeof(Projectile)};
+                components[i].size = sizeof(Projectile);
                 break;
             case ComponentType::MESH:
-                components[i] = {sizeof(MeshId)};
+                components[i].size = sizeof(MeshId);
                 break;
             case ComponentType::TRANSFORM_FOLLOWER:
-                components[i] = {sizeof(EntityHandle)};
+                components[i].size = sizeof(EntityHandle);
+                break;
+            case ComponentType::BOUNDING_BOX:
+                components[i].size = sizeof(BoundingBox);
                 break;
             default:
                 assert(false);
         }
     }
+}
+
+const char *component_name(uint32_t type)
+{
+    const char *names[ComponentType::NUM_COMPONENT_TYPES] = {};
+    names[ComponentType::WORLD_SECTOR]       = "WorldSector";
+    names[ComponentType::TRANSFORM]          = "Transform";
+    names[ComponentType::PLAYER_CONTROL]     = "PlayerControl";
+    names[ComponentType::PLANET]             = "Planet";
+    names[ComponentType::PHYSICS]            = "Physics";
+    names[ComponentType::PROJECTILE]         = "Projectile";
+    names[ComponentType::MESH]               = "MeshId";
+    names[ComponentType::TRANSFORM_FOLLOWER] = "TransformFollower";
+    names[ComponentType::BOUNDING_BOX]       = "BoundingBox";
+    return names[type];
 }

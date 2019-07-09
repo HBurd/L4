@@ -1,16 +1,16 @@
 #pragma once
 
 #include "hec.h"
-#include "common/player_control.h"
+#include "client/ship_controller.h"
+#include "client/keyboard.h"
 #include "common/math.h"
 
 struct LocalGameData
 {
     float dt = 0.0f;
+    Input input;
 
-    Rotor player_view_orientation;
     EntityHandle player_handle;
-    EntityHandle player_ship_handle;
 
     EntityManager *entity_manager;
 

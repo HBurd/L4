@@ -30,6 +30,8 @@ void update_transform_components(
     size_t num_components,
     float dt);
 
-Vec3 to_world_position(WorldSector sector, Vec3 pos);
+Vec3 mesh_to_sector(Transform transform, Vec3 pos);
+
+Vec3 sector_to_world(WorldSector sector, Vec3 pos);
 
 #endif // include guard
