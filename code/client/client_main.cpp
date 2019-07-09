@@ -283,29 +283,8 @@ int main(int argc, char *argv[])
             entity_inspect_windows.draw(*entity_manager);
         }
 
-        // PlayerControl updates
-        if (client_state.status == ClientState::SPAWNED)
-        {
-            PlayerInputs player_inputs = process_player_inputs(game);
-
-            ImGui::Begin("Debug");
-            if (ImGui::Button("Detach"))
-            {
-                player_inputs.leave_command_chair = true;
-            }
-            ImGui::End();
-
-            handle_player_input(entity_manager, game.player_handle, player_inputs, game.dt);
-
-            // Send the control packet
-            ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);
-            client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
-
-            // Save input for client-side prediction
-            past_inputs.save_input(player_inputs, (float)TIMESTEP);
-        }
-
         // check if raycast with aabb works
+        EntityHandle enter_ship;
         {
             EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
             if (player.is_valid() && !entity_manager->entity_lists[player.list_idx].supports_component(ComponentType::TRANSFORM_FOLLOWER))
@@ -326,13 +305,36 @@ int main(int argc, char *argv[])
                         {
                             if (game.input.keyboard.down.space)
                             {
-                                EntityHandle *follower = (EntityHandle*)entity_manager->add_component(&player, ComponentType::TRANSFORM_FOLLOWER);
-                                *follower = list.handles[ref.entity_idx];
+                                enter_ship = list.handles[ref.entity_idx];
                             }
                         }
                     }
                 }
             }
+        }
+
+        // PlayerControl updates
+        if (client_state.status == ClientState::SPAWNED)
+        {
+            PlayerInputs player_inputs = process_player_inputs(game);
+
+            ImGui::Begin("Debug");
+            if (ImGui::Button("Detach"))
+            {
+                player_inputs.ship.leave_command_chair = true;
+            }
+            ImGui::End();
+
+            player_inputs.player.enter_ship = enter_ship;
+
+            handle_player_input(entity_manager, game.player_handle, player_inputs, game.dt);
+
+            // Send the control packet
+            ControlUpdatePacket control_update(player_inputs, past_inputs.next_seq_num);
+            client.send_to_server(GamePacketType::CONTROL_UPDATE, &control_update, sizeof(control_update));
+
+            // Save input for client-side prediction
+            past_inputs.save_input(player_inputs, (float)TIMESTEP);
         }
 
         perform_entity_update_step(entity_manager, (float)TIMESTEP);

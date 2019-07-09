@@ -76,11 +76,17 @@ void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physic
 
 void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs, float dt)
 {
-    if (player_inputs.leave_command_chair)
+    if (player_inputs.ship.leave_command_chair)
     {
         EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
         assert(player_ref.is_valid());
         entity_manager->remove_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
+    }
+    if (player_inputs.player.enter_ship.is_valid())
+    {
+        EntityRef player_ref = entity_manager->entity_table.lookup_entity(player_handle);
+        EntityHandle *follower = (EntityHandle*)entity_manager->add_component(&player_ref, ComponentType::TRANSFORM_FOLLOWER);
+        *follower = player_inputs.player.enter_ship;
     }
 
     apply_input(player_inputs, player_handle, dt, entity_manager);

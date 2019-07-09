@@ -9,6 +9,7 @@ struct ShipControls
     float thrust = 0.0f;
     Vec3 torque;
     bool shoot = false;
+    bool leave_command_chair = false;
 
     // clamps torque and thrust to physical limits
     void clamp();
@@ -21,11 +22,11 @@ struct PlayerControls
 {
     Vec3 movement;
     Rotor orientation;
+    EntityHandle enter_ship;
 };
 
 struct PlayerInputs
 {
-    bool leave_command_chair = false;
     enum class InputType
     {
         PLAYER,
