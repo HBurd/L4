@@ -7,15 +7,15 @@ Transform::Transform(Vec3 transform_position)
 :position(transform_position) {}
 
 void update_transform_components(
-    WorldSector *world_sector_components,
-    Transform *transform_components,
+    WorldSector *world_sectors,
+    Transform *transforms,
     size_t num_components,
     float dt)
 {
     for (size_t i = 0; i < num_components; i++)
     {
-        WorldSector &sector = world_sector_components[i];
-        Transform &transform = transform_components[i];
+        WorldSector &sector = world_sectors[i];
+        Transform &transform = transforms[i];
 
         transform.position += transform.velocity * dt;
 
@@ -43,7 +43,11 @@ Vec3 mesh_to_sector(Transform transform, Vec3 position)
     return transform.orientation.to_matrix() * position + transform.position;
 }
 
-Vec3 sector_to_world(WorldSector sector, Vec3 position)
+Vec3 relative_to_sector(const WorldSector &from, const WorldSector &sector, const Vec3 &position)
 {
-    return position + WORLD_SECTOR_DIM * Vec3(sector.x, sector.y, sector.z);
+    float x_offset = WORLD_SECTOR_DIM * (sector.x - from.x);
+    float y_offset = WORLD_SECTOR_DIM * (sector.y - from.y);
+    float z_offset = WORLD_SECTOR_DIM * (sector.z - from.z);
+
+    return Vec3(x_offset, y_offset, z_offset) + position;
 }

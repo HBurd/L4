@@ -30,6 +30,7 @@ struct Renderer
     int height;
 
     Vec3 camera_pos;
+    WorldSector camera_sector;
     Rotor camera_orientation;
 
     Mat44 perspective;

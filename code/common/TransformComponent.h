@@ -1,5 +1,4 @@
-#ifndef HBTRANSFORM_H
-#define HBTRANSFORM_H
+#pragma once
 
 #include "common/math.h"
 #include <stdlib.h>
@@ -25,13 +24,11 @@ struct Transform
 };
 
 void update_transform_components(
-    WorldSector *world_sector_components,
-    Transform *transform_components,
+    WorldSector *world_sectors,
+    Transform *transforms,
     size_t num_components,
     float dt);
 
 Vec3 mesh_to_sector(Transform transform, Vec3 pos);
 
-Vec3 sector_to_world(WorldSector sector, Vec3 pos);
-
-#endif // include guard
+Vec3 relative_to_sector(const WorldSector &from, const WorldSector &sector, const Vec3 &position);

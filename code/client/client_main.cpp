@@ -365,7 +365,8 @@ int main(int argc, char *argv[])
             WorldSector world_sector = *(WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
             Transform transform = *(Transform*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM);
 
-            renderer.camera_pos = sector_to_world(world_sector, transform.position);
+            renderer.camera_pos = transform.position;
+            renderer.camera_sector = world_sector;
             renderer.camera_orientation = transform.orientation;
         }
         
@@ -399,7 +400,7 @@ int main(int argc, char *argv[])
                 Transform transform = *(Transform*)entity_manager->lookup_component(ref, ComponentType::TRANSFORM);
                 renderer.draw_mesh(
                     mesh,
-                    sector_to_world(world_sector, transform.position),
+                    relative_to_sector(renderer.camera_sector, world_sector, transform.position),
                     transform.scale,
                     transform.orientation);
             }
