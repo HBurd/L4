@@ -9,6 +9,8 @@ https://en.wikipedia.org/wiki/Lagrangian_point#L4_and_L5_points
 
 Windows:
 
+Most recent known working Windows commit: 709cf84f1d1cc65080c3e9acae9f811d31156ae5
+
 Open `vs/L4.sln`, build the x64 configuration from Visual Studio.
 After the first build, manually copy `lib/SDL2.dll`, `lib/glew32.dll` and `resources` into `vs/x64`.
   
