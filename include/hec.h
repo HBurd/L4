@@ -282,6 +282,10 @@ EntityManager::EntityManager(
 {
     component_info = components;
     num_components = num_components_;
+
+    // TODO: This is a hack so we can have a pointer to an entity list,
+    // since we will be removing vector
+    entity_lists.reserve(100);
 }
 
 #ifndef HEC_NEW_LIST_ACTION
