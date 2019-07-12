@@ -21,6 +21,7 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
     {
         inputs.type = PlayerInputs::InputType::SHIP;
         Transform ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
+        WorldSector ship_reference = *(WorldSector*)entity_manager->lookup_component(player_ship, ComponentType::WORLD_SECTOR);
         Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
 
         if (game.tracking.track)
@@ -29,11 +30,14 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
             if (target_ref.is_valid())
             {
                 Transform target_transform = *(Transform*)entity_manager->lookup_component(target_ref, ComponentType::TRANSFORM);
+                WorldSector target_reference = *(WorldSector*)entity_manager->lookup_component(target_ref, ComponentType::WORLD_SECTOR);
 
                 inputs.ship.torque += compute_target_tracking_torque(
                     ship_transform,
+                    ship_reference,
                     ship_physics,
-                    target_transform);
+                    target_transform,
+                    target_reference);
             }
         }
         else if (game.tracking.stabilize)

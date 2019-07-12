@@ -469,15 +469,16 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
     );
 }
 
-void Renderer::draw_bounding_box(BoundingBox bounding_box) const
+void Renderer::draw_bounding_box(BoundingBox bounding_box, WorldSector reference_frame) const
 {
     const Mesh* mesh = &meshes[MeshType::BOX];
     glUseProgram(shader_programs[mesh->shader_program].program);
 
-    Vec3 position(
+    Vec3 position_local(
         0.5f * (bounding_box.x1 + bounding_box.x2),
         0.5f * (bounding_box.y1 + bounding_box.y2),
         0.5f * (bounding_box.z1 + bounding_box.z2));
+    Vec3 position = relative_to_sector(camera_sector, reference_frame, position_local);
     
     GLuint origin_uniform_location = 
         glGetUniformLocation(

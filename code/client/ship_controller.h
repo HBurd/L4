@@ -15,8 +15,10 @@ struct TrackingState
 
 Vec3 compute_target_tracking_torque(
     Transform player_transform,
+    WorldSector player_reference,
     Physics player_physics,
-    Transform target_transform);
+    Transform target_transform,
+    WorldSector target_reference);
 
 Vec3 compute_stabilization_torque(
     Transform transform,

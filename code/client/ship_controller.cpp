@@ -3,8 +3,10 @@
 
 Vec3 compute_target_tracking_torque(
     Transform player_transform,
+    WorldSector player_reference_frame,
     Physics player_physics,
-    Transform target_transform)
+    Transform target_transform,
+    WorldSector target_reference_frame)
 {
     /*  Tracking will point the ship in a desired orientation.
      *  It is achieved by finding the axis that rotates from the
@@ -17,7 +19,7 @@ Vec3 compute_target_tracking_torque(
      */
     Rotor player_orient_abs = player_transform.orientation;
     Vec3 player_dir_rel = Vec3(0.0f, 0.0f, -1.0f);
-    Vec3 target_pos_abs = target_transform.position;
+    Vec3 target_pos_abs = relative_to_sector(player_reference_frame, target_reference_frame, target_transform.position);
     Vec3 player_pos_abs = player_transform.position;
     Vec3 player_omega = player_transform.angular_velocity;
 

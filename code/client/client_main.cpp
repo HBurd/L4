@@ -411,9 +411,11 @@ int main(int argc, char *argv[])
             EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
             if (!entity_list.supports_component(ComponentType::BOUNDING_BOX)) continue;
             BoundingBox *boxes = (BoundingBox*)entity_list.components[ComponentType::BOUNDING_BOX];
+            if (!entity_list.supports_component(ComponentType::WORLD_SECTOR)) continue;
+            WorldSector *reference_frames = (WorldSector*)entity_list.components[ComponentType::WORLD_SECTOR];
             for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                renderer.draw_bounding_box(boxes[entity_idx]);
+                renderer.draw_bounding_box(boxes[entity_idx], reference_frames[entity_idx]);
             }
         }
 
