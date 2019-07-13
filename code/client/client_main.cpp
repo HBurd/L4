@@ -38,6 +38,7 @@ const int INITIAL_WINDOW_HEIGHT = 600;
 
 int main(int argc, char *argv[])
 {
+	cout << "stars" << endl;
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window* window = SDL_CreateWindow(
