@@ -25,9 +25,11 @@ EntityCreatePacket::EntityCreatePacket(
 TransformSyncPacket::TransformSyncPacket(
     EntityHandle transform_entity,
     Transform transform,
+    WorldSector position_rf_,
     uint32_t packet_sequence)
 : entity(transform_entity),
     transform_state(transform),
+    position_rf(position_rf_),
     sequence(packet_sequence)
 {}
 

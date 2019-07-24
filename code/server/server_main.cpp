@@ -223,8 +223,9 @@ int main(int argc, char* argv[])
         {
             EntityListInfo &list = entity_manager->entity_lists[list_idx];
             if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+            if (!list.supports_component(ComponentType::WORLD_SECTOR)) continue;
             if (!list.supports_component(ComponentType::TRANSFORM_FOLLOWER)) continue;
-            update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], list.size); 
+            update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], (WorldSector*)list.components[ComponentType::WORLD_SECTOR], list.size); 
         }
 
         // Sync all transforms
@@ -235,10 +236,10 @@ int main(int argc, char* argv[])
                 EntityListInfo &list = entity_manager->entity_lists[ref.list_idx];
                 if (!list.supports_component(ComponentType::TRANSFORM)) continue;
 
-                // TODO: we don't need this yet but we will, when sector is actually synced
                 if (!list.supports_component(ComponentType::WORLD_SECTOR)) continue;
 
                 Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
+                WorldSector *position_rfs = (WorldSector*)list.components[ComponentType::WORLD_SECTOR];
 
                 PlayerControl *player_controls = nullptr;
                 if (list.supports_component(ComponentType::PLAYER_CONTROL))
@@ -265,6 +266,7 @@ int main(int argc, char* argv[])
                     TransformSyncPacket transform_sync(
                         list.handles[ref.entity_idx],
                         transforms[ref.entity_idx],
+                        position_rfs[ref.entity_idx],
                         seq_num);
                     server.broadcast(
                        GamePacketType::PHYSICS_SYNC,

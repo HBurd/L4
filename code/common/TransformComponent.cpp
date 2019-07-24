@@ -38,6 +38,11 @@ void update_transform_components(
     }
 }
 
+void update_transform(WorldSector *position_rf, Transform *transform, float dt)
+{
+    update_transform_components(position_rf, transform, 1, dt);
+}
+
 Vec3 mesh_to_sector(Transform transform, Vec3 position)
 {
     return transform.orientation.to_matrix() * position + transform.position;

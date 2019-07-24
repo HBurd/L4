@@ -8,6 +8,7 @@ void update_transform_followers(
     EntityManager *entity_manager,
     EntityHandle *transform_followers,
     Transform *transforms,
+    WorldSector *position_rfs,
     uint32_t count);
 
 #endif // include guard

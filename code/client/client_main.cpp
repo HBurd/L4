@@ -338,8 +338,9 @@ int main(int argc, char *argv[])
         {
             EntityListInfo &list = entity_manager->entity_lists[list_idx];
             if (!list.supports_component(ComponentType::TRANSFORM)) continue;
+            if (!list.supports_component(ComponentType::WORLD_SECTOR)) continue;
             if (!list.supports_component(ComponentType::TRANSFORM_FOLLOWER)) continue;
-            update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], list.size); 
+            update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], (WorldSector*)list.components[ComponentType::WORLD_SECTOR], list.size); 
         }
 
         for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)

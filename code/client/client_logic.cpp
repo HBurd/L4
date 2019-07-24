@@ -1,5 +1,6 @@
 #include "client/client_logic.h"
 #include "common/PlayerControlComponent.h"
+#include "common/TransformComponent.h"
 #include "common/components.h"
 #include "common/util.h"
 #include "common/physics.h"
@@ -41,7 +42,9 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
         return;
     }
 
-    Transform &transform = *(Transform*)entity_manager->lookup_component(sync_ref, ComponentType::TRANSFORM);
+    Transform *transform = (Transform*)entity_manager->lookup_component(sync_ref, ComponentType::TRANSFORM);
+    WorldSector *position_rf = (WorldSector*)entity_manager->lookup_component(sync_ref, ComponentType::WORLD_SECTOR);
+
     // check if there is a sequence number with this packet
     // TODO: 0 is actually valid, though nothing breaks if we treat it as representing no seq #.
     if (packet.packet.packet_data.transform_sync.sequence != 0)
@@ -50,13 +53,13 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
         if (packet.packet.packet_data.transform_sync.sequence > past_inputs->last_received_seq_num)
         {
             // Apply the transform update
-            transform = 
-                packet.packet.packet_data.transform_sync.transform_state;
+            *transform = packet.packet.packet_data.transform_sync.transform_state;
+            *position_rf = packet.packet.packet_data.transform_sync.position_rf;
             past_inputs->last_received_seq_num =
                 packet.packet.packet_data.transform_sync.sequence;
 
             // apply later inputs (reconciliation)
-            for (uint32_t sequence = packet.packet.packet_data.transform_sync.sequence;
+            for (uint32_t sequence = packet.packet.packet_data.transform_sync.sequence + 1;
                  sequence < past_inputs->next_seq_num;
                  sequence++)
             {
@@ -64,12 +67,15 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
                 if (past_inputs->inputs[input_idx].sequence_number == sequence)
                 {
                     apply_input(past_inputs->inputs[input_idx].input, sync_entity, past_inputs->inputs[input_idx].dt, entity_manager);
+                    // Apply physics for this input
+                    update_transform(position_rf, transform, past_inputs->inputs[input_idx].dt);
                 }
             }
         }
     }
     else    // no seq # so no prediction
     {
-        transform = packet.packet.packet_data.transform_sync.transform_state;
+        *transform = packet.packet.packet_data.transform_sync.transform_state;
+        *position_rf = packet.packet.packet_data.transform_sync.position_rf;
     }
 }

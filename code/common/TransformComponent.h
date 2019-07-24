@@ -29,6 +29,11 @@ void update_transform_components(
     size_t num_components,
     float dt);
 
+void update_transform(
+    WorldSector *position_rf,
+    Transform *transform,
+    float dt);
+
 Vec3 mesh_to_sector(Transform transform, Vec3 pos);
 
 Vec3 relative_to_sector(const WorldSector &from, const WorldSector &sector, const Vec3 &position);
