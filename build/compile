@@ -7,6 +7,8 @@ CLIENT_SRC=$BASE_DIR/code/client/*.cpp
 COMMON_SRC=$BASE_DIR/code/common/*.cpp
 LIBS_SRC=$BASE_DIR/code/libs/*.cpp
 
+LATENC_SRC=$BASE_DIR/tools/laten.c
+
 CLIENT_UNITY=client_build.cpp
 SERVER_UNITY=server_build.cpp
 
@@ -15,6 +17,12 @@ DEBUG=-g
 if [ "$1" == "lib" ]; then
     echo Libs:
     time clang++ $LIBS_SRC -c $DEBUG -I../include -I../include/SDL/linux -I../include/SDL/linux/SDL -I../code -I../code/linux
+    echo ====================
+fi
+
+if [ "$1" == "laten.c" ]; then
+    echo laten.c:
+    time clang $LATENC_SRC -olatenc
     echo ====================
 fi
 

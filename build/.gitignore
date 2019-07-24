@@ -5,4 +5,5 @@ server_build.cpp
 imgui.ini
 L4client
 L4server
+latenc
 resources
