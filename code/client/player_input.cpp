@@ -20,6 +20,10 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
     if (player_ship.is_valid())
     {
         inputs.type = PlayerInputs::InputType::SHIP;
+
+        // TODO: handle -> ref -> handle = bad
+        inputs.entity = entity_manager->entity_lists[player_ship.list_idx].handles[player_ship.entity_idx];
+
         Transform ship_transform = *(Transform*)entity_manager->lookup_component(player_ship, ComponentType::TRANSFORM);
         WorldSector ship_reference = *(WorldSector*)entity_manager->lookup_component(player_ship, ComponentType::WORLD_SECTOR);
         Physics ship_physics = *(Physics*)entity_manager->lookup_component(player_ship, ComponentType::PHYSICS);
@@ -42,7 +46,6 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
         }
         else if (game.tracking.stabilize)
         {
-            inputs.type = PlayerInputs::InputType::SHIP;
             inputs.ship.torque += compute_stabilization_torque(
                 ship_transform,
                 ship_physics);
@@ -73,6 +76,7 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
 
         inputs.player.movement = player_movement;
         inputs.type = PlayerInputs::InputType::PLAYER;
+        inputs.entity = game.player_handle;
     }
 
     return inputs;

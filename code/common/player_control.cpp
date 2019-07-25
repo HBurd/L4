@@ -89,12 +89,13 @@ void handle_player_input(EntityManager *entity_manager, EntityHandle player_hand
         *follower = player_inputs.player.enter_ship;
     }
 
-    apply_input(player_inputs, player_handle, dt, entity_manager);
+    apply_input(player_inputs, dt, entity_manager);
 }
 
-void apply_input(PlayerInputs input, EntityHandle handle, float dt, EntityManager *entity_manager)
+void apply_input(PlayerInputs input, float dt, EntityManager *entity_manager)
 {
-    EntityRef entity = entity_manager->entity_table.lookup_entity(handle);
+    EntityRef entity = entity_manager->entity_table.lookup_entity(input.entity);
+    assert(entity.is_valid());
     switch (input.type)
     {
         case PlayerInputs::InputType::PLAYER:
@@ -105,18 +106,10 @@ void apply_input(PlayerInputs input, EntityHandle handle, float dt, EntityManage
         } break;
         case PlayerInputs::InputType::SHIP:
         {
-            // TODO: ship input should probably be associated with the ship, not player
-            EntityHandle *ship_handle = (EntityHandle*)entity_manager->lookup_component(entity, ComponentType::TRANSFORM_FOLLOWER);
-            if (ship_handle)
-            {
-                EntityRef ship = entity_manager->entity_table.lookup_entity(*ship_handle);
-                assert(ship.is_valid());
-
-                Transform *transform = (Transform*)entity_manager->lookup_component(ship, ComponentType::TRANSFORM);
-                Physics *physics = (Physics*)entity_manager->lookup_component(ship, ComponentType::PHYSICS);
-                
-                apply_ship_inputs(input.ship, transform, *physics, dt);
-            }
+            Transform *transform = (Transform*)entity_manager->lookup_component(entity, ComponentType::TRANSFORM);
+            Physics *physics = (Physics*)entity_manager->lookup_component(entity, ComponentType::PHYSICS);
+            
+            apply_ship_inputs(input.ship, transform, *physics, dt);
         } break;
     }
 }

@@ -33,6 +33,8 @@ struct PlayerInputs
         SHIP,
     } type;
 
+    EntityHandle entity;
+
     // Only one of these should be used at a time
     PlayerControls player;
     ShipControls ship;
@@ -45,7 +47,7 @@ void apply_ship_inputs(ShipControls inputs, Transform *transform, Physics physic
 
 void handle_player_input(EntityManager *entity_manager, EntityHandle player_handle, PlayerInputs player_inputs, float dt);
 
-void apply_input(PlayerInputs input, EntityHandle handle, float dt, EntityManager *entity_manager);
+void apply_input(PlayerInputs input, float dt, EntityManager *entity_manager);
 
 // Get the ship the player is controlling
 // For now this is determined by the transform it is following

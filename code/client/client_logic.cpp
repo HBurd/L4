@@ -64,7 +64,7 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
                 uint32_t input_idx = sequence % ARRAY_LENGTH(past_inputs->inputs);
                 if (past_inputs->inputs[input_idx].sequence_number == sequence)
                 {
-                    apply_input(past_inputs->inputs[input_idx].input, sync_entity, past_inputs->inputs[input_idx].dt, entity_manager);
+                    apply_input(past_inputs->inputs[input_idx].input, past_inputs->inputs[input_idx].dt, entity_manager);
                     // Apply physics for this input
                     update_transform(position_rf, transform, past_inputs->inputs[input_idx].dt);
                 }

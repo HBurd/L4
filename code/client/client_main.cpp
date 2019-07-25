@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     Console ship_console("Ship Console");
     Console server_console("Server Console");
     bool enable_ui = true;
-    bool mouse_lock = true;
+    bool mouse_lock = false;
 
     struct ClientState
     {
