@@ -7,6 +7,9 @@
 #include "common/util.h"
 #include <stdint.h>
 
+#include "imgui/imgui.h"
+#define IMDBG(x) {ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_AlwaysAutoResize);x;ImGui::End();}
+
 const uint16_t DEFAULT_SERVER_PORT = 4444;
 #define DEFAULT_IP "127.0.0.1"
 

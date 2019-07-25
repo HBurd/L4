@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
     Console ship_console("Ship Console");
     Console server_console("Server Console");
     bool enable_ui = true;
+    bool mouse_lock = true;
 
     struct ClientState
     {
@@ -148,8 +149,15 @@ int main(int argc, char *argv[])
             }
         }
 
+        game.dt = (float)TIMESTEP;
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
+
         // Mouse wrapping
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)
+        IMDBG(ImGui::Checkbox("Mouse lock", &mouse_lock));
+        if (mouse_lock && SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)
         {
             int new_x, new_y;
             SDL_GetGlobalMouseState(&new_x, &new_y);
@@ -183,12 +191,6 @@ int main(int argc, char *argv[])
                 SDL_WarpMouseInWindow(window, game.input.mouse.x, game.input.mouse.y);
             }
         }
-
-        game.dt = (float)TIMESTEP;
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(window);
-        ImGui::NewFrame();
 
         // Process incoming packets
         get_packets(client.sock, &game_packets);
@@ -312,12 +314,12 @@ int main(int argc, char *argv[])
         {
             PlayerInputs player_inputs = process_player_inputs(game);
 
-            ImGui::Begin("Debug");
-            if (ImGui::Button("Detach"))
-            {
-                player_inputs.ship.leave_command_chair = true;
-            }
-            ImGui::End();
+            IMDBG(
+                if (ImGui::Button("Detach"))
+                {
+                    player_inputs.ship.leave_command_chair = true;
+                }
+            );
 
             player_inputs.player.enter_ship = enter_ship;
 
