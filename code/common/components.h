@@ -8,7 +8,6 @@ namespace ComponentType
     {
         PHYSICS = 0,
         MESH,
-        PLAYER_CONTROL,
         PROJECTILE,
         TRANSFORM,
         PLANET,

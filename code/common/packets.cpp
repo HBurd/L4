@@ -16,9 +16,10 @@ ConnectionAckPacket::ConnectionAckPacket(ClientId new_client_id)
 {}
 
 EntityCreatePacket::EntityCreatePacket(
-    EntityHandle entity_handle)
-:
-    handle(entity_handle)
+    EntityHandle entity_handle,
+    ClientId player_client_)
+: handle(entity_handle),
+    player_client(player_client_)
     // caller has to set the entity data
 {}
 
@@ -67,10 +68,10 @@ void get_packets(HbSocket sock, vector<GamePacketIn>* packet_list)
 
 }
 
-size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, uint8_t *data, size_t size)
+size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, ClientId client_id, uint8_t *data, size_t size)
 {
     // TODO this is tricky
-    EntityCreatePacket *create_packet = new (data) EntityCreatePacket(entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx]);
+    EntityCreatePacket *create_packet = new (data) EntityCreatePacket(entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx], client_id);
 
     assert(size > sizeof(EntityCreatePacket));
     create_packet->handle = entity_manager->entity_lists[ref.list_idx].handles[ref.entity_idx];

@@ -16,7 +16,6 @@
 #include "common/entity_initializers.h"
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
-#include "common/PlayerControlComponent.h"
 
 #include "client/player_input.h"
 
@@ -40,7 +39,6 @@ void handle_player_spawn_req(EntityManager *entity_manager, ServerData *server, 
     uint32_t player_components[] = {
         ComponentType::WORLD_SECTOR,
         ComponentType::TRANSFORM,
-        ComponentType::PLAYER_CONTROL,
         ComponentType::TRANSFORM_FOLLOWER
     };
     
@@ -49,8 +47,6 @@ void handle_player_spawn_req(EntityManager *entity_manager, ServerData *server, 
     *player_transform = Transform();
     WorldSector *player_sector = (WorldSector*)entity_manager->lookup_component(player_ref, ComponentType::WORLD_SECTOR);
     *player_sector = WorldSector();
-    PlayerControl *player_control = (PlayerControl*)entity_manager->lookup_component(player_ref, ComponentType::PLAYER_CONTROL);
-    player_control->client_id = packet->header.sender;
     EntityHandle *transform_follower = (EntityHandle*)entity_manager->lookup_component(player_ref, ComponentType::TRANSFORM_FOLLOWER);
     *transform_follower = ship_handle;
 
@@ -59,14 +55,14 @@ void handle_player_spawn_req(EntityManager *entity_manager, ServerData *server, 
     server->clients[packet->header.sender].player_entity = player_handle;
 
     uint8_t *create_packet_data = new uint8_t[2048];
-    size_t create_packet_size = make_entity_create_packet(ship_ref, entity_manager, create_packet_data, 2048);
+    size_t create_packet_size = make_entity_create_packet(ship_ref, entity_manager, INCOMPLETE_ID, create_packet_data, 2048);
     
     server->broadcast(
         GamePacketType::ENTITY_CREATE,
         create_packet_data,
         create_packet_size);
 
-    create_packet_size = make_entity_create_packet(player_ref, entity_manager, create_packet_data, 2048);
+    create_packet_size = make_entity_create_packet(player_ref, entity_manager, packet->header.sender, create_packet_data, 2048);
 
     server->broadcast(
         GamePacketType::ENTITY_CREATE,
@@ -147,7 +143,7 @@ int main(int argc, char* argv[])
 
                             // TODO define this size
                             uint8_t *create_packet_data = new uint8_t[2048];
-                            size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
+                            size_t create_packet_size = make_entity_create_packet(ref, entity_manager, INCOMPLETE_ID, create_packet_data, 2048);
 
                             send_game_packet(
                                 server.sock,
@@ -202,7 +198,7 @@ int main(int argc, char* argv[])
                     EntityRef ref = create_projectile(*ship_transform, entity_manager);
 
                     uint8_t *create_packet_data = new uint8_t[2048];
-                    size_t create_packet_size = make_entity_create_packet(ref, entity_manager, create_packet_data, 2048);
+                    size_t create_packet_size = make_entity_create_packet(ref, entity_manager, INCOMPLETE_ID, create_packet_data, 2048);
                     
                     server.broadcast(
                         GamePacketType::ENTITY_CREATE,
@@ -241,26 +237,25 @@ int main(int argc, char* argv[])
                 Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
                 WorldSector *position_rfs = (WorldSector*)list.components[ComponentType::WORLD_SECTOR];
 
-                PlayerControl *player_controls = nullptr;
-                if (list.supports_component(ComponentType::PLAYER_CONTROL))
-                {
-                    player_controls = (PlayerControl*)list.components[ComponentType::PLAYER_CONTROL];
-                }
-                
                 for (ref.entity_idx = 0; ref.entity_idx < list.size; ref.entity_idx++)
                 {
                     // Some transforms do not have seq nums, so send zero for those
                     uint32_t seq_num = 0;
-                    if (player_controls)
+
+                    // Check if this is a player entity:
+                    for (auto client : server.clients)
                     {
-                        seq_num = server.clients[player_controls[ref.entity_idx].client_id].sequence;
-                        // Hack
-                        if (!server.clients[player_controls[ref.entity_idx].client_id].received_input)
+                        if (list.handles[ref.entity_idx] == client.player_entity)
                         {
-                            continue;
+                            seq_num = client.sequence;
+
+                            // Hack
+                            if (!client.received_input)
+                            {
+                                continue;
+                            }
                         }
                     }
-
 
                     // Send the sync packet
                     TransformSyncPacket transform_sync(

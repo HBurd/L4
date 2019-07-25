@@ -1,5 +1,4 @@
 #include "client/client_logic.h"
-#include "common/PlayerControlComponent.h"
 #include "common/TransformComponent.h"
 #include "common/components.h"
 #include "common/util.h"
@@ -22,8 +21,7 @@ void handle_entity_create(LocalGameData *game, ClientData *client, GamePacketIn 
     // Check if created entity is the player entity
     EntityRef ref = entity_manager->entity_table.lookup_entity(
         packet.packet.packet_data.entity_create.handle);
-    if (ref.is_valid() && entity_manager->entity_lists[ref.list_idx].supports_component(ComponentType::PLAYER_CONTROL)
-        && ((PlayerControl*)entity_manager->lookup_component(ref, ComponentType::PLAYER_CONTROL))->client_id == client->id)
+    if (ref.is_valid() && packet.packet.packet_data.entity_create.player_client == client->id)
     {
         assert(!game->player_handle.is_valid());
 

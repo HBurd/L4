@@ -2,7 +2,6 @@
 #include "common/TransformComponent.h"
 #include "common/PlanetComponent.h"
 #include "common/PhysicsComponent.h"
-#include "common/PlayerControlComponent.h"
 #include "common/ProjectileComponent.h"
 #include "common/renderer.h"
 #include "common/collision.h"
@@ -21,9 +20,6 @@ void init_component_info(ComponentInfo *components, size_t num_components)
                 break;
             case ComponentType::TRANSFORM:
                 components[i].size = sizeof(Transform);
-                break;
-            case ComponentType::PLAYER_CONTROL:
-                components[i].size = sizeof(PlayerControl);
                 break;
             case ComponentType::PLANET:
                 components[i].size = sizeof(Planet);
@@ -54,7 +50,6 @@ const char *component_name(uint32_t type)
     const char *names[ComponentType::NUM_COMPONENT_TYPES] = {};
     names[ComponentType::WORLD_SECTOR]       = "WorldSector";
     names[ComponentType::TRANSFORM]          = "Transform";
-    names[ComponentType::PLAYER_CONTROL]     = "PlayerControl";
     names[ComponentType::PLANET]             = "Planet";
     names[ComponentType::PHYSICS]            = "Physics";
     names[ComponentType::PROJECTILE]         = "Projectile";

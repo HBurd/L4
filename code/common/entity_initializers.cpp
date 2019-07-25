@@ -3,7 +3,6 @@
 #include "common/mesh.h"
 #include "common/components.h"
 #include "common/PlanetComponent.h"
-#include "common/PlayerControlComponent.h"
 #include "common/PhysicsComponent.h"
 #include "common/ProjectileComponent.h"
 #include "common/collision.h"
@@ -50,31 +49,6 @@ EntityRef create_ship(Vec3 position, EntityManager *entity_manager)
     MeshId *mesh = new (entity_manager->lookup_component(ref, ComponentType::MESH)) MeshId;
     *mesh = MeshType::SHIP;
     new (entity_manager->lookup_component(ref, ComponentType::BOUNDING_BOX)) BoundingBox;
-
-    return ref;
-}
-
-EntityRef create_player_ship(Vec3 position, ClientId player, EntityManager *entity_manager)
-{
-    uint32_t components[] = {
-        ComponentType::WORLD_SECTOR,
-        ComponentType::TRANSFORM,
-        ComponentType::PHYSICS,
-        ComponentType::MESH,
-        ComponentType::PLAYER_CONTROL,
-        ComponentType::BOUNDING_BOX
-    };
-    EntityRef ref = entity_manager->create_entity(components, ARRAY_LENGTH(components));
-    
-    // Initialize components
-    new (entity_manager->lookup_component(ref, ComponentType::WORLD_SECTOR)) WorldSector;
-    new (entity_manager->lookup_component(ref, ComponentType::TRANSFORM)) Transform(position);
-    new (entity_manager->lookup_component(ref, ComponentType::PHYSICS)) Physics;
-    MeshId *mesh = new (entity_manager->lookup_component(ref, ComponentType::MESH)) MeshId;
-    *mesh = MeshType::SHIP;
-    PlayerControl *player_control = new (entity_manager->lookup_component(ref, ComponentType::PLAYER_CONTROL)) PlayerControl;
-    player_control->client_id = player;
-
 
     return ref;
 }

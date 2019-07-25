@@ -78,30 +78,12 @@ static void generate_entity_name(
     size_t name_len)
 {
     const EntityListInfo &entity_list = entity_manager->entity_lists[ref.list_idx];
-    if (entity_list.supports_component(ComponentType::PLAYER_CONTROL))
-    {
-        snprintf(
-            name,
-            name_len,
-            "ship (id %u)",
-            entity_list.handles[ref.entity_idx].idx);
-    }
-    else if (entity_list.supports_component(ComponentType::PROJECTILE))
-    {
-        snprintf(
-            name,
-            name_len,
-            "projectile (id %u)",
-            entity_list.handles[ref.entity_idx].idx);
-    }
-    else
-    {
-        snprintf(
-            name,
-            name_len,
-            "celestial body (id %u)",
-            entity_list.handles[ref.entity_idx].idx);
-    }
+    // TODO: This is supposed to give a kind of meaningful namae, ship, satellite etc.
+    snprintf(
+        name,
+        name_len,
+        "satellite body (id %u)",
+        entity_list.handles[ref.entity_idx].idx);
 }
 
 Console::Console(const char *name_)

@@ -32,13 +32,14 @@ struct ConnectionAckPacket
 struct EntityCreatePacket
 {
     EntityHandle handle;
+    ClientId player_client;
     size_t data_size;
     uint8_t entity_data[];
 
-    EntityCreatePacket(EntityHandle entity_handle);
+    EntityCreatePacket(EntityHandle entity_handle, ClientId player_client_);
 };
 
-size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, uint8_t *data, size_t size);
+size_t make_entity_create_packet(EntityRef ref, EntityManager *entity_manager, ClientId player_client, uint8_t *data, size_t size);
 
 struct PlayerSpawnPacket
 {
