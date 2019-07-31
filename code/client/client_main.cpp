@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
                     handle_entity_create(&game, &client, packet);
                     break;
                 case GamePacketType::PHYSICS_SYNC:
-                    handle_physics_sync(&game, &past_inputs, packet);
+                    handle_physics_sync(&game, &past_inputs, client, packet);
                     break;
                 default:
                     // do nothing

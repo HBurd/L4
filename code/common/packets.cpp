@@ -27,11 +27,13 @@ TransformSyncPacket::TransformSyncPacket(
     EntityHandle transform_entity,
     Transform transform,
     WorldSector position_rf_,
-    uint32_t packet_sequence)
+    uint32_t packet_sequence,
+    ClientId sync_client_)
 : entity(transform_entity),
     transform_state(transform),
     position_rf(position_rf_),
-    sequence(packet_sequence)
+    sequence(packet_sequence),
+    sync_client(sync_client_)
 {}
 
 // CLIENT PACKETS

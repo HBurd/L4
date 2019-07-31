@@ -16,7 +16,7 @@
 
 const size_t PIPE_READ_BUFFER_SIZE = 256;
 const unsigned int SERVER_CONNECTION_POLL_TIME_MS = 50;
-const unsigned int MAX_SERVER_CONNECTION_TIME_MS = 2000;
+const unsigned int MAX_SERVER_CONNECTION_TIME_MS = 5000;
 
 #ifdef _WIN32
 void ClientData::create_server(uint16_t port)
@@ -184,7 +184,6 @@ bool ClientData::connect(uint32_t server_ip, uint16_t server_port)
                 nullptr,
                 0);
 
-            // TODO: wrap this for windows support
             hb_sleep(SERVER_CONNECTION_POLL_TIME_MS);
             wait_time += SERVER_CONNECTION_POLL_TIME_MS;
 

@@ -29,7 +29,7 @@ void handle_entity_create(LocalGameData *game, ClientData *client, GamePacketIn 
     }
 }
 
-void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, GamePacketIn packet)
+void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, ClientData client_data, GamePacketIn packet)
 {
     EntityManager *entity_manager = game->entity_manager;
 
@@ -44,8 +44,7 @@ void handle_physics_sync(LocalGameData *game, PlayerInputBuffer *past_inputs, Ga
     WorldSector *position_rf = (WorldSector*)entity_manager->lookup_component(sync_ref, ComponentType::WORLD_SECTOR);
 
     // check if there is a sequence number with this packet
-    // TODO: 0 is actually valid, though nothing breaks if we treat it as representing no seq #.
-    if (packet.packet.packet_data.transform_sync.sequence != 0)
+    if (packet.packet.packet_data.transform_sync.sync_client == client_data.id)
     {
         // if we have received no later transform syncs from the server
         if (packet.packet.packet_data.transform_sync.sequence > past_inputs->last_received_seq_num)

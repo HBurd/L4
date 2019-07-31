@@ -170,6 +170,7 @@ int main(int argc, char* argv[])
                     server.clients[packet.packet.header.sender].sequence =
                         packet.packet.packet_data.control_update.sequence;
                     server.clients[packet.packet.header.sender].received_input = true;
+                    server.clients[packet.packet.header.sender].player_entity = packet.packet.packet_data.control_update.inputs.entity;
 
                     break;
                 }
@@ -241,19 +242,16 @@ int main(int argc, char* argv[])
                 {
                     // Some transforms do not have seq nums, so send zero for those
                     uint32_t seq_num = 0;
+                    ClientId sync_client = INCOMPLETE_ID;
 
                     // Check if this is a player entity:
-                    for (auto client : server.clients)
+                    for (uint32_t client_id = 0; client_id < server.clients.size(); client_id++)
                     {
+                        ClientConnection client = server.clients[client_id];
                         if (list.handles[ref.entity_idx] == client.player_entity)
                         {
                             seq_num = client.sequence;
-
-                            // Hack
-                            if (!client.received_input)
-                            {
-                                continue;
-                            }
+                            sync_client = client_id;
                         }
                     }
 
@@ -262,7 +260,8 @@ int main(int argc, char* argv[])
                         list.handles[ref.entity_idx],
                         transforms[ref.entity_idx],
                         position_rfs[ref.entity_idx],
-                        seq_num);
+                        seq_num,
+                        sync_client);
                     server.broadcast(
                        GamePacketType::PHYSICS_SYNC,
                        &transform_sync,

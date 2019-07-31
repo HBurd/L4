@@ -62,12 +62,14 @@ struct TransformSyncPacket
     Transform transform_state;
     WorldSector position_rf;
     uint32_t sequence;
+    ClientId sync_client;
 
     TransformSyncPacket(
         EntityHandle transform_entity,
         Transform transform,
         WorldSector position_rf_,
-        uint32_t packet_sequence);
+        uint32_t packet_sequence,
+        ClientId sync_client_);
 };
 
 // ===============================
