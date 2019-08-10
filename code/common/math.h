@@ -61,6 +61,8 @@ struct Vec3
     Vec3& operator-=(const Vec3& rhs);
     float norm() const;
     Vec3 normalize() const;
+
+    float *data() { return &x; }
 };
 #pragma pack(pop)
 

@@ -114,7 +114,7 @@ void Console::write(const char *string)
     writen(string, string_len);
 }
 
-/*    Writes string_len bytes of string to the console.
+/*  Writes string_len bytes of string to the console.
     The string will be copied in segments, so that
     no section of the string will be copied past the
     end of the console buffer. If the string is longer
@@ -306,14 +306,12 @@ void component_window_content(void *component, uint32_t type)
         case ComponentType::TRANSFORM:
         {
             Transform *transform = (Transform*)component;
+            ImGui::InputFloat3("Position", transform->position.data());
+            ImGui::InputFloat3("Velocity", transform->velocity.data());
             ImGui::Text(
-                "Position:    (%f, %f, %f)\n"
-                "Velocity:    (%f, %f, %f)\n"
                 "Orientation: (%f, %f, %f, %f)\n"
                 "Omega:       (%f, %f, %f)\n"
                 "Scale:       (%f, %f, %f)\n",
-                transform->position.x, transform->position.y, transform->position.z,
-                transform->velocity.x, transform->velocity.y, transform->velocity.z,
                 transform->orientation.s, transform->orientation.xy, transform->orientation.yz, transform->orientation.zx,
                 transform->angular_velocity.x, transform->angular_velocity.y, transform->angular_velocity.z,
                 transform->scale.x, transform->scale.y, transform->scale.z);
