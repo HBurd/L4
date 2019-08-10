@@ -2,11 +2,6 @@
 #include <iostream>
 #include <cassert>
 
-#ifdef __unix__
-#include <sys/prctl.h>
-#include <signal.h>
-#endif
-
 #include "hec.h"
 
 #include "common/time.h"
@@ -74,12 +69,6 @@ void handle_player_spawn_req(EntityManager *entity_manager, ServerData *server, 
 
 int main(int argc, char* argv[])
 {
-#ifdef __unix__
-    // TODO: doesn't belong here
-    // exit when parent exits
-    prctl(PR_SET_PDEATHSIG, SIGHUP);
-#endif
-
     // parse command line arguments
     uint16_t port;
     {

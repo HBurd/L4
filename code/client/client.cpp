@@ -12,6 +12,8 @@
 #ifdef __unix__
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/prctl.h>
+#include <signal.h>
 #endif
 
 const size_t PIPE_READ_BUFFER_SIZE = 256;
@@ -123,12 +125,15 @@ void ClientData::create_server(uint16_t port)
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
 
+        // exit when parent exits
+        prctl(PR_SET_PDEATHSIG, SIGHUP);
+
         char port_arg[6] = {};   // 2^16 has max 5 digits, plus null terminator
         snprintf(port_arg, sizeof(port_arg), "%d", port);
         // replace process with server process
         execl("L4server", "L4server", port_arg, nullptr);
     }
-    else // we are parent process
+    else // we are parent process (client)
     {
         // close the write end of the pipe and save the read end
         close(pipefd[1]);
