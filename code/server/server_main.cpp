@@ -12,8 +12,6 @@
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
 
-#include "client/player_input.h"
-
 #include "server/server.h"
 
 #undef main

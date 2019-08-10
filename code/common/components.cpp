@@ -3,7 +3,6 @@
 #include "common/PlanetComponent.h"
 #include "common/PhysicsComponent.h"
 #include "common/ProjectileComponent.h"
-#include "common/renderer.h"
 #include "common/collision.h"
 
 #include <cassert>

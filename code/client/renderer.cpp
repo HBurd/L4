@@ -1,4 +1,4 @@
-#include "common/renderer.h"
+#include "client/renderer.h"
 #include "common/util.h"
 #include "GL/glew.h"
 #include <string>

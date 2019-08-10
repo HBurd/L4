@@ -1,5 +1,4 @@
-#ifndef HBMATH_H
-#define HBMATH_H
+#pragma once
 
 const float MATH_PI  = 3.141592653589793238462643f;
 
@@ -138,5 +137,3 @@ Rotor operator*(const Rotor& lhs, const Rotor& rhs);
 // Misc
 // ====
 int modulo(int n, int d); // works for negative numbers, unlike %
-
-#endif // include guard

@@ -5,10 +5,8 @@
 
 #include "hec.h"
 
-#include "common/renderer.h"
 #include "common/time.h"
 #include "common/util.h"
-//#include "common/net.h"
 #include "common/entity_update_step.h"
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
@@ -19,6 +17,7 @@
 #include "client/client.h"
 #include "client/client_logic.h"
 #include "client/player_input.h"
+#include "client/renderer.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
