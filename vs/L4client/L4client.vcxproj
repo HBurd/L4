@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\code\client\keyboard.cpp" />
     <ClCompile Include="..\..\code\client\pipes.cpp" />
     <ClCompile Include="..\..\code\client\player_input.cpp" />
+    <ClCompile Include="..\..\code\client\renderer.cpp" />
     <ClCompile Include="..\..\code\client\ship_controller.cpp" />
     <ClCompile Include="..\..\code\common\collision.cpp" />
     <ClCompile Include="..\..\code\common\components.cpp" />
@@ -38,7 +39,6 @@
     <ClCompile Include="..\..\code\common\PlanetComponent.cpp" />
     <ClCompile Include="..\..\code\common\player_control.cpp" />
     <ClCompile Include="..\..\code\common\projectile.cpp" />
-    <ClCompile Include="..\..\code\common\renderer.cpp" />
     <ClCompile Include="..\..\code\common\time.cpp" />
     <ClCompile Include="..\..\code\common\TransformComponent.cpp" />
     <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp" />
@@ -53,6 +53,7 @@
     <ClInclude Include="..\..\code\client\local_game_data.h" />
     <ClInclude Include="..\..\code\client\pipes.h" />
     <ClInclude Include="..\..\code\client\player_input.h" />
+    <ClInclude Include="..\..\code\client\renderer.h" />
     <ClInclude Include="..\..\code\client\ship_controller.h" />
     <ClInclude Include="..\..\code\common\collision.h" />
     <ClInclude Include="..\..\code\common\components.h" />
@@ -65,11 +66,9 @@
     <ClInclude Include="..\..\code\common\physics.h" />
     <ClInclude Include="..\..\code\common\PhysicsComponent.h" />
     <ClInclude Include="..\..\code\common\PlanetComponent.h" />
-    <ClInclude Include="..\..\code\common\PlayerControlComponent.h" />
     <ClInclude Include="..\..\code\common\player_control.h" />
     <ClInclude Include="..\..\code\common\projectile.h" />
     <ClInclude Include="..\..\code\common\ProjectileComponent.h" />
-    <ClInclude Include="..\..\code\common\renderer.h" />
     <ClInclude Include="..\..\code\common\time.h" />
     <ClInclude Include="..\..\code\common\TransformComponent.h" />
     <ClInclude Include="..\..\code\common\TransformFollowerComponent.h" />

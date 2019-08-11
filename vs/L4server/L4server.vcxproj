@@ -30,7 +30,6 @@
     <ClCompile Include="..\..\code\common\PlanetComponent.cpp" />
     <ClCompile Include="..\..\code\common\player_control.cpp" />
     <ClCompile Include="..\..\code\common\projectile.cpp" />
-    <ClCompile Include="..\..\code\common\renderer.cpp" />
     <ClCompile Include="..\..\code\common\time.cpp" />
     <ClCompile Include="..\..\code\common\TransformComponent.cpp" />
     <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp" />
@@ -51,11 +50,9 @@
     <ClInclude Include="..\..\code\common\physics.h" />
     <ClInclude Include="..\..\code\common\PhysicsComponent.h" />
     <ClInclude Include="..\..\code\common\PlanetComponent.h" />
-    <ClInclude Include="..\..\code\common\PlayerControlComponent.h" />
     <ClInclude Include="..\..\code\common\player_control.h" />
     <ClInclude Include="..\..\code\common\projectile.h" />
     <ClInclude Include="..\..\code\common\ProjectileComponent.h" />
-    <ClInclude Include="..\..\code\common\renderer.h" />
     <ClInclude Include="..\..\code\common\time.h" />
     <ClInclude Include="..\..\code\common\TransformComponent.h" />
     <ClInclude Include="..\..\code\common\TransformFollowerComponent.h" />

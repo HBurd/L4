@@ -30,10 +30,10 @@
     <ClCompile Include="..\..\code\libs\impl_libs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\client\pipes.cpp">
+    <ClCompile Include="..\..\code\client\player_input.cpp">
       <Filter>Source Files\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\client\player_input.cpp">
+    <ClCompile Include="..\..\code\client\renderer.cpp">
       <Filter>Source Files\client</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\client\ship_controller.cpp">
@@ -53,6 +53,18 @@
     </ClCompile>
     <ClCompile Include="..\..\code\client\keyboard.cpp">
       <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\client\pipes.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\player_control.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\projectile.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\code\common\time.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\common\TransformComponent.cpp">
       <Filter>Source Files\common</Filter>
@@ -90,21 +102,21 @@
     <ClCompile Include="..\..\code\common\PlanetComponent.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\common\player_control.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\projectile.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\renderer.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\time.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\client\keyboard.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\local_game_data.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\pipes.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\code\client\player_input.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\client\renderer.h">
       <Filter>Header Files\client</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\client\ship_controller.h">
@@ -119,14 +131,29 @@
     <ClInclude Include="..\..\code\client\gui.h">
       <Filter>Header Files\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\client\keyboard.h">
-      <Filter>Header Files\client</Filter>
+    <ClInclude Include="..\..\code\common\player_control.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\client\local_game_data.h">
-      <Filter>Header Files\client</Filter>
+    <ClInclude Include="..\..\code\common\projectile.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\client\pipes.h">
-      <Filter>Header Files\client</Filter>
+    <ClInclude Include="..\..\code\common\ProjectileComponent.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\time.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\TransformComponent.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\util.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\code\common\collision.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\common\components.h">
       <Filter>Header Files\common</Filter>
@@ -156,36 +183,6 @@
       <Filter>Header Files\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\common\PlanetComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\player_control.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\PlayerControlComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\projectile.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\ProjectileComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\renderer.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\time.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\TransformComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\util.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\collision.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
   </ItemGroup>
