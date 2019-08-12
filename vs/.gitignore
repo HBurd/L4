@@ -1,5 +1,7 @@
 .vs/
 L4client/x64/
 L4server/x64/
+L4common/x64/
+L4graphics/x64/
 x64/
 

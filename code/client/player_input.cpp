@@ -72,7 +72,7 @@ PlayerInputs process_player_inputs(const LocalGameData &game)
         // Set orientation in player input
         EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
         Transform *player_transform = (Transform*)entity_manager->lookup_component(player, ComponentType::TRANSFORM);
-        inputs.player.orientation = player_transform->orientation * Rotor::yaw(PLAYER_LOOK_FACTOR * game.input.mouse.dx) * Rotor::pitch(PLAYER_LOOK_FACTOR * game.input.mouse.dy);;
+        inputs.player.orientation = player_transform->orientation * Rotor::yaw(PLAYER_LOOK_FACTOR * game.input.mouse.dx) * Rotor::pitch(PLAYER_LOOK_FACTOR * game.input.mouse.dy);
 
         inputs.player.movement = player_movement;
         inputs.type = PlayerInputs::InputType::PLAYER;

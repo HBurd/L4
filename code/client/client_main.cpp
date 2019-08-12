@@ -120,31 +120,33 @@ int main(int argc, char *argv[])
     {
         game.input.keyboard.clear_keydowns();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            switch (event.type)
+            SDL_Event event;
+            while (SDL_PollEvent(&event))
             {
-                case SDL_QUIT:
-                    running = false;
-                    break;
-                case SDL_WINDOWEVENT:
+                ImGui_ImplSDL2_ProcessEvent(&event);
+                switch (event.type)
                 {
-                    unsigned int new_width, new_height;
-                    SDL_GetWindowSize(
-                        window, 
-                        (int*)&new_width,
-                        (int*)&new_height);
-                    renderer.set_screen_size(new_width, new_height);
-                    break;
+                    case SDL_QUIT:
+                        running = false;
+                        break;
+                    case SDL_WINDOWEVENT:
+                    {
+                        unsigned int new_width, new_height;
+                        SDL_GetWindowSize(
+                            window, 
+                            (int*)&new_width,
+                            (int*)&new_height);
+                        renderer.set_screen_size(new_width, new_height);
+                        break;
+                    }
+                    case SDL_KEYUP:
+                        game.input.keyboard.handle_keyup(event.key.keysym.sym);
+                        break;
+                    case SDL_KEYDOWN:
+                        game.input.keyboard.handle_keydown(event.key.keysym.sym);
+                        break;
                 }
-                case SDL_KEYUP:
-                    game.input.keyboard.handle_keyup(event.key.keysym.sym);
-                    break;
-                case SDL_KEYDOWN:
-                    game.input.keyboard.handle_keydown(event.key.keysym.sym);
-                    break;
             }
         }
 
@@ -155,7 +157,9 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         // Mouse wrapping
-        IMDBG(ImGui::Checkbox("Mouse lock", &mouse_lock));
+        ImGui::Begin("Debug");
+        ImGui::Checkbox("Mouse lock", &mouse_lock);
+        ImGui::End();
         if (mouse_lock && SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)
         {
             int new_x, new_y;
@@ -313,12 +317,12 @@ int main(int argc, char *argv[])
         {
             PlayerInputs player_inputs = process_player_inputs(game);
 
-            IMDBG(
-                if (ImGui::Button("Detach"))
-                {
-                    player_inputs.ship.leave_command_chair = true;
-                }
-            );
+            ImGui::Begin("Debug");
+            if (ImGui::Button("Detach"))
+            {
+                player_inputs.ship.leave_command_chair = true;
+            }
+            ImGui::End();
 
             player_inputs.player.enter_ship = enter_ship;
 

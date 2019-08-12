@@ -13,177 +13,54 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\common">
-      <UniqueIdentifier>{0403013a-7c3c-4f36-89b9-6ecb6ff04f12}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\client">
-      <UniqueIdentifier>{a8aa9b50-e042-45a7-b308-d12aa00ddb19}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\common">
-      <UniqueIdentifier>{0cc2af8f-3573-4f53-8f8e-d4e58b2b4f80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\client">
-      <UniqueIdentifier>{d9ca8034-c71d-4b1c-a359-b861d3537032}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\libs\impl_libs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\client\player_input.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\renderer.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\ship_controller.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\code\client\client.cpp">
-      <Filter>Source Files\client</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\client\client_logic.cpp">
-      <Filter>Source Files\client</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\client\client_main.cpp">
-      <Filter>Source Files\client</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\client\gui.cpp">
-      <Filter>Source Files\client</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\client\keyboard.cpp">
-      <Filter>Source Files\client</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\code\client\pipes.cpp">
-      <Filter>Source Files\client</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\common\player_control.cpp">
-      <Filter>Source Files\common</Filter>
+    <ClCompile Include="..\..\code\client\player_input.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\code\common\projectile.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\time.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformComponent.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\util.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\collision.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\components.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\entity_initializers.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\entity_update_step.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\math.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\net.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\packets.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\physics.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\code\common\PlanetComponent.cpp">
-      <Filter>Source Files\common</Filter>
+    <ClCompile Include="..\..\code\client\ship_controller.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\client\keyboard.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\client\local_game_data.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\client\pipes.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\client\player_input.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\client\renderer.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\client\ship_controller.h">
-      <Filter>Header Files\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\code\client\client.h">
-      <Filter>Header Files\client</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\client\client_logic.h">
-      <Filter>Header Files\client</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\code\client\gui.h">
-      <Filter>Header Files\client</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\common\player_control.h">
-      <Filter>Header Files\common</Filter>
+    <ClInclude Include="..\..\code\client\local_game_data.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\common\projectile.h">
-      <Filter>Header Files\common</Filter>
+    <ClInclude Include="..\..\code\client\pipes.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\common\ProjectileComponent.h">
-      <Filter>Header Files\common</Filter>
+    <ClInclude Include="..\..\code\client\player_input.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\code\common\time.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\TransformComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\util.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\collision.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\components.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\entity_initializers.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\entity_update_step.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\math.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\mesh.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\net.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\packets.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\physics.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\PhysicsComponent.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\code\common\PlanetComponent.h">
-      <Filter>Header Files\common</Filter>
+    <ClInclude Include="..\..\code\client\ship_controller.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

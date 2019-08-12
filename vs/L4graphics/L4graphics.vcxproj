@@ -18,29 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\code\client\client.cpp" />
-    <ClCompile Include="..\..\code\client\client_logic.cpp" />
-    <ClCompile Include="..\..\code\client\client_main.cpp" />
-    <ClCompile Include="..\..\code\client\gui.cpp" />
-    <ClCompile Include="..\..\code\client\pipes.cpp" />
-    <ClCompile Include="..\..\code\client\player_input.cpp" />
-    <ClCompile Include="..\..\code\client\ship_controller.cpp" />
-    <ClCompile Include="..\..\code\libs\impl_libs.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\code\client\client.h" />
-    <ClInclude Include="..\..\code\client\client_logic.h" />
-    <ClInclude Include="..\..\code\client\gui.h" />
-    <ClInclude Include="..\..\code\client\local_game_data.h" />
-    <ClInclude Include="..\..\code\client\pipes.h" />
-    <ClInclude Include="..\..\code\client\player_input.h" />
-    <ClInclude Include="..\..\code\client\ship_controller.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{0E057F77-858C-4368-8606-59D45F256C8D}</ProjectGuid>
-    <RootNamespace>L4client</RootNamespace>
+    <ProjectGuid>{4CD38118-EEFC-495C-8F66-15E3D56522E8}</ProjectGuid>
+    <RootNamespace>L4graphics</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -58,7 +39,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -100,7 +81,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(TargetDir)\L4common.lib;$(TargetDir)\L4graphics.lib;SDL2.lib;glew32.lib;opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;glew32.lib;opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -144,6 +125,15 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\code\client\keyboard.h" />
+    <ClInclude Include="..\..\code\client\renderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\code\client\keyboard.cpp" />
+    <ClCompile Include="..\..\code\client\renderer.cpp" />
+    <ClCompile Include="..\..\code\libs\impl_libs.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

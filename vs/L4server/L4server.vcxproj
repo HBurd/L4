@@ -19,44 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\common\collision.cpp" />
-    <ClCompile Include="..\..\code\common\components.cpp" />
-    <ClCompile Include="..\..\code\common\entity_initializers.cpp" />
-    <ClCompile Include="..\..\code\common\entity_update_step.cpp" />
-    <ClCompile Include="..\..\code\common\math.cpp" />
-    <ClCompile Include="..\..\code\common\net.cpp" />
-    <ClCompile Include="..\..\code\common\packets.cpp" />
-    <ClCompile Include="..\..\code\common\physics.cpp" />
-    <ClCompile Include="..\..\code\common\PlanetComponent.cpp" />
-    <ClCompile Include="..\..\code\common\player_control.cpp" />
-    <ClCompile Include="..\..\code\common\projectile.cpp" />
-    <ClCompile Include="..\..\code\common\time.cpp" />
-    <ClCompile Include="..\..\code\common\TransformComponent.cpp" />
-    <ClCompile Include="..\..\code\common\TransformFollowerComponent.cpp" />
-    <ClCompile Include="..\..\code\common\util.cpp" />
     <ClCompile Include="..\..\code\libs\impl_libs.cpp" />
     <ClCompile Include="..\..\code\server\server.cpp" />
     <ClCompile Include="..\..\code\server\server_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\common\collision.h" />
-    <ClInclude Include="..\..\code\common\components.h" />
-    <ClInclude Include="..\..\code\common\entity_initializers.h" />
-    <ClInclude Include="..\..\code\common\entity_update_step.h" />
-    <ClInclude Include="..\..\code\common\math.h" />
-    <ClInclude Include="..\..\code\common\mesh.h" />
-    <ClInclude Include="..\..\code\common\net.h" />
-    <ClInclude Include="..\..\code\common\packets.h" />
-    <ClInclude Include="..\..\code\common\physics.h" />
-    <ClInclude Include="..\..\code\common\PhysicsComponent.h" />
-    <ClInclude Include="..\..\code\common\PlanetComponent.h" />
-    <ClInclude Include="..\..\code\common\player_control.h" />
-    <ClInclude Include="..\..\code\common\projectile.h" />
-    <ClInclude Include="..\..\code\common\ProjectileComponent.h" />
-    <ClInclude Include="..\..\code\common\time.h" />
-    <ClInclude Include="..\..\code\common\TransformComponent.h" />
-    <ClInclude Include="..\..\code\common\TransformFollowerComponent.h" />
-    <ClInclude Include="..\..\code\common\util.h" />
     <ClInclude Include="..\..\code\server\server.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -118,11 +85,12 @@
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)..\include\SDL\windows\SDL;$(SolutionDir)..\include\SDL\windows;$(SolutionDir)..\code;$(SolutionDir)..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SERVER_GRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;glew32.lib;opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(TargetDir)\L4common.lib;$(TargetDir)\L4graphics.lib;SDL2.lib;glew32.lib;opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
