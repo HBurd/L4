@@ -1,7 +1,11 @@
 .vs/
 L4client/x64/
+L4client/L4client.vcxproj.user
 L4server/x64/
+L4server/L4server.vcxproj.user
 L4common/x64/
+L4common/L4common.vcxproj.user
 L4graphics/x64/
+L4graphics/L4graphics.vcxproj.user
 x64/
 
