@@ -22,7 +22,6 @@
     <ClCompile Include="..\..\code\client\client.cpp" />
     <ClCompile Include="..\..\code\client\client_logic.cpp" />
     <ClCompile Include="..\..\code\client\client_main.cpp" />
-    <ClCompile Include="..\..\code\client\gui.cpp" />
     <ClCompile Include="..\..\code\client\pipes.cpp" />
     <ClCompile Include="..\..\code\client\player_input.cpp" />
     <ClCompile Include="..\..\code\client\ship_controller.cpp" />
@@ -31,7 +30,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\code\client\client.h" />
     <ClInclude Include="..\..\code\client\client_logic.h" />
-    <ClInclude Include="..\..\code\client\gui.h" />
     <ClInclude Include="..\..\code\client\local_game_data.h" />
     <ClInclude Include="..\..\code\client\pipes.h" />
     <ClInclude Include="..\..\code\client\player_input.h" />

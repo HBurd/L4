@@ -16,6 +16,7 @@
 // TODO: probably belongs in a different directory now that server uses this
 #include "client/renderer.h"
 #include "client/keyboard.h"
+#include "client/gui.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
@@ -121,12 +122,15 @@ int main(int argc, char* argv[])
     {
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         const char* glsl_version = "#version 330";
         ImGui_ImplSDL2_InitForOpenGL(window, gl_ctxt);
         ImGui_ImplOpenGL3_Init(glsl_version);
         ImGui::StyleColorsDark();
     }
+
+    EntityInspectWindows entity_inspector;
 
     Input input;
     bool mouse_lock = false;
@@ -224,6 +228,8 @@ int main(int argc, char* argv[])
                 SDL_WarpMouseInWindow(window, input.mouse.x, input.mouse.y);
             }
         }
+
+        entity_inspector.draw(*entity_manager);
 
         Vec3 camera_velocity;
         if (input.keyboard.held.a) camera_velocity += Vec3(-1.0f, 0.0f, 0.0f);

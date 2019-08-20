@@ -306,8 +306,15 @@ void component_window_content(void *component, uint32_t type)
         case ComponentType::TRANSFORM:
         {
             Transform *transform = (Transform*)component;
-            ImGui::InputFloat3("Position", transform->position.data());
-            ImGui::InputFloat3("Velocity", transform->velocity.data());
+            Transform transform_copy = *transform;
+            if (ImGui::InputFloat3("Position", transform_copy.position.data(), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                transform->position = transform_copy.position;
+            }
+            if (ImGui::InputFloat3("Velocity", transform_copy.velocity.data(), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                transform->velocity = transform_copy.velocity;
+            }
             ImGui::Text(
                 "Orientation: (%f, %f, %f, %f)\n"
                 "Omega:       (%f, %f, %f)\n"
@@ -345,7 +352,7 @@ void component_window_content(void *component, uint32_t type)
     }
 }
 
-void EntityInspectWindows::draw(const EntityManager &entity_manager)
+void EntityInspectWindows::draw(EntityManager &entity_manager)
 {
     // Draw the entity select window
     ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -371,31 +378,44 @@ void EntityInspectWindows::draw(const EntityManager &entity_manager)
     ref = entity_manager.entity_table.lookup_entity(selected_entity);
     if (ref.is_valid())
     {
+        Array<uint32_t, ComponentType::NUM_COMPONENT_TYPES> addable_components;
+
         // Draw the entity info window
         ImGui::Begin("Entity Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Components:");
         for (uint32_t i = 0; i < ComponentType::NUM_COMPONENT_TYPES; i++)
         {
             if (entity_manager.entity_lists[ref.list_idx].components[i])
             {
-                bool print_component = BF_READ(selected_components, i);
-                ImGui::Checkbox(component_name(i), &print_component);
-                BF_WRITE(selected_components, i, print_component);
+                if (ImGui::TreeNode(component_name(i)))
+                {
+                    uint32_t component_size = entity_manager.component_info[i].size;
+                    ImGui::Text("Size (bytes): %u", component_size);
+                    component_window_content(entity_manager.lookup_component(ref, i), i);
+                    if (ImGui::Button("Remove Component"))
+                    {
+                        entity_manager.remove_component(&ref, i);
+                    }
+                    ImGui::TreePop();
+                }
             }
-        }
-        ImGui::End();
-
-        // Draw the component info windows
-        for (uint32_t i = 0; i < ComponentType::NUM_COMPONENT_TYPES; i++)
-        {
-            if (BF_READ(selected_components, i) && entity_manager.entity_lists[ref.list_idx].components[i])
+            else
             {
-                uint32_t component_size = entity_manager.component_info[i].size;
-                ImGui::Begin(component_name(i), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-                ImGui::Text("Size (bytes): %u", component_size);
-                component_window_content(entity_manager.lookup_component(ref, i), i);
-                ImGui::End();
+                addable_components.push(i);
             }
         }
+
+        if (ImGui::BeginCombo("##Add Component", "Add Component"))
+        {
+            for (uint32_t i = 0; i < addable_components.size; i++)
+            {
+                if (ImGui::Selectable(component_name(addable_components[i])))
+                {
+                    entity_manager.add_component(&ref, addable_components[i]);
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::End();
     }
 }

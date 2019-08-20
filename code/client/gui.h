@@ -14,8 +14,6 @@ const uint16_t DEFAULT_SERVER_PORT = 4444;
 
 struct MainMenu
 {
-    //bool draw_main_menu = true;
-
     // draw the server create menu, or otherwise the connect menu
     bool is_server = true;
 
@@ -29,7 +27,6 @@ struct MainMenu
 
 struct SpawnMenu
 {
-    //bool draw_spawn_menu = false;
     Vec3 coords;
 
     bool draw();
@@ -38,9 +35,9 @@ struct SpawnMenu
 struct EntityInspectWindows
 {
     EntityHandle selected_entity;
-    uint32_t selected_components[BF_SIZE(uint32_t, ComponentType::NUM_COMPONENT_TYPES)] = {};
+    int selected_add_component = 0;
 
-    void draw(const EntityManager &entity_manager);
+    void draw(EntityManager &entity_manager);
 };
 
 struct Console
@@ -63,7 +60,3 @@ bool draw_guidance_menu(
     const EntityManager *entity_manager,
     EntityHandle player_handle,
     TrackingState *tracking);
-
-void draw_entity_select_menu(EntityHandle *selected_entity, const EntityManager &entity_manager);
-
-void draw_entity_info(EntityHandle handle, uint32_t *selected_component, const EntityManager &entity_manager);

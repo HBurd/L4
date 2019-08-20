@@ -126,10 +126,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\client\gui.h" />
     <ClInclude Include="..\..\code\client\keyboard.h" />
     <ClInclude Include="..\..\code\client\renderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\client\gui.cpp" />
     <ClCompile Include="..\..\code\client\keyboard.cpp" />
     <ClCompile Include="..\..\code\client\renderer.cpp" />
     <ClCompile Include="..\..\code\libs\impl_libs.cpp" />

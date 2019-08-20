@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <assert.h>
 
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof (*x))
 
@@ -15,6 +16,29 @@
 #define BF_SET(bf, bit)    ((bf)[BF_INDEX(bf, bit)] |= 1 << BF_OFFSET(bf, bit))
 #define BF_RESET(bf, bit)  ((bf)[BF_INDEX(bf, bit)] &= ~(1 << BF_OFFSET(bf, bit)))
 #define BF_WRITE(bf, bit, val) BF_RESET(bf, bit); val ? BF_SET(bf, bit) : 0
+
+template <typename T, uint32_t max_size>
+struct Array
+{
+    uint32_t size = 0;
+    T data[max_size];
+    void push(T element)
+    {
+        assert(size < max_size);
+        data[size++] = element;
+    }
+
+    T pop()
+    {
+        assert(size);
+        return data[--size];
+    }
+
+    T& operator[](uint32_t idx)
+    {
+        return data[idx];
+    }
+};
 
 // TODO: probably doesn't belong here
 // returns host byte order
