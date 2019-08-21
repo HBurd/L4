@@ -19,7 +19,7 @@ using std::vector;
 static GLint compile_shader(const char* filename, GLuint shader_type)
 {
     std::ifstream shader_file;
-    shader_file.open(filename, std::ios::ate);
+    shader_file.open(filename, std::ios::ate | std::ios::binary);
     size_t file_len = shader_file.tellg();
     GLchar* shader_text = (GLchar*) malloc(file_len + 1); // +1 for null terminator
     shader_file.seekg(0, std::ios::beg);
@@ -35,18 +35,23 @@ static GLint compile_shader(const char* filename, GLuint shader_type)
 
     free(shader_text);
 
+    GLint log_size = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_size);
+    if (log_size > 1)
+    {
+        GLchar* info_log = (GLchar*)malloc(log_size);
+        glGetShaderInfoLog(shader, log_size, NULL, info_log);
+        cout << filename  << " info log: "
+             << info_log
+             << endl;
+        free(info_log);
+    }
+
     GLint success = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (success == GL_FALSE)
     {
-        GLint log_size = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_size);
-        GLchar* info_log = (GLchar*)malloc(log_size);
-        glGetShaderInfoLog(shader, log_size, NULL, info_log);
-        cout << "Shader compilation failed with the following error message: "
-             << info_log
-             << endl;
-        free(info_log);
+        cout << "Shader compilation failed!" << std::endl;
     }
 
     return shader;
@@ -342,7 +347,7 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
         }
     }
 
-    skybox_texture = load_texture("resources/textures/skymap3.png");
+    skybox_texture = load_texture("resources/textures/skybox4.png");
     skybox_mesh = MeshType::SKYBOX;
 }
 

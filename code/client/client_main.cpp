@@ -32,17 +32,17 @@ using std::vector;
 
 const double TIMESTEP = 1.0 / 60.0;
 
-const int INITIAL_WINDOW_WIDTH = 800;
-const int INITIAL_WINDOW_HEIGHT = 600;
-
 int main(int argc, char *argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window* window = SDL_CreateWindow(
         "L4",
-        20, 20, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT,
-        SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        800, 600,
+        SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+
+    assert(window);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -50,12 +50,18 @@ int main(int argc, char *argv[])
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
     SDL_GLContext gl_ctxt = SDL_GL_CreateContext(window);
 
-    Renderer renderer(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
- 
+    int window_width, window_height;
+    SDL_GetWindowSize(window, &window_width, &window_height);
+    Renderer renderer(window_width, window_height);
+
     // Initialize ImGui
     {
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        ImFont *niceFont = io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Medium.ttf", 16);
+        io.FontDefault = niceFont;
 
         const char* glsl_version = "#version 330";
         ImGui_ImplSDL2_InitForOpenGL(window, gl_ctxt);
@@ -157,9 +163,7 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         // Mouse wrapping
-        ImGui::Begin("Debug");
         ImGui::Checkbox("Mouse lock", &mouse_lock);
-        ImGui::End();
         if (mouse_lock && SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)
         {
             int new_x, new_y;
@@ -317,12 +321,10 @@ int main(int argc, char *argv[])
         {
             PlayerInputs player_inputs = process_player_inputs(game);
 
-            ImGui::Begin("Debug");
             if (ImGui::Button("Detach"))
             {
                 player_inputs.ship.leave_command_chair = true;
             }
-            ImGui::End();
 
             player_inputs.player.enter_ship = enter_ship;
 
@@ -412,6 +414,8 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Draw bounding boxes
+        /*
         for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
             EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
@@ -424,6 +428,7 @@ int main(int argc, char *argv[])
                 renderer.draw_bounding_box(boxes[entity_idx], reference_frames[entity_idx]);
             }
         }
+        */
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

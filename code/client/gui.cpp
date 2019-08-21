@@ -354,34 +354,44 @@ void component_window_content(void *component, uint32_t type)
 
 void EntityInspectWindows::draw(EntityManager &entity_manager)
 {
+    EntityRef ref;
+
     // Draw the entity select window
     ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-    EntityRef ref;
-    for (ref.list_idx = 0; ref.list_idx < entity_manager.entity_lists.size(); ref.list_idx++)
+    if (ImGui::ListBoxHeader("##Select Entity"))
     {
-        for (ref.entity_idx = 0; ref.entity_idx < entity_manager.entity_lists[ref.list_idx].size; ref.entity_idx++)
+        for (ref.list_idx = 0; ref.list_idx < entity_manager.entity_lists.size(); ref.list_idx++)
         {
-            EntityHandle handle = entity_manager.entity_lists[ref.list_idx].handles[ref.entity_idx];
-            char handle_string[17];
-            entity_handle_string(handle, handle_string);
-            if (ImGui::Button(handle_string))
+            for (ref.entity_idx = 0; ref.entity_idx < entity_manager.entity_lists[ref.list_idx].size; ref.entity_idx++)
             {
-                selected_entity = handle;
+                EntityHandle handle = entity_manager.entity_lists[ref.list_idx].handles[ref.entity_idx];
+                char handle_string[17];
+                entity_handle_string(handle, handle_string);
+                bool selected = selected_entity == handle;
+                if (ImGui::Selectable(handle_string, selected))
+                {
+                    selected_entity = selected ? EntityHandle() : handle;
+                }
             }
         }
+        ImGui::ListBoxFooter();
     }
 
     ImGui::End();
 
+    // Draw the entity info window
+    ImGui::Begin("Entity Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
     // Lookup selected entity
     ref = entity_manager.entity_table.lookup_entity(selected_entity);
-    if (ref.is_valid())
+    if (!ref.is_valid())
+    {
+        ImGui::Text("Select an entity");
+    }
+    else
     {
         Array<uint32_t, ComponentType::NUM_COMPONENT_TYPES> addable_components;
-
-        // Draw the entity info window
-        ImGui::Begin("Entity Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         for (uint32_t i = 0; i < ComponentType::NUM_COMPONENT_TYPES; i++)
         {
             if (entity_manager.entity_lists[ref.list_idx].components[i])
@@ -416,6 +426,7 @@ void EntityInspectWindows::draw(EntityManager &entity_manager)
             ImGui::EndCombo();
         }
 
-        ImGui::End();
     }
+
+    ImGui::End();
 }
