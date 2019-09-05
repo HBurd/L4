@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "common/net.h"
 #include "hec.h"
 #include "common/math.h"

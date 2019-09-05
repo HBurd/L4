@@ -13,7 +13,7 @@ struct ClientConnection
     HbSockaddr addr;
     EntityHandle player_entity;
     bool received_input = false;
-    uint32_t sequence;
+    uint32_t sequence = 0;
     PlayerInputs inputs;
 };
 
