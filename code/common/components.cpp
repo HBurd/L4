@@ -4,6 +4,7 @@
 #include "common/PhysicsComponent.h"
 #include "common/ProjectileComponent.h"
 #include "common/collision.h"
+#include "common/mesh.h"
 
 #include <cassert>
 #include <cinttypes>

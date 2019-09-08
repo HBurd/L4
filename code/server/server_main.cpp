@@ -11,6 +11,7 @@
 #include "common/entity_initializers.h"
 #include "common/components.h"
 #include "common/TransformFollowerComponent.h"
+#include "common/physics.h"
 
 #ifdef SERVER_GRAPHICS
 // TODO: probably belongs in a different directory now that server uses this
@@ -27,6 +28,8 @@ const float PLAYER_LOOK_FACTOR = 0.005f;
 #endif
 
 #include "server/server.h"
+
+#include "ccd/ccd.h"
 
 #undef main
 
@@ -138,6 +141,9 @@ int main(int argc, char* argv[])
 
     vector<GamePacketIn> game_packets;
 
+    ccd_t ccd;
+    CCD_INIT(&ccd);
+
     ComponentInfo components[ComponentType::NUM_COMPONENT_TYPES];
     init_component_info(components, ARRAY_LENGTH(components));
 
@@ -147,6 +153,7 @@ int main(int argc, char* argv[])
             ARRAY_LENGTH(components));
 
     create_planet(Vec3(0.0f, 0.0f, -1005.0f), 1000.0f, 10000.0f, entity_manager);
+    create_ship(Vec3(0.0f, 0.0f, -10.0f), entity_manager);
  
     TimeKeeper time_keeper;
 
@@ -396,6 +403,133 @@ int main(int argc, char* argv[])
             }
         }
 
+        // TEMPORARY: We're just gonna loop over every pair of bounding boxes and see if they intersect
+        {
+            ccd.support1 = box_support;
+            ccd.support2 = box_support;
+            ccd.max_iterations = 100;
+            ccd.epa_tolerance = 0.0001f;
+
+            EntityRef ref1;
+            for (ref1.list_idx = 0; ref1.list_idx < entity_manager->entity_lists.size(); ref1.list_idx++)
+            {
+                EntityListInfo& list1 = entity_manager->entity_lists[ref1.list_idx];
+
+                if (!list1.supports_component(ComponentType::TRANSFORM)) continue;
+                Transform *transforms1 = (Transform*)list1.components[ComponentType::TRANSFORM];
+
+                if (!list1.supports_component(ComponentType::WORLD_SECTOR)) continue;
+                WorldSector *position_rfs1 = (WorldSector*)list1.components[ComponentType::WORLD_SECTOR];
+
+                if (!list1.supports_component(ComponentType::MESH)) continue;
+                MeshId *meshes1 = (MeshId*)list1.components[ComponentType::MESH];
+
+                if (!list1.supports_component(ComponentType::PHYSICS)) continue;
+                Physics *physics1 = (Physics*)list1.components[ComponentType::PHYSICS];
+
+                EntityRef ref2;
+                for (ref2.list_idx = ref1.list_idx; ref2.list_idx < entity_manager->entity_lists.size(); ref2.list_idx++)
+                {
+                    EntityListInfo& list2 = entity_manager->entity_lists[ref2.list_idx];
+
+                    if (!list2.supports_component(ComponentType::TRANSFORM)) continue;
+                    Transform *transforms2 = (Transform*)list2.components[ComponentType::TRANSFORM];
+
+                    if (!list2.supports_component(ComponentType::WORLD_SECTOR)) continue;
+                    WorldSector *position_rfs2 = (WorldSector*)list2.components[ComponentType::WORLD_SECTOR];
+
+                    if (!list2.supports_component(ComponentType::MESH)) continue;
+                    MeshId *meshes2 = (MeshId*)list2.components[ComponentType::MESH];
+
+                    if (!list2.supports_component(ComponentType::PHYSICS)) continue;
+                    Physics *physics2 = (Physics*)list2.components[ComponentType::PHYSICS];
+
+                    // We now have a pair of entity lists that we can look for pairs of entities in
+                    for (ref1.entity_idx = 0; ref1.entity_idx < list1.size; ref1.entity_idx++)
+                    {
+                        uint32_t starting_entity_idx = 0;
+                        if (ref1.list_idx == ref2.list_idx)
+                        {
+                            starting_entity_idx = ref1.entity_idx + 1;
+                        }
+                        for (ref2.entity_idx = starting_entity_idx; ref2.entity_idx < list2.size; ref2.entity_idx++)
+                        {
+                            if (ref1 == ref2) continue;
+
+                            Transform *t1 = &transforms1[ref1.entity_idx];
+                            Transform *t2 = &transforms2[ref2.entity_idx];
+                            WorldSector *rf1 = &position_rfs1[ref1.entity_idx];
+                            WorldSector *rf2 = &position_rfs2[ref2.entity_idx];
+                            Physics *p1 = &physics1[ref1.entity_idx];
+                            Physics *p2 = &physics2[ref2.entity_idx];
+
+                            BoundingBoxData bbox_data1;
+                            bbox_data1.bbox = &renderer.meshes[meshes1[ref1.entity_idx]].bounding_box;
+                            bbox_data1.transform = t1;
+                            bbox_data1.position_rf = rf1;
+
+                            BoundingBoxData bbox_data2;
+                            bbox_data2.bbox = &renderer.meshes[meshes2[ref2.entity_idx]].bounding_box;
+                            bbox_data2.transform = t2;
+                            bbox_data2.position_rf = rf2;
+
+                            float depth;
+                            Vec3 dir, pos;
+                            if (!ccdGJKPenetration(&bbox_data1,
+                                                   &bbox_data2,
+                                                   &ccd,
+                                                   &depth,
+                                                   reinterpret_cast<ccd_vec3_t*>(&dir),
+                                                   reinterpret_cast<ccd_vec3_t*>(&pos)))
+                            {
+                                dir = dir.normalize();
+                                // find impact speed
+                                Vec3 vr12;
+                                {
+                                    // TODO: definitely bug with angular velocity
+                                    Vec3 w1 = t1->angular_velocity;
+                                    float temp = w1.x;
+                                    w1.x = w1.z;
+                                    w1.z = w1.y;
+                                    w1.y = temp;
+                                    Vec3 v1 = t1->velocity + (pos - t1->position, w1);
+
+                                    // TODO: definitely bug with angular velocity
+                                    Vec3 w2 = t2->angular_velocity;
+                                    temp = w2.x;
+                                    w2.x = w2.z;
+                                    w2.z = w2.y;
+                                    w2.y = temp;
+                                    Vec3 v2 = t2->velocity + (pos - t2->position, w2);
+
+                                    vr12 = v1 - v2;
+                                }
+
+                                // Calculate reaction impulse magnitude (see wikipedia page for collision response)
+                                float j;
+                                {
+                                    float vr12_normal = dot(vr12, dir);
+                                    float m1 = p1->mass;
+                                    float m2 = p2->mass;
+                                    float I1 = p1->angular_mass;
+                                    float I2 = p2->angular_mass;
+                                    Vec3 r1 = pos - t1->position;
+                                    Vec3 r2 = pos - t2->position;
+                                    j = -2 * vr12_normal / (1.0f / m1 + 1.0f / m2 + dot((1.0f / I1) * cross (r1, dir)
+                                                                                            + (1.0f / I2) * cross(r2, dir),
+                                                                                        dir));
+                                }
+
+                                apply_offset_impulse(j * dir, pos - t1->position, &t1->velocity, &t1->angular_velocity, physics1[ref1.entity_idx].mass, physics1[ref1.entity_idx].angular_mass);
+                                apply_offset_impulse(-j * dir, pos - t2->position, &t2->velocity, &t2->angular_velocity, physics2[ref2.entity_idx].mass, physics2[ref2.entity_idx].angular_mass);
+                                t1->position += -depth * dir;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 #ifdef SERVER_GRAPHICS
         renderer.clear();
         renderer.prep();
@@ -428,12 +562,31 @@ int main(int argc, char* argv[])
             }
         }
 
+        // Draw bounding boxes
+        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
+        {
+            EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
+
+            if (!entity_list.supports_component(ComponentType::TRANSFORM)) continue;
+            Transform *transforms = (Transform*)entity_list.components[ComponentType::TRANSFORM];
+
+            if (!entity_list.supports_component(ComponentType::WORLD_SECTOR)) continue;
+            WorldSector *reference_frames = (WorldSector*)entity_list.components[ComponentType::WORLD_SECTOR];
+
+            if (!entity_list.supports_component(ComponentType::MESH)) continue;
+            MeshId *mesh_ids = (MeshId*)entity_list.components[ComponentType::MESH];
+
+            for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
+            {
+                renderer.draw_bounding_box(renderer.meshes[mesh_ids[entity_idx]].bounding_box, transforms[entity_idx], reference_frames[entity_idx]);
+            }
+        }
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         SDL_GL_SwapWindow(window);
 #endif
-
 
         double delta_time = time_keeper.get_delta_time_s_no_reset();
 

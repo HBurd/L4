@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/mesh.h"
 #include "common/TransformComponent.h"
+
+#include "ccd/ccd.h"
 
 struct BoundingBox
 {
@@ -13,6 +14,14 @@ struct BoundingBox
     float z2;
 };
 
-BoundingBox compute_bounding_box(const Transform &transform, const Mesh &mesh);
-
 bool ray_intersect(const BoundingBox &aabb, Vec3 point, Vec3 direction, float *distance);
+
+struct BoundingBoxData
+{
+    BoundingBox *bbox;
+    Transform *transform;
+    WorldSector *position_rf;
+};
+
+// Signature of ccd support function
+void box_support(const void *box, const ccd_vec3_t *dir, ccd_vec3_t *vec);

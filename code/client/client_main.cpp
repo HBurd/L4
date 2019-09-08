@@ -288,6 +288,7 @@ int main(int argc, char *argv[])
 
         // check if raycast with aabb works
         EntityHandle enter_ship;
+        /*
         {
             EntityRef player = entity_manager->entity_table.lookup_entity(game.player_handle);
             if (player.is_valid() && !entity_manager->entity_lists[player.list_idx].supports_component(ComponentType::TRANSFORM_FOLLOWER))
@@ -315,6 +316,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        */
 
         // PlayerControl updates
         if (client_state.status == ClientState::SPAWNED)
@@ -348,21 +350,6 @@ int main(int argc, char *argv[])
             if (!list.supports_component(ComponentType::WORLD_SECTOR)) continue;
             if (!list.supports_component(ComponentType::TRANSFORM_FOLLOWER)) continue;
             update_transform_followers(entity_manager, (EntityHandle*)list.components[ComponentType::TRANSFORM_FOLLOWER], (Transform*)list.components[ComponentType::TRANSFORM], (WorldSector*)list.components[ComponentType::WORLD_SECTOR], list.size); 
-        }
-
-        for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
-        {
-            EntityListInfo &list = entity_manager->entity_lists[list_idx];
-            if (!list.supports_component(ComponentType::TRANSFORM)) continue;
-            if (!list.supports_component(ComponentType::BOUNDING_BOX)) continue;
-            if (!list.supports_component(ComponentType::MESH)) continue;
-            Transform *transforms = (Transform*)list.components[ComponentType::TRANSFORM];
-            BoundingBox *bounding_boxes = (BoundingBox*)list.components[ComponentType::BOUNDING_BOX];
-            MeshId *meshes = (MeshId*)list.components[ComponentType::MESH];
-            for (uint32_t entity_idx = 0; entity_idx < list.size; entity_idx++)
-            {
-                bounding_boxes[entity_idx] = compute_bounding_box(transforms[entity_idx], renderer.meshes[meshes[entity_idx]]);
-            }
         }
 
         // Update camera
@@ -415,20 +402,24 @@ int main(int argc, char *argv[])
         }
 
         // Draw bounding boxes
-        /*
         for (uint32_t list_idx = 0; list_idx < entity_manager->entity_lists.size(); list_idx++)
         {
             EntityListInfo &entity_list = entity_manager->entity_lists[list_idx];
-            if (!entity_list.supports_component(ComponentType::BOUNDING_BOX)) continue;
-            BoundingBox *boxes = (BoundingBox*)entity_list.components[ComponentType::BOUNDING_BOX];
+
+            if (!entity_list.supports_component(ComponentType::TRANSFORM)) continue;
+            Transform *transforms = (Transform*)entity_list.components[ComponentType::TRANSFORM];
+
             if (!entity_list.supports_component(ComponentType::WORLD_SECTOR)) continue;
             WorldSector *reference_frames = (WorldSector*)entity_list.components[ComponentType::WORLD_SECTOR];
+
+            if (!entity_list.supports_component(ComponentType::MESH)) continue;
+            MeshId *mesh_ids = (MeshId*)entity_list.components[ComponentType::MESH];
+
             for (uint32_t entity_idx = 0; entity_idx < entity_list.size; entity_idx++)
             {
-                renderer.draw_bounding_box(boxes[entity_idx], reference_frames[entity_idx]);
+                renderer.draw_bounding_box(renderer.meshes[mesh_ids[entity_idx]].bounding_box, transforms[entity_idx], reference_frames[entity_idx]);
             }
         }
-        */
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -5,7 +5,6 @@
 #include "common/PlanetComponent.h"
 #include "common/PhysicsComponent.h"
 #include "common/ProjectileComponent.h"
-#include "common/collision.h"
 
 void create_planet(Vec3 position, float radius, float mass, EntityManager *entity_manager)
 {
@@ -38,7 +37,6 @@ EntityRef create_ship(Vec3 position, EntityManager *entity_manager)
         ComponentType::TRANSFORM,
         ComponentType::PHYSICS,
         ComponentType::MESH,
-        ComponentType::BOUNDING_BOX
     };
     EntityRef ref = entity_manager->create_entity(components, ARRAY_LENGTH(components));
     
@@ -48,7 +46,6 @@ EntityRef create_ship(Vec3 position, EntityManager *entity_manager)
     new (entity_manager->lookup_component(ref, ComponentType::PHYSICS)) Physics;
     MeshId *mesh = new (entity_manager->lookup_component(ref, ComponentType::MESH)) MeshId;
     *mesh = MeshType::SHIP;
-    new (entity_manager->lookup_component(ref, ComponentType::BOUNDING_BOX)) BoundingBox;
 
     return ref;
 }

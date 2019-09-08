@@ -5,6 +5,9 @@
 
 #include "common/math.h"
 
+// TODO: remove this dependency
+#include "common/collision.h"
+
 typedef size_t ShaderProgramId;
 typedef size_t MeshId;
 
@@ -19,6 +22,7 @@ namespace MeshType
         PLANET,
         CROSSHAIR,
         BOX,
+        CUBE,
 
         NUM_MESH_TYPES,
     };
@@ -54,4 +58,8 @@ struct Mesh
     GLuint vbo;
     GLuint vao;
     std::vector<Vertex> vertices;
+    BoundingBox bounding_box;
 };
+
+// Compute bounding box in mesh space
+BoundingBox compute_bounding_box(const Vertex *vertices, uint32_t size);

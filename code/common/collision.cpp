@@ -3,25 +3,57 @@
 #include "common/TransformComponent.h"
 #include <float.h>
 
-BoundingBox compute_bounding_box(const Transform &transform, const Mesh &mesh)
+void box_support(const void *box_p, const ccd_vec3_t *dir, ccd_vec3_t *vec)
 {
-    BoundingBox result;
-    result.x1 = result.y1 = result.z1 = FLT_MAX;
-    result.x2 = result.y2 = result.z2 = -FLT_MAX;
+    BoundingBoxData *box = (BoundingBoxData*)box_p;
+    BoundingBox *bbox = box->bbox;
+    Transform *transform = box->transform;
+    WorldSector *position_rf = box->position_rf;
 
-    for (Vertex v : mesh.vertices)
+    // TODO: pick reference frame based on objects under comparison
+    Vec3 origin = relative_to_sector({0, 0, 0}, *position_rf, transform->position);
+
+    Vec3 bbox_points[] = {
+        {bbox->x1, bbox->y1, bbox->z1},
+        {bbox->x1, bbox->y1, bbox->z2},
+        {bbox->x1, bbox->y2, bbox->z1},
+        {bbox->x1, bbox->y2, bbox->z2},
+        {bbox->x2, bbox->y1, bbox->z1},
+        {bbox->x2, bbox->y1, bbox->z2},
+        {bbox->x2, bbox->y2, bbox->z1},
+        {bbox->x2, bbox->y2, bbox->z2},
+    };
+
+    Mat33 orientation = transform->orientation.to_matrix();
+
+    /* TODO: We may want some sort of tolerance for checking if the support result
+       is an edge or surface. Previously I was averaging the set of points with an
+       equal dot product, but floating point == comparisons seemed like a bad idea.
+       Should look into this more. */
+
+    Vec3 result;
+    float max_dot = -FLT_MAX;
+    for (uint32_t i = 0; i < ARRAY_LENGTH(bbox_points); ++i)
     {
-        Vec3 pos = mesh_to_sector(transform, v.position);
-
-        result.x1 = HB_MIN(pos.x, result.x1);
-        result.y1 = HB_MIN(pos.y, result.y1);
-        result.z1 = HB_MIN(pos.z, result.z1);
-
-        result.x2 = HB_MAX(pos.x, result.x2);
-        result.y2 = HB_MAX(pos.y, result.y2);
-        result.z2 = HB_MAX(pos.z, result.z2);
+        Vec3 position =  orientation * bbox_points[i] + origin;
+        float current_dot = dot(*reinterpret_cast<const Vec3*>(dir), position);
+        if (current_dot > max_dot)
+        {
+            max_dot = current_dot;
+            result = position;
+            // npoints = 1;
+        }
+        //else if (current_dot == max_dot)
+        //{
+        //    // running avg
+        //    result = (1.0f / (npoints + 1)) * (npoints * result + position);
+        //    ++npoints;
+        //}
     }
-    return result;
+
+    vec->v[0] = result.x;
+    vec->v[1] = result.y;
+    vec->v[2] = result.z;
 }
 
 bool ray_intersect(const BoundingBox &aabb, Vec3 point, Vec3 direction, float *distance)

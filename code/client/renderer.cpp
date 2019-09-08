@@ -16,6 +16,27 @@ using std::endl;
 using std::string;
 using std::vector;
 
+// TODO: probably doesn't belong here
+BoundingBox compute_bounding_box(const Vertex *vertices, uint32_t size)
+{
+    BoundingBox result;
+    result.x1 = result.y1 = result.z1 = FLT_MAX;
+    result.x2 = result.y2 = result.z2 = -FLT_MAX;
+
+    for (int i = 0; i < size; i++)
+    {
+        Vertex v = vertices[i];
+        result.x1 = HB_MIN(v.position.x, result.x1);
+        result.y1 = HB_MIN(v.position.y, result.y1);
+        result.z1 = HB_MIN(v.position.z, result.z1);
+
+        result.x2 = HB_MAX(v.position.x, result.x2);
+        result.y2 = HB_MAX(v.position.y, result.y2);
+        result.z2 = HB_MAX(v.position.z, result.z2);
+    }
+    return result;
+}
+
 static GLint compile_shader(const char* filename, GLuint shader_type)
 {
     std::ifstream shader_file;
@@ -95,6 +116,8 @@ Mesh::Mesh(void *mesh_vertices, uint32_t num_vertices, uint16_t vertex_size, Sha
             )
         );
     }
+
+    bounding_box = compute_bounding_box(vertices.data(), vertices.size());
 
     // create and fill vbo
     vbo = 0;
@@ -186,6 +209,8 @@ Mesh::Mesh(const char *filename, ShaderProgramId mesh_shader_program)
     }
 
     fast_obj_destroy(mesh);
+
+    bounding_box = compute_bounding_box(vertices.data(), vertices.size());
 
     // create and fill vbo
     vbo = 0;
@@ -342,8 +367,14 @@ Renderer::Renderer(unsigned int _width, unsigned int _height)
                 };
                 meshes.push_back(Mesh(box_mesh, ARRAY_LENGTH(box_mesh), sizeof(*box_mesh), shader_prog));
             } break;
+            case MeshType::CUBE:
+            {
+                ShaderProgramId shader_prog =
+                    load_shader("resources/shaders/triangle.vert", "resources/shaders/triangle.frag");
+                meshes.push_back(Mesh("resources/models/cube.obj", shader_prog));
+            } break;
             default:
-                assert(false); // Unimplemeneted mesh type
+                assert(false && "Unimplemented mesh type");
         }
     }
 
@@ -474,7 +505,83 @@ void Renderer::draw_mesh(MeshId mesh_id, Vec3 position, Vec3 scale, Rotor orient
     );
 }
 
-void Renderer::draw_bounding_box(BoundingBox bounding_box, WorldSector reference_frame) const
+void Renderer::draw_bounding_box(BoundingBox bounding_box, Transform transform, WorldSector reference_frame) const
+{
+    const Mesh* mesh = &meshes[MeshType::BOX];
+    glUseProgram(shader_programs[mesh->shader_program].program);
+
+    Mat33 rotation_matrix = transform.orientation.to_matrix();
+    
+    // Can't just centre the box at the object's origin since it may be offset
+    Vec3 offset = Vec3(
+        (bounding_box.x2 + bounding_box.x1) * 0.5f,
+        (bounding_box.y2 + bounding_box.y1) * 0.5f,
+        (bounding_box.z2 + bounding_box.z1) * 0.5f);
+    Vec3 position = relative_to_sector(camera_sector, reference_frame, transform.position) + rotation_matrix * offset;
+    
+    GLuint origin_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "origin");
+    glUniform3fv(origin_uniform_location, 1, (GLfloat*)&position);
+
+    GLuint rotation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "rotation");
+    glUniformMatrix3fv(
+        rotation_uniform_location,
+        1,       // 1 matrix
+        GL_TRUE, // transpose (row to column major)
+        (GLfloat*)&rotation_matrix.data);
+
+    GLuint camera_pos_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_pos");
+    glUniform3fv(camera_pos_uniform_location, 1, (GLfloat*)&camera_pos);
+
+    GLuint camera_orientation_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "camera_orientation");
+    Mat33 camera_orientation_inverse = camera_orientation.inverse().to_matrix();
+    glUniformMatrix3fv(
+        camera_orientation_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&camera_orientation_inverse.data);
+
+    Vec3 scale(
+        bounding_box.x2 - bounding_box.x1,
+        bounding_box.y2 - bounding_box.y1,
+        bounding_box.z2 - bounding_box.z1);
+
+    GLuint scale_uniform_location =
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "scale");
+    glUniform3fv(scale_uniform_location, 1, (GLfloat*)&scale);
+
+    GLuint perspective_uniform_location = 
+        glGetUniformLocation(
+            shader_programs[mesh->shader_program].program,
+            "perspective");
+    glUniformMatrix4fv(
+        perspective_uniform_location,
+        1,
+        GL_TRUE,
+        (GLfloat*)&perspective.data);
+
+    glBindVertexArray(mesh->vao);
+    glDrawArrays(
+        GL_LINES,
+        0,  // starting idx
+        (int)mesh->vertices.size()
+    );
+}
+
+void Renderer::draw_aabb(BoundingBox bounding_box, WorldSector reference_frame) const
 {
     const Mesh* mesh = &meshes[MeshType::BOX];
     glUseProgram(shader_programs[mesh->shader_program].program);
